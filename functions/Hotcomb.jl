@@ -42,7 +42,8 @@ Base.collect(x::Hotcomb) = [x[i,j] for i = 1:size(x)[1], j = 1:size(x)[2]]
 @test mycomb[5,:] == [1, 2, 'b']
 
 """
-Hotcomb(x) takes a tuple x, named tuple x, or vector x
+Hotcomb(x) takes a tuple, named tuple, vector of ranges, or vector of constants.
+Vectors of constants will be expanded with starting index of 1.
 
 It can be accessed using `[:,:]`` getindex lookups. It uses processing speed to
 loopup values but uses almost no memory. Symbols can also be used to index columns.
@@ -77,5 +78,17 @@ julia> mycomb[5 , :]
 
 julia> mycomb[4 , :b]
 2
+
+julia> keys(Hotcomb((a=1:2, b=1:4,c='a':'c')))
+(:a, :b, :c)
+
+julia> value(Hotcomb([4,5,6]))
+3-element Array{UnitRange{Int64},1}:
+ 1:4
+ 1:5
+ 1:6
+
+julia> value(Hotcomb([4,5,6]) == value(Hotcomb([1:4,1:5,1:6]))
+true
 ```
 """
