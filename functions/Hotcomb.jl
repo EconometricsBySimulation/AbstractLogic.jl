@@ -10,12 +10,11 @@ Base.size(x::Hotcomb)     = (*(length.(value(x))...), length(x.intuple))
 find(x::Tuple, y::Symbol) = x[[x...] .== y]
 
 function Base.getindex(x::Hotcomb, row::Integer, col::Integer)
-    # Divisor is calculating based on how many values remains
-    # how many times to repeat the current value
+    # Divisor is calculating based on how many values remains how many times to repeat the current value
     divisor = (col+1 > size(x)[2] ? 1 : value(x)[(col+1):size(x)[2]] .|> length |> prod)
     # indexvalue finds the index to select from the column of interest
-    indexvalue = (Integer(ceil(row / divisor)) - 1) % length(value(x)[col])
-    value(x)[col][indexvalue+1]
+    indexvalue = (Integer(ceil(row / divisor)) - 1) % length(value(x)[col]) +1
+    value(x)[col][indexvalue]
 end
 
 function Base.getindex(x::Hotcomb, I...)
