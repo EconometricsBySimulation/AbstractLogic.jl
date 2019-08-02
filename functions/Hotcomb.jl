@@ -31,15 +31,6 @@ function Base.getindex(x::Hotcomb, row::Integer, col::Symbol)
   x[row, keymatch...]
 end
 
-Base.collect(x::Hotcomb) = [x[i,j] for i = 1:size(x)[1], j = 1:size(x)[2]]
-
-
-@test keys(mycomb) == (:a, :b, :c)
-@test value(mycomb) == [1:2, 1:4, 'a':'c']
-@test size(mycomb) == (24,3)
-@test collect(mycomb) == mycomb[:,:] # Seems to be working
-@test mycomb[13,2] == mycomb[13,:b]
-@test mycomb[5,:] == [1, 2, 'b']
 
 """
 Hotcomb(x) takes a tuple, named tuple, vector of ranges, or vector of constants.
