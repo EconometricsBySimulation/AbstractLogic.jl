@@ -65,4 +65,4 @@ mycomb[1000,:]
 mycomb_collect[1000,:]
 @benchmark mycomb_collect[1000,:]
 
-varinfo()
+varinfo() # Accessing mycomb as Hotcomb is more time intensive but uses less memory than generating full collection
