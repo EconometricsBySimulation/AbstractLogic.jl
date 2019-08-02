@@ -1,4 +1,4 @@
-cd("C:/Users/francis.smart.ctr/GitDir/AbstractLogic")
+cd("C:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
 
 struct Hotcomb
   intuple
@@ -32,12 +32,8 @@ function Base.getindex(x::Hotcomb, row::Integer, col::Symbol)
 end
 
 Base.collect(x::Hotcomb) = [x[i,j] for i = 1:size(x)[1], j = 1:size(x)[2]]
-###############################################################################
-# Testing
 
-using Test
 
-mycomb = Hotcomb((a=1:2, b=1:4,c='a':'c'))
 @test keys(mycomb) == (:a, :b, :c)
 @test value(mycomb) == [1:2, 1:4, 'a':'c']
 @test size(mycomb) == (24,3)
@@ -45,23 +41,41 @@ mycomb = Hotcomb((a=1:2, b=1:4,c='a':'c'))
 @test mycomb[13,2] == mycomb[13,:b]
 @test mycomb[5,:] == [1, 2, 'b']
 
-@test_throws "Symbol :d not found" mycomb[3,:d]
+"""
+Hotcomb(x) takes a tuple x, named tuple x, or vector x
 
-###############################################################################
-# Benchmarking
+It can be accessed using `[:,:]`` getindex lookups. It uses processing speed to
+loopup values but uses almost no memory. Symbols can also be used to index columns.
+Hotcomb type has `key()`, `value()`, `size()`, and `collect()` methods defined for it.
 
-using BenchmarkTools, InteractiveUtils
+# Examples
+```jldoctest
+julia> mycomb = Hotcomb((a=1:2, b=1:4,c='a':'c'))
+Hotcomb((a = 1:2, b = 1:4, c = 'a':1:'c'))
 
-mycomb = Hotcomb([7,7,7,7,7,7,7])
-value(mycomb)
-size(mycomb)
+julia> collect(mycomb)
+24×3 Array{Any,2}:
+ 1  1  'a'
+ 1  1  'b'
+ 1  1  'c'
+ 1  2  'a'
+ 1  2  'b'
+ 1  2  'c'
+ ⋮
+ 2  3  'a'
+ 2  3  'b'
+ 2  3  'c'
+ 2  4  'a'
+ 2  4  'b'
+ 2  4  'c'
 
-mycomb_collect = mycomb[]
+julia> mycomb[5 , :]
+3-element Array{Any,1}:
+ 1
+ 2
+ 'b'
 
-mycomb[1000,:]
-@benchmark mycomb[1000,:]
-
-mycomb_collect[1000,:]
-@benchmark mycomb_collect[1000,:]
-
-varinfo() # Accessing mycomb as Hotcomb is more time intensive but uses less memory than generating full collection
+julia> mycomb[4 , :b]
+2
+```
+"""
