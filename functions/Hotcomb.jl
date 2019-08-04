@@ -1,4 +1,5 @@
 cd("C:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
+cd("/Users/francissmart/Documents/GitHub/AbstractLogic")
 
 struct Hotcomb
   intuple
@@ -8,6 +9,7 @@ Base.keys(x::Hotcomb)     = keys(x.intuple)
 value(x::Hotcomb)         = [(length(i)>1 ? i : 1:i) for i in x.intuple]
 Base.size(x::Hotcomb)     = (*(length.(value(x))...), length(x.intuple))
 find(x::Tuple, y::Symbol) = x[[x...] .== y]
+Base.collect(x::Hotcomb)  = [x[i,j] for i in 1:size(x)[1], j in 1:size(x)[2]]
 
 function Base.getindex(x::Hotcomb, row::Integer, col::Integer)
     # Divisor is calculating based on how many values remains how many times to repeat the current value
