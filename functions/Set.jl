@@ -3,6 +3,7 @@ integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
                                stop = integer(match(r"[0-9]+$", x).match))
 ABoccursin(y::Symbol) = any( [ y ∈ keys(Ω[i]) for i in 1:length(Ω) ] )
+ABoccursin(x::Hotcomb, y::Symbol) = y ∈ keys(x)
 
 function ABparse(commands::Array{String,1})
   println("")
@@ -11,24 +12,29 @@ function ABparse(commands::Array{String,1})
       print(i)
       ABparse(i)
 
-      sum(sum.(Υ))
-      println(" ✓")
+      feasibleoutcomes = (length(Υ)>0) ? prod(sum.(Υ)) : 0
+      filler = repeat("\t", max(1, 3-Integer(round(length(i)/10))))
+      println(" $filler feasible outcomes $feasibleoutcomes ✓")
 
   end
 end
 
 function ABparse(command::String)
   exclusionlist = ["in"]
+  command == "clear" && return ABclear!()
   occursin(r"∈|\bin\b", command) && return ABassign!(command)
 
   # Check for the existance of any symbols in Ω
-  varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z]*", command)
+  varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
   smatch = [String(s.match) for s in symbols]
 
-  sym = [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
-  for S in sym
+  # Checks if any of the variables does not exist in Ω
+  for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
       !ABoccursin(S) && throw("In {$command} variable {:$S} not found in Ω")
   end
+
+  occursin(r"(( |\b)+=+( |\b)+)", command) && return ABequal!(command)
+
 end
 
 function ABassign!(command::String)
@@ -49,53 +55,43 @@ function ABassign!(command::String)
   (isdefined(Main, :Ω) ? append!(Ω, [x]) : Ω = [x])
 end
 
-command = "a,b,d = 1"
-# command = "a = 1|2"
-
-ABparse(["a,b,c ∈ [1:3]"])
-
-
-y=:a
-
-function ABequal(command)
-  left, right = strip.(split(command, "="))
+function ABequal!(command)
+  left, right = strip.(split(command, r"[=]+"))
+  #global Υ, Ω
 
   for i in i:length(Ω)
-   i=1
 
-   for L in lefts
-    Lvalues = occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",L) && (Symbol(L) ∈ keys(Ω[i])) &&
-      (Ω[i][Υ[i], Symbol(L)])
+   for L in [Symbol(x) for x in strip.(split(left, r"[,|&]"))]
+    !ABoccursin(Ω[i], L) && continue
+    Lvalues = Ω[i][Υ[i], L]
 
     (length(Lvalues)==0) && continue
     #(!Lvalues[1]) && throw("In $command $L not found in Ω")
 
-    if occursin(r"\|", right)
-      checkset = fill(false, length(Lvalues))
-        for R in (split(right, "|") .|> strip)
-          occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R) && (Symbol(R) ∈ keys(Ω[i])) &&
-            (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
-        checkset = checkset .| (Rvalues .== Lvalues)
-       end
-       Υ[i][Υ[i]] = checkset
-    elseif occursin(r"&", right)
+    checkset = fill(true,  length(Lvalues))
+    occursin(r"\|", right) && (checkset = fill(false, length(Lvalues)))
 
-    else
-        checkset = occursin(r"^[0-9]+$",right) &&
-          (Rvalues = integer(match(r"^[0-9]+$",right).match))
-        occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R) && (Symbol(R) ∈ keys(Ω[i])) &&
-          (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
-        checkset = (Rvalues .== Lvalues)
-        Υ[i][Υ[i]] = checkset
+    for R in strip.(split(right, r"[,|&]"))
+        rsymb = occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R)
+
+        rsymb && !ABoccursin(Ω[i], Symbol(R)) && continue
+        rsymb && (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
+
+        !rsymb && (Rvalues = integer(R))
+
+        if occursin(r"\|", right)
+          checkset = checkset .| (Lvalues .== Rvalues)
+        else
+          checkset = checkset .& (Lvalues .== Rvalues)
+        end
     end
-   end
 
-   occursin(r"^[0-9]+$",j) && (fill())
-
+    Υ[i][Υ[i]] = checkset
+    end
   end
 end
 
-function ABclear()
+function ABclear!()
   global Ω, Υ
   Ω = []
   Υ = []
@@ -104,13 +100,16 @@ end
 set = [(a=1, b=2), (c=2, d=3), (a=39, n=92)]
 [:a ∈ keys(set[i]) for i in 1:length(set)]
 
-ABclear(); Ω
+ABclear!(); Ω
 
 ABparse("a, b, c  ∈  [1,2,3]"); Ω
 ABparse("a, b, c, d, e  ∈  [1,2,3,4]") ; Ω
 ABparse("a, b, c  in [2:3]") ; Ω
 
-ABparse("a, b, c  ∈  [1,2,3]"); Ω
+ABparse(["clear",
+         "a, b, c  ∈  [1,2,3]",
+         "b, a = c",
+         "c = 1|2"]); Ω[1][Υ[1],:] 
 
 
 ΩΩΩ[1][:,:]
