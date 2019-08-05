@@ -1,5 +1,5 @@
-cd("C:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
-cd("/Users/francissmart/Documents/GitHub/AbstractLogic")
+#cd("C:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
+#cd("/Users/francissmart/Documents/GitHub/AbstractLogic")
 
 struct Hotcomb
   intuple
@@ -10,6 +10,9 @@ value(x::Hotcomb)         = [(length(i)>1 ? i : 1:i) for i in x.intuple]
 Base.size(x::Hotcomb)     = (*(length.(value(x))...), length(x.intuple))
 find(x::Tuple, y::Symbol) = x[[x...] .== y]
 Base.collect(x::Hotcomb)  = [x[i,j] for i in 1:size(x)[1], j in 1:size(x)[2]]
+Base.min(x::Hotcomb)      = min(collect(Iterators.flatten(value(x)))...)
+Base.max(x::Hotcomb)      = max(collect(Iterators.flatten(value(x)))...)
+ends(x::Hotcomb)          = [min(x), max(x)]
 
 function Base.getindex(x::Hotcomb, row::Integer, col::Integer)
     # Divisor is calculating based on how many values remains how many times to repeat the current value
@@ -19,19 +22,37 @@ function Base.getindex(x::Hotcomb, row::Integer, col::Integer)
     value(x)[col][indexvalue]
 end
 
-function Base.getindex(x::Hotcomb, I...)
-  ([I...] == Any[]) && (return collect(x))
-  index = [I...]
-  (index[1] == Colon()) && (index[2] != Colon()) && (return [x[i,index[2]] for i = 1:size(x)[1] ])
-  (index[1] != Colon()) && (index[2] == Colon()) && (return [x[index[1],i] for i = 1:size(x)[2] ])
-  (index[1] == Colon()) && (index[2] == Colon()) && (return collect(x))
-end
+Base.getindex(x::Hotcomb, row::Int, ::Colon) = [ x[row,i] for i = 1:size(x)[2] ]
+Base.getindex(x::Hotcomb, ::Colon, col::Union{Int64,Symbol}) = [ x[i,col] for i = 1:size(x)[1] ]
+Base.getindex(x::Hotcomb, ::Colon, ::Colon) = collect(x)
 
 function Base.getindex(x::Hotcomb, row::Integer, col::Symbol)
   keymatch = findall(y -> y==col, [keys(x)...])
   length(keymatch)==0 && throw("Symbol :$col not found")
   x[row, keymatch...]
 end
+
+Base.getindex(x::Hotcomb, row::AbstractArray{Bool,1}, col::Union{Symbol,Int}) =
+  [ x[i,col] for i = (1:size(x)[1])[row] ]
+
+Base.getindex(x::Hotcomb, row::AbstractArray{Bool,1}, ::Colon) =
+  [ x[i,j] for i = (1:size(x)[1])[row], j =  (1:size(x)[2])]
+
+
+Base.getindex(x::Hotcomb, ::Colon, ::Colon) = collect(x)
+
+x = Hotcomb((a=4,b=4,c=6:15))
+binaryselector = rand(Bool, size(x)[1])
+
+x[1,:]
+x[binaryselector, :a]
+x[binaryselector, 1]
+y = x[binaryselector, :]
+
+# min(x)
+# max(x)
+# ends(x)
+
 
 
 """
