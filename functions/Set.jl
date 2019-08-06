@@ -26,7 +26,6 @@ function ABparse(command::String)
 
   # Check for the existance of any symbols in Ω
   varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
-  smatch = [String(s.match) for s in symbols]
 
   # Checks if any of the variables does not exist in Ω
   for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
@@ -55,40 +54,50 @@ function ABassign!(command::String)
   (isdefined(Main, :Ω) ? append!(Ω, [x]) : Ω = [x])
 end
 
-function ABequal!(command)
+ABorequal(a,b) = [any([a[j][i] ∈ b[k][i] for j in 1:length(a), k in 1:length(b)]) for i in 1:length(a[1])]
+
+function ABequal(command)
+
   left, right = strip.(split(command, r"[=]+"))
   #global Υ, Ω
+  Υ2 = Υ
 
-  for i in i:length(Ω)
+  for i in 1:length(Ω)
 
-   for L in [Symbol(x) for x in strip.(split(left, r"[,|&]"))]
-    !ABoccursin(Ω[i], L) && continue
-    Lvalues = Ω[i][Υ[i], L]
+       Lcheckset = fill(true,  sum(Υ[i]))
+       occursin(r"[|]", left) && (Lcheckset = fill(false,  sum(Υ[i])))
 
-    (length(Lvalues)==0) && continue
-    #(!Lvalues[1]) && throw("In $command $L not found in Ω")
+           for L in [Symbol(x) for x in strip.(split(left, r"[,|&]"))]
+            !ABoccursin(Ω[i], L) && continue
+            Lvalues = Ω[i][Υ[i], L]
 
-    checkset = fill(true,  length(Lvalues))
-    occursin(r"\|", right) && (checkset = fill(false, length(Lvalues)))
+            (length(Lvalues)==0) && continue
+            #(!Lvalues[1]) && throw("In $command $L not found in Ω")
 
-    for R in strip.(split(right, r"[,|&]"))
-        rsymb = occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R)
+            Rcheckset = fill(true,  length(Lvalues))
+            occursin(r"\|", right) && (Rcheckset = fill(false, length(Lvalues)))
 
-        rsymb && !ABoccursin(Ω[i], Symbol(R)) && continue
-        rsymb && (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
+            for R in strip.(split(right, r"[,|&]"))
+                rsymb = occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R)
 
-        !rsymb && (Rvalues = integer(R))
+                rsymb && !ABoccursin(Ω[i], Symbol(R)) && continue
+                rsymb && (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
 
-        if occursin(r"\|", right)
-          checkset = checkset .| (Lvalues .== Rvalues)
-        else
-          checkset = checkset .& (Lvalues .== Rvalues)
+                !rsymb && (Rvalues = integer(R))
+
+                if occursin(r"\|", right)
+                  Rcheckset = Rcheckset .| (Lvalues .== Rvalues)
+                else
+                  Rcheckset = Rcheckset .& (Lvalues .== Rvalues)
+                end
+            end
+
+          occursin(r"\|", right)  && (Υ2[i][Υ[i]] = Lcheckset .| Rcheckset)
+          !occursin(r"\|", right) && (Υ2[i][Υ[i]] = Lcheckset .& Rcheckset)
+
         end
     end
-
-    Υ[i][Υ[i]] = checkset
-    end
-  end
+  Υ2
 end
 
 function ABclear!()
@@ -96,9 +105,6 @@ function ABclear!()
   Ω = []
   Υ = []
 end
-
-set = [(a=1, b=2), (c=2, d=3), (a=39, n=92)]
-[:a ∈ keys(set[i]) for i in 1:length(set)]
 
 ABclear!(); Ω
 
@@ -108,8 +114,8 @@ ABparse("a, b, c  in [2:3]") ; Ω
 
 ABparse(["clear",
          "a, b, c  ∈  [1,2,3]",
-         "b, a = c",
-         "c = 1|2"]); Ω[1][Υ[1],:] 
+         "b | a = c",
+         "c = 1|2"]); Ω[1][Υ2[1],:]
 
 
 ΩΩΩ[1][:,:]
