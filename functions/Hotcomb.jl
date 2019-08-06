@@ -46,12 +46,18 @@ Base.getindex(x::Hotcomb, row::AbstractArray{Bool,1}, ::Colon) =
 
 Base.getindex(x::Hotcomb, ::Colon, ::Colon) = collect(x)
 
+Base.getindex(x::Hotcomb, symb::Union{Array{Symbol,1}, Symbol}) = x[:,symb]
+
+
+
 x = Hotcomb((a=4,b=4,c=6:15))
 binaryselector = rand(Bool, size(x)[1])
 
 x[1,:]
 x[binaryselector, :a]
 x[:, [:a,:b]]
+x[[:a,:b]]
+x[:a]
 x[binaryselector, [1,3,2,1]]
 
 x[binaryselector, 1]
