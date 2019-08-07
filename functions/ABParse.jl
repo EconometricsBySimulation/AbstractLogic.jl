@@ -24,7 +24,7 @@ end
 
 commands = ["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]
 commands = ["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d"]
-
+commands = ["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]
 command = commands[2]
 
 function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
@@ -41,7 +41,7 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
       !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  occursin(r"( |\b)(==|\|=|!=|=)(\b| )", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
+  occursin(r"( |\b)(==|\|=|!=)(\b| )", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
 
   (Ω,℧)
 end
@@ -94,7 +94,7 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
 
     n = 1:sum(℧)
 
-    m = match(r"(.*)(\b(==|\|!=)\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b(==|\|=|!=)\b)(.*)",replace(command, " "=>""))
     left, blank, operator, right = m.captures
 
     leftarg  = strip.(split(left,  r"[,|&]"))
@@ -121,15 +121,10 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
     (Ω, ℧)
 end
 
-ABclear!(); Ω
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]);
+Ω[℧,:]
 
-ABparse("a, b, c  ∈  [1,2,3]"); Ω
-ABparse("a, b, c, d, e  ∈  [1,2,3,4]") ; Ω
-ABparse("a, b, c  in [2:3]") ; Ω
-
-a,b = ABparse(["a, b, c  ∈  [1,2,3]",
-         "b , a == c-1",
-         "c |= 1|2"]);
+a,b = ABparse(["a, b, c  ∈  [1,2,3]", "b , a == c-1", "c |= 1|2"]);
 a[b,:]
 
 a,b = ABparse(["a, b, c ∈  [1,2,3]", "a == c+b"]);
