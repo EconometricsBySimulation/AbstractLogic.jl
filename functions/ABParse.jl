@@ -1,3 +1,8 @@
+using Pkg
+cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
+Pkg.activate(".")
+
+
 # Global set variables Ω, Υ hold
 integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
@@ -10,12 +15,12 @@ function ABparse(commands::Array{String,1})
   ℧ = Bool[0]
   println("")
 
-  for c in commands
+  for command in commands
       print(command)
       Ω, ℧ = ABparse(command, Ω, ℧)
 
       feasibleoutcomes = (length(℧)>0) ? sum(℧) : 0
-      filler = repeat("\t", max(1, 3-Integer(round(length(c)/10))))
+      filler = repeat("\t", max(1, 3-Integer(round(length(command)/18))))
       println(" $filler feasible outcomes $feasibleoutcomes ✓")
 
   end
@@ -25,13 +30,16 @@ end
 commands = ["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]
 commands = ["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d"]
 commands = ["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]
-command = commands[2]
+command = commands[1]
 
 function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
   # A vector of non-standard operators to ignore
   exclusionlist = ["\bin\b"]
 
-  occursin(r"∈|\bin\b", command) && ((Ω,℧) = ABassign(command))
+  if occursin(r"∈|\bin\b", command)
+      (Ω,℧) = ABassign(command)
+      return (Ω,℧)
+  end
 
   # Check for the existance of any symbols in Ω
   varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
@@ -41,9 +49,14 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
       !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  occursin(r"( |\b)(==|\|=|!=)(\b| )", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
-
-  (Ω,℧)
+  if occursin(r"( |\b)([><=|!]{3})(\b| )", command)
+      (Ω,℧) = ABevaluate2way(command,Ω,℧)
+      return (Ω,℧)
+  elseif occursin(r"( |\b)([><=|!]{2})(\b| )", command)
+      (Ω,℧) = ABevaluate(command,Ω,℧)
+      return (Ω,℧)
+  end
+  println("Warning! { $command } not interpretted")
 end
 
 function ABassign(command::String)
@@ -61,9 +74,6 @@ function ABassign(command::String)
 
   (Ω ,℧)
 end
-
-ABorequal(a,b) = [any([a[j][i] ∈ b[k][i] for j in 1:length(a), k in 1:length(b)]) for i in 1:length(a[1])]
-
 
 function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command = "")
   matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
@@ -89,12 +99,53 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command
   (o1 == "*") && return left .* right
 end
 
-function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
+command = "a == b ||| a == c+1"
+
+function ABevaluate2way(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    #println("ABevaluate($command)")
     (sum(℧) == 0) && return (Ω, ℧)
 
-    n = 1:sum(℧)
+    m = match(r"(.*)(\b([><=|!]{3})\b)(.*)",replace(command, " "=>""))
+    left, blank, superoperator, right = m.captures
 
-    m = match(r"(.*)(\b(==|\|=|!=)\b)(.*)",replace(command, " "=>""))
+    υ = copy(℧); ℧η = copy(℧)
+
+    ℧left  = ABevaluate(left ,Ω,℧)[2]
+    ℧right = ABevaluate(right,Ω,℧)[2]
+
+    if superoperator == "==="
+        ℧η = υ .& (℧left .& ℧right)
+
+    elseif superoperator == "|||"
+        ℧η = υ .& (℧left .| ℧right)
+
+    elseif superoperator == "|=>"
+        ℧η[℧left]  = ℧[℧left]  .& ℧right[℧left]
+
+    elseif superoperator == "<=|"
+        ℧η[℧right] = ℧[℧right] .& ℧right[℧right]
+
+    elseif superoperator == "<=>" # ???????????????????????????????????
+        ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
+        ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
+
+        #Ω[.!℧left][℧[.!℧left] .& ℧right[.!℧left],:]
+        #℧η[℧left]   .= ℧[.!℧left] .& ℧right[.!℧left]
+    end
+
+    (Ω, ℧η)
+end
+
+command = "a == 1 <=> b == 1"
+
+function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    #println("ABevaluate($command)")
+    (sum(℧) == 0) && return (Ω, ℧)
+
+    n = 1:sum(℧); ℧Δ = copy(℧); ℧η = copy(℧)
+
+
+    m = match(r"(.*)(\b([><=|!]{2})\b)(.*)",replace(command, " "=>""))
     left, blank, operator, right = m.captures
 
     leftarg  = strip.(split(left,  r"[,|&]"))
@@ -114,15 +165,50 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
     elseif operator == "|="
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [any(lcheck[i,:]) for i in n]
+
+    elseif operator == "<<"
+        lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == "<="
+        lcheck = [all(leftvals[i,j] .<= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == "<<"
+        lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == ">>"
+        lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == ">="
+        lcheck = [all(leftvals[i,j] .>= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
     end
 
-    ℧[℧] = ℧Δ
+    ℧η[℧η] = ℧Δ
 
-    (Ω, ℧)
+    (Ω, ℧η)
 end
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]);
 Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a << b,c", "c |= 1,2"]);Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b << 3 |=> a == b"]); Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == b <=| b << 3"]); Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]);
+Ω[℧,:]
+
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]);
+Ω[℧,:]
+
 
 a,b = ABparse(["a, b, c  ∈  [1,2,3]", "b , a == c-1", "c |= 1|2"]);
 a[b,:]
