@@ -11,21 +11,21 @@ function ABparse(commands::Array{String,1})
   println("")
 
   for c in commands
-      print(c)
-      Ω, ℧ = ABparse(c, Ω, ℧)
+      print(command)
+      Ω, ℧ = ABparse(command, Ω, ℧)
 
       feasibleoutcomes = (length(℧)>0) ? sum(℧) : 0
       filler = repeat("\t", max(1, 3-Integer(round(length(c)/10))))
       println(" $filler feasible outcomes $feasibleoutcomes ✓")
 
   end
+  (Ω, ℧)
 end
 
-commands = ["a, b, c  ∈  [1,2,3]",
-         "b | a = c",
-         "c = 1|2"]
+commands = ["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]
+commands = ["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d"]
 
-c = commands[1]
+command = commands[2]
 
 function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
   # A vector of non-standard operators to ignore
@@ -41,7 +41,7 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
       !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  occursin(r"\b(==|\|=)\b", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
+  occursin(r"( |\b)(==|\|=|!=|=)(\b| )", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
 
   (Ω,℧)
 end
@@ -57,7 +57,7 @@ function ABassign(command::String)
   outset = (; zip([Symbol(i) for i in varsVect], fill(vals, length(vars)))...)
 
   Ω  = Hotcomb(outset)
-  ℧ = fill(true, size(x)[1])
+  ℧ = fill(true, size(Ω)[1])
 
   (Ω ,℧)
 end
@@ -89,19 +89,12 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command
   (o1 == "*") && return left .* right
 end
 
-isequal(n1, nothing)
-
-command = "a, b == 1, c"
-command = "a + 1, b==1, c"
-
-command = "a |= b,c"
-
 function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
-    (sum(℧) == 0) && return (Ω,℧)
+    (sum(℧) == 0) && return (Ω, ℧)
 
     n = 1:sum(℧)
 
-    m = match(r"(.*)(\b(==|\|=)\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b(==|\|!=)\b)(.*)",replace(command, " "=>""))
     left, blank, operator, right = m.captures
 
     leftarg  = strip.(split(left,  r"[,|&]"))
@@ -110,15 +103,22 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
     leftvals  = hcat([grab(L, Ω, ℧, command=command) for L in leftarg]...)
     rightvals = hcat([grab(R, Ω, ℧, command=command) for R in rightarg]...)
 
-    (operator == "==") &&
-      (℧ = [all(leftvals[i,1] .== [leftvals[i,1]..., rightvals[i,:]...]) for i in n] )
-
-    if operator == "|="
+    if operator == "!="
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-        ℧ = [any(lcheck[i,:]) for i in n]
+        ℧Δ = [!all(lcheck[i,:]) for i in n]
+
+    elseif (operator == "==") | (operator == "=")
+        lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == "|="
+        lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [any(lcheck[i,:]) for i in n]
     end
 
-    (Ω,℧)
+    ℧[℧] = ℧Δ
+
+    (Ω, ℧)
 end
 
 ABclear!(); Ω
@@ -127,10 +127,22 @@ ABparse("a, b, c  ∈  [1,2,3]"); Ω
 ABparse("a, b, c, d, e  ∈  [1,2,3,4]") ; Ω
 ABparse("a, b, c  in [2:3]") ; Ω
 
-ABparse(["a, b, c  ∈  [1,2,3]",
-         "b | a = c",
-         "c = 1|2"]);
+a,b = ABparse(["a, b, c  ∈  [1,2,3]",
+         "b , a == c-1",
+         "c |= 1|2"]);
+a[b,:]
 
+a,b = ABparse(["a, b, c ∈  [1,2,3]", "a == c+b"]);
+a[b,:]
+
+a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]);
+a[b,:]
+
+a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]);
+a[b,:]
+
+a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1"]);
+a[b,:]
 
 ΩΩΩ[1][:,:]
 (; zip([Symbol(i) for i in varsVect], fill(1:2, 3))...)
