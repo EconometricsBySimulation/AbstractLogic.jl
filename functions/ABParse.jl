@@ -6,37 +6,47 @@ ABoccursin(y::Symbol) = any( [ y ∈ keys(Ω[i]) for i in 1:length(Ω) ] )
 ABoccursin(x::Hotcomb, y::Symbol) = y ∈ keys(x)
 
 function ABparse(commands::Array{String,1})
+  Ω = Hotcomb(0)
+  ℧ = Bool[0]
   println("")
 
-  for i in commands
-      print(i)
-      ABparse(i)
+  for c in commands
+      print(c)
+      Ω, ℧ = ABparse(c, Ω, ℧)
 
-      feasibleoutcomes = (length(Υ)>0) ? prod(sum.(Υ)) : 0
-      filler = repeat("\t", max(1, 3-Integer(round(length(i)/10))))
+      feasibleoutcomes = (length(℧)>0) ? sum(℧) : 0
+      filler = repeat("\t", max(1, 3-Integer(round(length(c)/10))))
       println(" $filler feasible outcomes $feasibleoutcomes ✓")
 
   end
 end
 
-function ABparse(command::String)
-  exclusionlist = ["in"]
-  command == "clear" && return ABclear!()
-  occursin(r"∈|\bin\b", command) && return ABassign!(command)
+commands = ["a, b, c  ∈  [1,2,3]",
+         "b | a = c",
+         "c = 1|2"]
+
+c = commands[1]
+
+function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
+  # A vector of non-standard operators to ignore
+  exclusionlist = ["\bin\b"]
+
+  occursin(r"∈|\bin\b", command) && ((Ω,℧) = ABassign(command))
 
   # Check for the existance of any symbols in Ω
   varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
 
   # Checks if any of the variables does not exist in Ω
   for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
-      !ABoccursin(S) && throw("In {$command} variable {:$S} not found in Ω")
+      !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  occursin(r"(( |\b)+=+( |\b)+)", command) && return ABequal!(command)
+  occursin(r"\b(==|\|=)\b", command) && ((Ω,℧) = ABevaluate(command,Ω,℧))
 
+  (Ω,℧)
 end
 
-function ABassign!(command::String)
+function ABassign(command::String)
   vars, valsin = strip.(split(command, r"∈|\bin\b"))
   varsVect = split(vars, ",") .|> strip
   vals0 = split(replace(valsin, r"\[|\]" => ""), ",")
@@ -46,64 +56,69 @@ function ABassign!(command::String)
 
   outset = (; zip([Symbol(i) for i in varsVect], fill(vals, length(vars)))...)
 
-  x = Hotcomb(outset)
-  y = fill(true, size(x)[1])
+  Ω  = Hotcomb(outset)
+  ℧ = fill(true, size(x)[1])
 
-  global Ω, Υ
-  (isdefined(Main, :Υ) ? append!(Υ, [y]) : Ω = [[y]])
-  (isdefined(Main, :Ω) ? append!(Ω, [x]) : Ω = [x])
+  (Ω ,℧)
 end
 
 ABorequal(a,b) = [any([a[j][i] ∈ b[k][i] for j in 1:length(a), k in 1:length(b)]) for i in 1:length(a[1])]
 
-function ABequal(command)
 
-  left, right = strip.(split(command, r"[=]+"))
-  #global Υ, Ω
-  Υ2 = Υ
+function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command = "")
+  matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
 
-  for i in 1:length(Ω)
+  m = match(matcher, argument)
+  nvar = 5-sum([i === nothing for i in m.captures])
+  (nvar==0) && throw("Argument $argument could not be parsed in $command")
 
-       Lcheckset = fill(true,  sum(Υ[i]))
-       occursin(r"[|]", left) && (Lcheckset = fill(false,  sum(Υ[i])))
+  v1, n1, o1, v2, n2 = m.captures
 
-           for L in [Symbol(x) for x in strip.(split(left, r"[,|&]"))]
-            !ABoccursin(Ω[i], L) && continue
-            Lvalues = Ω[i][Υ[i], L]
 
-            (length(Lvalues)==0) && continue
-            #(!Lvalues[1]) && throw("In $command $L not found in Ω")
+  !(v1 === nothing) && (left  = Ω[℧, Symbol(v1)])
+  !(n1 === nothing) && (left  = fill(integer(n1), length(℧)))
 
-            Rcheckset = fill(true,  length(Lvalues))
-            occursin(r"\|", right) && (Rcheckset = fill(false, length(Lvalues)))
+  (nvar==1) && return left
 
-            for R in strip.(split(right, r"[,|&]"))
-                rsymb = occursin(r"^[a-zA-Z][0-9a-zA-Z]*$",R)
+  !(v2 === nothing) && (right = Ω[℧, Symbol(v2)])
+  !(n2 === nothing) && (right = fill(integer(n2), length(℧)))
 
-                rsymb && !ABoccursin(Ω[i], Symbol(R)) && continue
-                rsymb && (Rvalues = (Ω[i][Υ[i], Symbol(R)]))
-
-                !rsymb && (Rvalues = integer(R))
-
-                if occursin(r"\|", right)
-                  Rcheckset = Rcheckset .| (Lvalues .== Rvalues)
-                else
-                  Rcheckset = Rcheckset .& (Lvalues .== Rvalues)
-                end
-            end
-
-          occursin(r"\|", right)  && (Υ2[i][Υ[i]] = Lcheckset .| Rcheckset)
-          !occursin(r"\|", right) && (Υ2[i][Υ[i]] = Lcheckset .& Rcheckset)
-
-        end
-    end
-  Υ2
+  (o1 == "+") && return left .+ right
+  (o1 == "-") && return left .- right
+  (o1 == "/") && return left ./ right
+  (o1 == "*") && return left .* right
 end
 
-function ABclear!()
-  global Ω, Υ
-  Ω = []
-  Υ = []
+isequal(n1, nothing)
+
+command = "a, b == 1, c"
+command = "a + 1, b==1, c"
+
+command = "a |= b,c"
+
+function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    (sum(℧) == 0) && return (Ω,℧)
+
+    n = 1:sum(℧)
+
+    m = match(r"(.*)(\b(==|\|=)\b)(.*)",replace(command, " "=>""))
+    left, blank, operator, right = m.captures
+
+    leftarg  = strip.(split(left,  r"[,|&]"))
+    rightarg = strip.(split(right, r"[,|&]"))
+
+    leftvals  = hcat([grab(L, Ω, ℧, command=command) for L in leftarg]...)
+    rightvals = hcat([grab(R, Ω, ℧, command=command) for R in rightarg]...)
+
+    (operator == "==") &&
+      (℧ = [all(leftvals[i,1] .== [leftvals[i,1]..., rightvals[i,:]...]) for i in n] )
+
+    if operator == "|="
+        lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧ = [any(lcheck[i,:]) for i in n]
+    end
+
+    (Ω,℧)
 end
 
 ABclear!(); Ω
@@ -112,10 +127,9 @@ ABparse("a, b, c  ∈  [1,2,3]"); Ω
 ABparse("a, b, c, d, e  ∈  [1,2,3,4]") ; Ω
 ABparse("a, b, c  in [2:3]") ; Ω
 
-ABparse(["clear",
-         "a, b, c  ∈  [1,2,3]",
+ABparse(["a, b, c  ∈  [1,2,3]",
          "b | a = c",
-         "c = 1|2"]); Ω[1][Υ2[1],:]
+         "c = 1|2"]);
 
 
 ΩΩΩ[1][:,:]
