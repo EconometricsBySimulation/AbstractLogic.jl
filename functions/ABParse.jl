@@ -49,10 +49,10 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
       !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  if occursin(r"( |\b)([><=|!]{3})(\b| )", command)
+  if occursin(r"( |\b)([><=|!]{3,4})(\b| )", command)
       (Ω,℧) = ABevaluate2way(command,Ω,℧)
       return (Ω,℧)
-  elseif occursin(r"( |\b)([><=|!]{2})(\b| )", command)
+  elseif occursin(r"( |\b)([><=|!]{1,2})(\b| )", command)
       (Ω,℧) = ABevaluate(command,Ω,℧)
       return (Ω,℧)
   end
@@ -84,14 +84,13 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command
 
   v1, n1, o1, v2, n2 = m.captures
 
-
   !(v1 === nothing) && (left  = Ω[℧, Symbol(v1)])
   !(n1 === nothing) && (left  = fill(integer(n1), length(℧)))
 
   (nvar==1) && return left
 
   !(v2 === nothing) && (right = Ω[℧, Symbol(v2)])
-  !(n2 === nothing) && (right = fill(integer(n2), length(℧)))
+  !(n2 === nothing) && (right = fill(integer(n2), length(left)))
 
   (o1 == "+") && return left .+ right
   (o1 == "-") && return left .- right
@@ -101,11 +100,13 @@ end
 
 command = "a == b ||| a == c+1"
 
+
+
 function ABevaluate2way(command, Ω::Hotcomb, ℧::Array{Bool,1})
     #println("ABevaluate($command)")
     (sum(℧) == 0) && return (Ω, ℧)
 
-    m = match(r"(.*)(\b([><=|!]{3})\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b([><=|!]{3,4})\b)(.*)",replace(command, " "=>""))
     left, blank, superoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
@@ -119,37 +120,41 @@ function ABevaluate2way(command, Ω::Hotcomb, ℧::Array{Bool,1})
     elseif superoperator == "|||"
         ℧η = υ .& (℧left .| ℧right)
 
-    elseif superoperator == "|=>"
+    elseif superoperator ∈ ["|=>","==>"]
         ℧η[℧left]  = ℧[℧left]  .& ℧right[℧left]
 
-    elseif superoperator == "<=|"
-        ℧η[℧right] = ℧[℧right] .& ℧right[℧right]
+    elseif superoperator ∈ ["<=|","<=="]
+        ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
 
-    elseif superoperator == "<=>" # ???????????????????????????????????
+    elseif superoperator ∈ ["<=>","<==>"] # ???????????????????????????????????
         ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
         ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
-
-        #Ω[.!℧left][℧[.!℧left] .& ℧right[.!℧left],:]
-        #℧η[℧left]   .= ℧[.!℧left] .& ℧right[.!℧left]
     end
-
     (Ω, ℧η)
 end
+
+
 
 command = "a == 1 <=> b == 1"
 
 function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
     #println("ABevaluate($command)")
+
     (sum(℧) == 0) && return (Ω, ℧)
 
     n = 1:sum(℧); ℧Δ = copy(℧); ℧η = copy(℧)
 
+    # convert a = b|c to a |= b,c
+    if occursin("|", command) &  occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
+      command = replace(command, "|"=>",")
+      command = replace(command, r",*=+,*"=>"|=")
+    end
 
-    m = match(r"(.*)(\b([><=|!]{2})\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b([><=|!]{1,2})\b)(.*)",replace(command, " "=>""))
     left, blank, operator, right = m.captures
 
-    leftarg  = strip.(split(left,  r"[,|&]"))
-    rightarg = strip.(split(right, r"[,|&]"))
+    leftarg  = strip.(split(left,  r"[,&]"))
+    rightarg = strip.(split(right, r"[,&]"))
 
     leftvals  = hcat([grab(L, Ω, ℧, command=command) for L in leftarg]...)
     rightvals = hcat([grab(R, Ω, ℧, command=command) for R in rightarg]...)
@@ -158,33 +163,30 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [!all(lcheck[i,:]) for i in n]
 
-    elseif (operator == "==") | (operator == "=")
+    elseif operator  ∈ ["==","="]
         lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
-    elseif operator == "|="
+    elseif operator ∈ ["|=", "=|"]
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [any(lcheck[i,:]) for i in n]
-
-    elseif operator == "<<"
-        lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-        ℧Δ = [all(lcheck[i,:]) for i in n]
 
     elseif operator == "<="
         lcheck = [all(leftvals[i,j] .<= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
-    elseif operator == "<<"
+    elseif operator ∈ ["<<","<"]
         lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-        ℧Δ = [all(lcheck[i,:]) for i in n]
-
-    elseif operator == ">>"
-        lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
     elseif operator == ">="
         lcheck = [all(leftvals[i,j] .>= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator ∈ [">>",">"]
+        lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
 
     end
 
@@ -193,37 +195,19 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
     (Ω, ℧η)
 end
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]);
-Ω[℧,:]
-
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a << b,c", "c |= 1,2"]);Ω[℧,:]
-
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b << 3 |=> a == b"]); Ω[℧,:]
-
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c == 1|2"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a < b,c",  "c |= 1,2"]);Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b < 3 |=> a = b"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == b <=| b << 3"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]); Ω[℧,:]
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]);
-Ω[℧,:]
-
-
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]);
-Ω[℧,:]
-
-
-a,b = ABparse(["a, b, c  ∈  [1,2,3]", "b , a == c-1", "c |= 1|2"]);
-a[b,:]
-
-a,b = ABparse(["a, b, c ∈  [1,2,3]", "a == c+b"]);
-a[b,:]
-
-a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]);
-a[b,:]
-
-a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]);
-a[b,:]
-
-a,b = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1"]);
-a[b,:]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c ∈  [1,2,3]", "a == c+b"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1", "d == a*2"]); Ω[℧,:]
 
 ΩΩΩ[1][:,:]
 (; zip([Symbol(i) for i in varsVect], fill(1:2, 3))...)
