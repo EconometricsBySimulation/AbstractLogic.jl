@@ -2,7 +2,6 @@ using Pkg
 cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
 Pkg.activate(".")
 
-
 # Global set variables Ω, Υ hold
 integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
@@ -10,9 +9,7 @@ Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
 ABoccursin(y::Symbol) = any( [ y ∈ keys(Ω[i]) for i in 1:length(Ω) ] )
 ABoccursin(x::Hotcomb, y::Symbol) = y ∈ keys(x)
 
-function ABparse(commands::Array{String,1})
-  Ω = Hotcomb(0)
-  ℧ = Bool[0]
+function ABparse(commands::Array{String,1}; Ω::Hotcomb = Hotcomb(0), ℧::Array{Bool,1} = Bool[0])
   println("")
 
   for command in commands
@@ -21,16 +18,16 @@ function ABparse(commands::Array{String,1})
 
       feasibleoutcomes = (length(℧)>0) ? sum(℧) : 0
       filler = repeat("\t", max(1, 3-Integer(round(length(command)/18))))
-      println(" $filler feasible outcomes $feasibleoutcomes ✓")
+
+      (feasibleoutcomes == 0)  && (check = "X")
+      (feasibleoutcomes > 1)   && (check = "✓")
+      (feasibleoutcomes == 1)  && (check = "✓✓")
+
+      println(" $filler feasible outcomes $feasibleoutcomes $check")
 
   end
   (Ω, ℧)
 end
-
-commands = ["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]
-commands = ["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d"]
-commands = ["a, b, c  ∈  [1,2,3]", "b != a,c", "c |= 1,2"]
-command = commands[1]
 
 function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
   # A vector of non-standard operators to ignore
@@ -49,11 +46,14 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::Array{Bool,1})
       !ABoccursin(Ω, S) && throw("In {$command} variable {:$S} not found in Ω")
   end
 
-  if occursin(r"( |\b)([><=|!]{3,4})(\b| )", command)
-      (Ω,℧) = ABevaluate2way(command,Ω,℧)
+  if occursin(r"( |\b)([><=|!+\\-]{4})(\b| )", command)
+      (Ω,℧) = SuperSuperOperatorEval(command,Ω,℧)
+      return (Ω,℧)
+  elseif occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)
+      (Ω,℧) = SuperOperatorEval(command,Ω,℧)
       return (Ω,℧)
   elseif occursin(r"( |\b)([><=|!]{1,2})(\b| )", command)
-      (Ω,℧) = ABevaluate(command,Ω,℧)
+      (Ω,℧) = OperatorEval(command,Ω,℧)
       return (Ω,℧)
   end
   println("Warning! { $command } not interpretted")
@@ -98,35 +98,63 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::Array{Bool,1}; command
   (o1 == "*") && return left .* right
 end
 
-command = "a == b ||| a == c+1"
+commands = ["a, b, c  ∈  [1,2,3]", "b = a|c {2}"]
+command = commands[1]
+command = commands[2]
 
-
-
-function ABevaluate2way(command, Ω::Hotcomb, ℧::Array{Bool,1})
-    #println("ABevaluate($command)")
+function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
 
-    m = match(r"(.*)(\b([><=|!]{3,4})\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b([><=|!+\\-]{4})\b)(.*)",replace(command, " "=>""))
+    left, blank, supersuperoperator, right = m.captures
+
+    υ = copy(℧); ℧η = copy(℧)
+
+    ℧left  = SuperOperatorEval(left ,Ω,℧)[2]
+    ℧right = SuperOperatorEval(right,Ω,℧)[2]
+
+    (supersuperoperator == "====") && (℧η = υ .& (℧left .& ℧right))
+
+    (Ω, ℧η)
+end
+
+
+function SuperOperatorEval(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    #println("OperatorEval($command)")
+    (sum(℧) == 0) && return (Ω, ℧)
+    (!occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
+
+    m = match(r"(.*)(\b([><=|!+\\-]{3})\b)(.*)",replace(command, " "=>""))
     left, blank, superoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
 
-    ℧left  = ABevaluate(left ,Ω,℧)[2]
-    ℧right = ABevaluate(right,Ω,℧)[2]
+    ℧left  = OperatorEval(left ,Ω,℧)[2]
+    ℧right = OperatorEval(right,Ω,℧)[2]
 
     if superoperator == "==="
         ℧η = υ .& (℧left .& ℧right)
+
+    elseif superoperator == "^^^"
+        ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
+
+    elseif superoperator == "---"
+        ℧η[υ] = (℧left .- ℧right)[υ]
+
+    elseif superoperator == "+++"
+        ℧η = ℧left .+ ℧right
 
     elseif superoperator == "|||"
         ℧η = υ .& (℧left .| ℧right)
 
     elseif superoperator ∈ ["|=>","==>"]
-        ℧η[℧left]  = ℧[℧left]  .& ℧right[℧left]
+        ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
 
     elseif superoperator ∈ ["<=|","<=="]
         ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
 
-    elseif superoperator ∈ ["<=>","<==>"] # ???????????????????????????????????
+    elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
         ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
         ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
     end
@@ -134,11 +162,12 @@ function ABevaluate2way(command, Ω::Hotcomb, ℧::Array{Bool,1})
 end
 
 
+command = "b |= a,c {4}"
+command = "b |= a,c {2}"
+command = "b |= a,c {2}"
 
-command = "a == 1 <=> b == 1"
-
-function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
-    #println("ABevaluate($command)")
+function OperatorEval(command, Ω::Hotcomb, ℧::Array{Bool,1})
+    #println("OperatorEval($command)")
 
     (sum(℧) == 0) && return (Ω, ℧)
 
@@ -150,8 +179,12 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
       command = replace(command, r",*=+,*"=>"|=")
     end
 
-    m = match(r"(.*)(\b([><=|!]{1,2})\b)(.*)",replace(command, " "=>""))
-    left, blank, operator, right = m.captures
+    m = match(r"^(.*)(\b([><=|!]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
+    left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
+
+    (nmin === nothing) && (nmax === nothing)  &&  (nrange = 1:999)
+    !(nmin === nothing) && (nmax === nothing) &&  (nrange = integer(nmin):integer(nmin))
+    !(nmin === nothing) && !(nmax === nothing) && (nrange = integer(nmin):integer(nmax))
 
     leftarg  = strip.(split(left,  r"[,&]"))
     rightarg = strip.(split(right, r"[,&]"))
@@ -169,7 +202,7 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
 
     elseif operator ∈ ["|=", "=|"]
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-        ℧Δ = [any(lcheck[i,:]) for i in n]
+        ℧Δ = [sum(lcheck[i,:]) ∈ nrange for i in n]
 
     elseif operator == "<="
         lcheck = [all(leftvals[i,j] .<= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
@@ -187,7 +220,6 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
         lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
-
     end
 
     ℧η[℧η] = ℧Δ
@@ -196,6 +228,13 @@ function ABevaluate(command, Ω::Hotcomb, ℧::Array{Bool,1})
 end
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {1}"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {0}"]); Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2 {1}"]); Ω[℧,:]
+
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c == 1|2"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a < b,c",  "c |= 1,2"]);Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b < 3 |=> a = b"]); Ω[℧,:]
@@ -203,13 +242,14 @@ end
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]); Ω[℧,:]
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"]); Ω[℧,:]
-Ω,℧ = ABparse(["a, b, c ∈  [1,2,3]", "a == c+b"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"]); Ω[℧,:]
+Ω,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "a == c+b"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1", "d == a*2"]); Ω[℧,:]
 
-ΩΩΩ[1][:,:]
-(; zip([Symbol(i) for i in varsVect], fill(1:2, 3))...)
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧,:]
 
-keys((fill(1:2, 3))) = [Symbol(i) for i in varsVect]
+Ω,℧ = ABparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]", "a,b,c,d,e,f,g == 1 +++ a,b,c,d,e,f,g == 1 ==== 2"]); Ω[℧,:]
+
+Ω,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1"]); Ω[℧,:]

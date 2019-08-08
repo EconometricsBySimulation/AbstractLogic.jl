@@ -32,6 +32,8 @@ function Base.getindex(x::Hotcomb, row::Integer, col::Symbol)
   x[row, keymatch...]
 end
 
+Base.getindex(x::Hotcomb, row::AbstractArray{Bool,1}) = x[row,:]
+
 Base.getindex(x::Hotcomb, row::AbstractArray{Bool,1}, col::Union{Symbol,Int}) =
   [ x[i,col] for i = (1:size(x)[1])[row] ]
 
