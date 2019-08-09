@@ -128,6 +128,8 @@ function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
     (!occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
+    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
+
 
     m = match(r"(.*)(\b([><=|!+\\-]{3})\b)(.*)",replace(command, " "=>""))
     left, blank, superoperator, right = m.captures
@@ -197,7 +199,7 @@ function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
 
     positivematches = matches[matches .!= "!i"]
 
-    collector = fill(true, length(℧))
+    collection = []
 
     for i in 1:length(mykeys), j in keyrange[keyrange .!= i]
        txtcmd = tempcommand
@@ -207,12 +209,15 @@ function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
 
        occursin("~~OUTOFBOUNDS~~", txtcmd) && continue
 
-       ℧∇ = OperatorEval(txtcmd, Ω, ℧)[2]
+       ℧∇ = SuperOperatorEval(txtcmd, Ω, ℧)[2]
 
-       collector = hcat(collector, ℧∇)
+       print("\n>>> $txtcmd")
+
+       push!(collection, ℧∇)
     end
 
-    collector = collector[:, 2:end]
+
+    collector = hcat(collection...)
 
     if (countrange === missing)
       ℧Δ = ℧ .& [all(collector[i,:]) for i in 1:size(collector)[1]]
@@ -304,14 +309,15 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     (Ω, ℧η)
 end
 
-ABparse("{{i}} == 2 {{1}}",Ω,℧)
-
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1"]);
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == {{!i}}"]); Ω[℧]
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{0}}"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{3}}"]); Ω[℧] # ??????????????????????
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{1,5}}"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}}"]); Ω[℧]
 
