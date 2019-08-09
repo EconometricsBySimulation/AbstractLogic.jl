@@ -1,5 +1,5 @@
-
 """
+Snape's Riddle - Author JK Rowling
 Danger lies before you, while safety lies behind,
 Two of us will help you, whichever you would find,
 One among us seven will let you move ahead,
