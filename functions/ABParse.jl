@@ -140,7 +140,7 @@ function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     ℧left  = OperatorEval(left ,Ω,℧)[2]
     ℧right = OperatorEval(right,Ω,℧)[2]
 
-    if superoperator == "==="
+    if superoperator == "&&&"
         ℧η = υ .& (℧left .& ℧right)
 
     elseif superoperator == "^^^"
@@ -211,7 +211,7 @@ function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
        for m in positivematches; txtcmd = subout(txtcmd, i, m, mykeys); end
 
        if occursin("~~OUTOFBOUNDS~~", txtcmd)
-          # push!(collection, fill(false, ℧))
+           push!(collection, fill(false, ℧))
            continue
        end
 
