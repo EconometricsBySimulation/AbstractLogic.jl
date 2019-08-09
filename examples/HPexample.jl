@@ -29,16 +29,18 @@ Are twins once you taste them, though different at first sight.
 Ω,℧ = ABparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]"])
 
 # Two among our number hold only nettle wine, #code 1
-Ω,℧ = ABparse(["a|b|c|d|e|f|g == 1 {2}"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{i}} == 1 {{2}}"], Ω=Ω,℧=℧); Ω[℧]
+# Equivalent to ABparse(["a|b|c|d|e|f|g == 1 {2}"], Ω=Ω,℧=℧)
 
 # One among us seven will let you move ahead, #code 2
-Ω,℧ = ABparse(["a|b|c|d|e|f|g == 2 {1}"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{i}} == 2 {{1}}"], Ω=Ω,℧=℧)
+#Ω,℧ = ABparse(["a|b|c|d|e|f|g == 2 {1}"], Ω=Ω,℧=℧)
 
 #Another will transport the drinker back instead, #code 3
-Ω,℧ = ABparse(["a|b|c|d|e|f|g == 3 {1}"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{i}} == 3 {{1}}"], Ω=Ω,℧=℧)
 
 # Three of us are killers #code 4
-Ω,℧ = ABparse(["a|b|c|d|e|f|g == 4 {3}"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{i}} == 4 {{3}}"], Ω=Ω,℧=℧)
 # This last specification does not reduce the feasible set
 
 Ω[℧] # 420 possible outcomes
@@ -46,15 +48,16 @@ Are twins once you taste them, though different at first sight.
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-Ω,℧ = ABparse(["b == 1 ==> a == 4"], Ω=Ω,℧=℧)
-Ω,℧ = ABparse(["c == 1 ==> b == 4"], Ω=Ω,℧=℧)
-Ω,℧ = ABparse(["d == 1 ==> c == 4"], Ω=Ω,℧=℧)
-Ω,℧ = ABparse(["e == 1 ==> d == 4"], Ω=Ω,℧=℧)
-Ω,℧ = ABparse(["f == 1 ==> e == 4"], Ω=Ω,℧=℧)
-Ω,℧ = ABparse(["g == 1 ==> f == 4"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{i+1}} == 1 ==> {{i}} == 4"], Ω=Ω,℧=℧)
+
+# Equivalent to:
+ABparse(["b == 1 ==> a == 4","c == 1 ==> b == 4","d == 1 ==> c == 4",
+         "e == 1 ==> d == 4","f == 1 ==> e == 4","g == 1 ==> f == 4"], Ω=Ω,℧=℧)
+
+# Wine cannot be in the first bottle since poison is to the left
 Ω,℧ = ABparse(["a != 1"], Ω=Ω,℧=℧)
 
-Ω[℧] # 66 possible outcomes
+Ω[℧] # 60 possible outcomes
 
 # Second, different are those who stand at either end,
 Ω,℧ = ABparse(["a != g"], Ω=Ω,℧=℧)
@@ -74,7 +77,7 @@ Are twins once you taste them, though different at first sight.
 
 # Fourth, the second left and the second on the right
 # Are twins once you taste them, though different at first sight.
-Ω,℧ = ABparse(["b == f"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["b == f"], Ω=Ω, ℧=℧)
 
 Ω[℧] # 1 possible outcome
 # You pick the 3rd (move ahead) and the 7th (move back)
