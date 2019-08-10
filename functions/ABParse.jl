@@ -1,6 +1,6 @@
-using Pkg
-cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
-Pkg.activate(".")
+#using Pkg
+#cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
+#Pkg.activate(".")
 
 # Global set variables Ω, Υ hold
 integer(x::AbstractString) = parse(Int, strip(x))
@@ -53,15 +53,8 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::AbstractArray{Bool,1})
       end
   end
 
-  if occursin(r"( |\b)([><=|!+\\-]{4})(\b| )", command)
-      (Ω,℧) = SuperSuperOperatorEval(command,Ω,℧)
-      return (Ω,℧)
-  elseif occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)
-      (Ω,℧) = SuperOperatorEval(command,Ω,℧)
-      return (Ω,℧)
-  elseif occursin(r"( |\b)([><=|!]{1,2})(\b| )", command)
-      (Ω,℧) = OperatorEval(command,Ω,℧)
-      return (Ω,℧)
+  if occursin(r"( |\b)([><=|!+\\-\^]{1,4})(\b| )", command)
+      return SuperSuperOperatorEval(command,Ω,℧)
   end
   println("Warning! { $command } not interpretted")
 end
@@ -105,71 +98,6 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::AbstractArray{Bool,1};
   (o1 == "*") && return left .* right
 end
 
-function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
-    #println("OperatorEval($command)")
-    (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-]{4})(\b| )", command)) && return SuperOperatorEval(command, Ω, ℧)
-
-
-    m = match(r"(.*)(\b([><=|!+\\-]{4})\b)(.*)",replace(command, " "=>""))
-    left, blank, supersuperoperator, right = m.captures
-
-    υ = copy(℧); ℧η = copy(℧)
-
-    ℧left  = SuperSuperOperatorEval(left ,Ω,℧)[2]
-    ℧right = SuperSuperOperatorEval(right,Ω,℧)[2]
-
-    (supersuperoperator == "====") && (℧η = υ .& (℧left .& ℧right))
-    (supersuperoperator == "||||") && (℧η = υ .& (℧left .| ℧right))
-
-    (Ω, ℧η)
-end
-
-function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
-    #println("OperatorEval($command)")
-    (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
-    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
-
-
-    m = match(r"(.*)(\b([><=|!+\\-]{3})\b)(.*)",replace(command, " "=>""))
-    left, blank, superoperator, right = m.captures
-
-    υ = copy(℧); ℧η = copy(℧)
-
-    ℧left  = OperatorEval(left ,Ω,℧)[2]
-    ℧right = OperatorEval(right,Ω,℧)[2]
-
-    if superoperator == "&&&"
-        ℧η = υ .& (℧left .& ℧right)
-
-    elseif superoperator == "^^^"
-        ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
-
-    elseif superoperator == "---"
-        ℧η[υ] = (℧left .- ℧right)[υ]
-
-    elseif superoperator == "+++"
-        ℧η = ℧left .+ ℧right
-
-    elseif superoperator == "|||"
-        ℧η = υ .& (℧left .| ℧right)
-
-    elseif superoperator ∈ ["|=>","==>"]
-        ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
-
-    elseif superoperator ∈ ["<=|","<=="]
-        ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
-
-    elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
-        ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
-        ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
-    end
-    (Ω, ℧η)
-end
-
-command = "{{i}} < {{>i}}"
-
 function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     tempcommand = command
     m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
@@ -190,7 +118,8 @@ function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     mykeys = keys(Ω)
     domain = collect(1:length(mykeys))
 
-    i! = [m for m in matches if m ∈ ["!i", ">i", ">=i", "<=i", "<i"]]
+    i! = [m for m in matches if m ∈
+      ["!i", ">i", ">=i", "<=i", "<i", "!j", ">j", ">=j", "<=j", "<j"]]
     (length(i!)>1) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed")
 
     keyrange(i) = 0:0
@@ -232,6 +161,70 @@ function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     (Ω, ℧Δ)
 end
 
+function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
+    #println("OperatorEval($command)")
+    (sum(℧) == 0) && return (Ω, ℧)
+    (!occursin(r"( |\b)([><=|!+\\-\^]{4})(\b| )", command)) && return SuperOperatorEval(command, Ω, ℧)
+
+    m = match(r"(.*)(\b([><=|!+\\-\^]{4})\b)(.*)",replace(command, " "=>""))
+    left, blank, supersuperoperator, right = m.captures
+
+    υ = copy(℧); ℧η = copy(℧)
+
+    ℧left  = SuperSuperOperatorEval(left ,Ω,℧)[2]
+    ℧right = SuperSuperOperatorEval(right,Ω,℧)[2]
+
+    (supersuperoperator == "====") && (℧η = υ .& (℧left .& ℧right))
+    (supersuperoperator == "||||") && (℧η = υ .& (℧left .| ℧right))
+    (supersuperoperator == "^^^^") && (℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
+
+    (Ω, ℧η)
+end
+
+function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
+    #println("OperatorEval($command)")
+    (sum(℧) == 0) && return (Ω, ℧)
+    (!occursin(r"( |\b)([><=|!+\\-\^]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
+    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
+
+
+    m = match(r"(.*)(\b([><=|!+\\-\^]{3})\b)(.*)",replace(command, " "=>""))
+    left, blank, superoperator, right = m.captures
+
+    υ = copy(℧); ℧η = copy(℧)
+
+    ℧left  = SuperOperatorEval(left ,Ω,℧)[2]
+    ℧right = SuperOperatorEval(right,Ω,℧)[2]
+
+    if superoperator == "&&&"
+        ℧η = υ .& (℧left .& ℧right)
+
+    elseif superoperator == "^^^"
+        ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
+
+    elseif superoperator == "---"
+        ℧η[υ] = (℧left .- ℧right)[υ]
+
+    elseif superoperator == "+++"
+        ℧η = ℧left .+ ℧right
+
+    elseif superoperator == "|||"
+        ℧η = υ .& (℧left .| ℧right)
+
+    elseif superoperator ∈ ["|=>","==>"]
+        ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
+
+    elseif superoperator ∈ ["<=|","<=="]
+        ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
+
+    elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
+        ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
+        ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
+    end
+    (Ω, ℧η)
+end
+
+#command = "{{i}} < {{>i}}"
 #Ω[℧]
 
 function subout(txtcmd, i, arg, mykeys)
@@ -316,7 +309,17 @@ end
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1"]);
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^ b = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b = 1"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == {{!i}}"]); Ω[℧]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} < {{>i}}"]); Ω[℧]
