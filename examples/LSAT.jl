@@ -21,11 +21,15 @@
 
 #1. If the last digit of an acceptable product code is 1, it
 #must be true that the
-Ω1,℧1 = ABparse("e == 1", Ω,℧); Ω1[℧1]
+Ω1,℧1 = ABparse("e == 1 ==> a==2", Ω,℧); Ω1[℧1]
 #(A) first digit is 2
+Ω1,℧1 = ABparse("e == 1 ==> b==0", Ω,℧); Ω1[℧1]
 #(B) second digit is 0
+Ω1,℧1 = ABparse("e == 1 ==> c==3", Ω,℧); Ω1[℧1]
 #(C) third digit is 3
+Ω1,℧1 = ABparse("d == 1 ==> d==4", Ω,℧); Ω1[℧1]
 #(D) fourth digit is 4
+Ω1,℧1 = ABparse("d == 1 ==> d==0", Ω,℧); Ω1[℧1]
 #(E) fourth digit is 0
 
 #2. Which one of the following must be true about any
@@ -33,24 +37,21 @@
 range(Ω, ℧)
 Ω[℧]
 
-# ??? Something is wrong with this specification
-
 #(A) The digit 1 appears in some position before the
 #digit 2.
-Ω2,℧2 = ABparse("{{i}} == 1 ==> {{>i}} |= 2", Ω,℧); Ω2[℧2]
-
+Ω2,℧2 = ABparse("{{i}} == 1 ==> {{<i}} == 2", Ω,℧); Ω2[℧2]
 
 #(B) The digit 1 appears in some position before the
 #digit 3.
-Ω2,℧2 = ABparse("{{i}} == 1 ==> {{>i}} |= 3", Ω,℧); Ω2[℧2]
+Ω2,℧2 = ABparse("{{i}} == 1 ==> {{<i}} == 3", Ω,℧); Ω2[℧2]
 
 #(C) The digit 2 appears in some position before the
 #digit 3.
-Ω2,℧2 = ABparse("{{i}} == 2 ==> {{>i}} |= 3", Ω,℧); Ω2[℧2]
+Ω2,℧2 = ABparse("{{i}} == 2 ==> {{<i}} == 3", Ω,℧); Ω2[℧2]
 
 #(D) The digit 3 appears in some position before the
 #digit 0.
-Ω2,℧2 = ABparse("{{i}} == 3 ==> {{>i}} |= 0", Ω,℧); Ω2[℧2]
+Ω2,℧2 = ABparse("{{i}} == 0 ==> {{<i}} == 3", Ω,℧); Ω2[℧2]
 
 #(E) The digit 4 appears in some position before the
 #digit 3.

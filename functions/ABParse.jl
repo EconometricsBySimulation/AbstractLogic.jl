@@ -309,7 +309,16 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     (Ω, ℧η)
 end
 
+Ω,℧ = ABparse(["a, b, c, d, e, f  ∈ 1:6", "{{i}} != {{!i}}"]); Ω[℧]
+
+#Ω,℧ = ABparse(["a, b, c, d, e, f  ∈ 6"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c, d, e, f  ∈ 1:6", "{{i}} != {{!i}}"]); Ω[℧]
+
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"]); Ω[℧]
+
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); Ω[℧]
 
