@@ -1,6 +1,6 @@
-using Pkg
-cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
-Pkg.activate(".")
+#using Pkg
+#cd("c:/Users/francis.smart.ctr/GitDir/AbstractLogicJL")
+#Pkg.activate(".")
 
 # Global set variables Ω, Υ hold
 integer(x::AbstractString) = parse(Int, strip(x))
@@ -13,19 +13,20 @@ Base.range(Ω::Hotcomb, ℧) = [Symbol(keys(Ω)[i])=> sort(unique(Ω[℧][:,i]))
 
 
 #command = "a,b,c,d ∈ 1:5"
+#Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); Ω[℧]
 
 function ABparse(commands::Array{String,1}; Ω::Hotcomb = Hotcomb(0), ℧::AbstractArray{Bool,1} = Bool[0])
   println("")
 
   for command in commands
       print(command)
-      Ω, ℧ = ABparse(command, Ω, ℧)
+      Ω, ℧ = ABparse(command,Ω,℧)
 
       feasibleoutcomes = (length(℧)>0) ? sum(℧) : 0
       filler = repeat("\t", max(1, 3-Integer(round(length(command)/18))))
 
       (feasibleoutcomes == 0)  && (check = "X")
-      (feasibleoutcomes > 1)   && (check = "✓")
+      (feasibleoutcomes  > 1)  && (check = "✓")
       (feasibleoutcomes == 1)  && (check = "✓✓")
 
       println(" $filler feasible outcomes $feasibleoutcomes $check")
@@ -53,15 +54,8 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::AbstractArray{Bool,1})
       end
   end
 
-  if occursin(r"( |\b)([><=|!+\\-]{4})(\b| )", command)
-      (Ω,℧) = SuperSuperOperatorEval(command,Ω,℧)
-      return (Ω,℧)
-  elseif occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)
-      (Ω,℧) = SuperOperatorEval(command,Ω,℧)
-      return (Ω,℧)
-  elseif occursin(r"( |\b)([><=|!]{1,2})(\b| )", command)
-      (Ω,℧) = OperatorEval(command,Ω,℧)
-      return (Ω,℧)
+  if occursin(r"( |\b)([><=|!+\\-\^]{1,4})(\b| )", command)
+      return SuperSuperOperatorEval(command,Ω,℧)
   end
   println("Warning! { $command } not interpretted")
 end
@@ -105,13 +99,96 @@ function grab(argument::AbstractString, Ω::Hotcomb, ℧::AbstractArray{Bool,1};
   (o1 == "*") && return left .* right
 end
 
+function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
+    tempcommand = command
+    m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
+    matches = [replace(x[1], r"\{|\}"=>"") for x in collect(m)] |> unique
+
+    if occursin(r"^[0-9]+,[0-9]+$", matches[end])
+        countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
+        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        matches = matches[1:(end-1)]
+    elseif occursin(r"^[0-9]+$", matches[end])
+        countrange = (x -> x[1]:x[1])(integer(matches[end]))
+        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        matches = matches[1:(end-1)]
+    else
+        countrange = missing
+    end
+
+    mykeys = keys(Ω)
+    domain = 1:length(mykeys)
+
+    iSet  = [m for m in matches if m[end:end] ∈ ["i", "j"]]
+    iSet1 = [m[1:1] for m in iSet]
+    iSet2 = [m[1:2] for m in iSet if length(m)>=2]
+    iSetend = unique([m[end:end] for m in iSet])
+
+    (length(iSet)>2) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed with i (or j)")
+    (length(iSetend)>1) && throw("Only one type i or j allowed")
+
+    wild  = matches[length.(matches) .== 1]
+    wild2 = matches[length.(matches) .!= 1]
+
+    collection = []
+
+    println()
+    for i in domain, j in domain
+      ((length(wild2)  == 0) || wild2[1][1] ∈ 'i':'j') && (j>1)  && continue
+      ("!"   ∈ iSet1)       && (i==j) && continue
+      (">"   ∈ iSet1)       && (i>=j) && continue
+      ("<"   ∈ iSet1)       && (i<=j) && continue
+      (">="  ∈ iSet2)       && (i<j)  && continue
+      ("<="  ∈ iSet2)       && (i>j)  && continue
+      #println("$i and $j")
+
+       txtcmd = tempcommand
+
+       (length(wild2)==1) && !(wild2[1][1] ∈ 'i':'j') &&  (txtcmd = subout(txtcmd, j, wild2[1], mykeys))
+       (length(wild2)==1) &&  (wild2[1][1] ∈ 'i':'j') &&  (txtcmd = subout(txtcmd, i, wild2[1], mykeys))
+       (length(wild)  == 1) && (txtcmd = subout(txtcmd, i, wild[1], mykeys))
+
+       if occursin("~~OUTOFBOUNDS~~", txtcmd)
+           ("i" ∈ iSet) && push!(collection, fill(false, length(℧)))
+           continue
+       end
+
+       ℧∇ = SuperOperatorEval(txtcmd, Ω, ℧)[2]
+
+       println(">>> $txtcmd")
+
+       push!(collection, ℧∇)
+    end
+
+    collector = hcat(collection...)
+
+    if (countrange === missing)
+      ℧Δ = ℧ .& [all(collector[i,:]) for i in 1:size(collector)[1]]
+    else
+      ℧Δ = ℧ .& [sum(collector[i,:]) ∈ countrange for i in 1:size(collector)[1]]
+    end
+    (Ω, ℧Δ)
+end
+
+function subout(txtcmd, i, arg, mykeys)
+  lookup(vect, i) = i ∈ 1:length(vect) ? vect[i] : "~~OUTOFBOUNDS~~"
+
+  (arg[end] ∈ ['i', 'j'])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
+
+  mod = integer(match(r"([0-9]+$)", arg).match)
+
+  occursin("+", arg) && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i+mod))
+  occursin("-", arg) && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i-mod))
+
+  txtcmd
+end
+
 function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-]{4})(\b| )", command)) && return SuperOperatorEval(command, Ω, ℧)
+    (!occursin(r"( |\b)([><=|!+\\-\^]{4})(\b| )", command)) && return SuperOperatorEval(command, Ω, ℧)
 
-
-    m = match(r"(.*)(\b([><=|!+\\-]{4})\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b([><=|!+\\-\^]{4})\b)(.*)",replace(command, " "=>""))
     left, blank, supersuperoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
@@ -121,6 +198,7 @@ function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1}
 
     (supersuperoperator == "====") && (℧η = υ .& (℧left .& ℧right))
     (supersuperoperator == "||||") && (℧η = υ .& (℧left .| ℧right))
+    (supersuperoperator == "^^^^") && (℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
     (Ω, ℧η)
 end
@@ -128,17 +206,17 @@ end
 function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
+    (!occursin(r"( |\b)([><=|!+\\-\^]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
     occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
 
 
-    m = match(r"(.*)(\b([><=|!+\\-]{3})\b)(.*)",replace(command, " "=>""))
+    m = match(r"(.*)(\b([><=|!+\\-\^]{3})\b)(.*)",replace(command, " "=>""))
     left, blank, superoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
 
-    ℧left  = OperatorEval(left ,Ω,℧)[2]
-    ℧right = OperatorEval(right,Ω,℧)[2]
+    ℧left  = SuperOperatorEval(left ,Ω,℧)[2]
+    ℧right = SuperOperatorEval(right,Ω,℧)[2]
 
     if superoperator == "&&&"
         ℧η = υ .& (℧left .& ℧right)
@@ -168,89 +246,6 @@ function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     (Ω, ℧η)
 end
 
-command = "{{i}} < {{>i}}"
-
-function OperatorSpawn(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
-    tempcommand = command
-    m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
-    matches = [replace(x[1], r"\{|\}"=>"") for x in collect(m)] |> unique
-
-    if occursin(r"^[0-9]+,[0-9]+$", matches[end])
-        countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
-        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
-        matches = matches[1:(end-1)]
-    elseif occursin(r"^[0-9]+$", matches[end])
-        countrange = (x -> x[1]:x[1])(integer(matches[end]))
-        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
-        matches = matches[1:(end-1)]
-    else
-        countrange = missing
-    end
-
-    mykeys = keys(Ω)
-    domain = collect(1:length(mykeys))
-
-    i! = [m for m in matches if m ∈ ["!i", ">i", ">=i", "<=i", "<i"]]
-    (length(i!)>1) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed")
-
-    keyrange(i) = 0:0
-    (i![1] == "!i")   && (keyrange(i)  = domain[domain .!= i])
-    (i![1] == ">i")   && (keyrange(i)  = domain[domain .>  i])
-    (i![1] == ">=i")  && (keyrange(i)  = domain[domain .>= i])
-    (i![1] == "<=i")  && (keyrange(i)  = domain[domain .<= i])
-    (i![1] == "<i")   && (keyrange(i)  = domain[domain .<  i])
-
-    positivematches = matches[matches .!= "!i"]
-
-    collection = []
-
-    for i in 1:length(mykeys), j in keyrange(i)
-       txtcmd = tempcommand
-
-       (j != 0) && (txtcmd = subout(txtcmd, j, i![1], mykeys))
-       for m in positivematches; txtcmd = subout(txtcmd, i, m, mykeys); end
-
-       if occursin("~~OUTOFBOUNDS~~", txtcmd)
-           push!(collection, fill(false, ℧))
-           continue
-       end
-
-       ℧∇ = SuperOperatorEval(txtcmd, Ω, ℧)[2]
-
-       print("\n>>> $txtcmd")
-
-       push!(collection, ℧∇)
-    end
-
-    collector = hcat(collection...)
-
-    if (countrange === missing)
-      ℧Δ = ℧ .& [all(collector[i,:]) for i in 1:size(collector)[1]]
-    else
-      ℧Δ = ℧ .& [sum(collector[i,:]) ∈ countrange for i in 1:size(collector)[1]]
-    end
-    (Ω, ℧Δ)
-end
-
-#Ω[℧]
-
-function subout(txtcmd, i, arg, mykeys)
-  lookup(vect, i) = i ∈ 1:length(vect) ? vect[i] : "~~OUTOFBOUNDS~~"
-
-  (arg ∈ ["i", "!i", ">i", "<i", ">=i", "<=i"])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
-
-  mod = integer(match(r"([0-9]+$)", arg).match)
-
-  occursin("+", arg) && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i+mod))
-  occursin("-", arg) && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i+mod))
-
-  txtcmd
-end
-
-#command = "{{i}} == {{i+1}} {{2}}"
-#txtcmd = subout(txtcmd, 1, "i+1", mykeys)
-#txtcmd = subout(txtcmd, 1, "i", mykeys)
-
 function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
 
@@ -269,7 +264,7 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     m = match(r"^(.*)(\b([><=|!]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
 
-    (nmin === nothing) && (nmax === nothing)  &&  (nrange = 1:999)
+    (nmin === nothing)  && (nmax === nothing)  &&  (nrange = 1:999)
     !(nmin === nothing) && (nmax === nothing) &&  (nrange = integer(nmin):integer(nmin))
     !(nmin === nothing) && !(nmax === nothing) && (nrange = integer(nmin):integer(nmax))
 
@@ -316,20 +311,36 @@ end
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1"]);
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == {{!i}}"]); Ω[℧]
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} < {{>i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == {{!i}}"]); Ω[℧]
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == 1 {{1}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a = 1 ^^^ b = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b = 1"]); Ω[℧]
 
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} == {{!i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{>i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{2,3}}"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == 1 {{2}}"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{0}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} <= {{j+1}}"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); Ω[℧]
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{0}}"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} = 2 {{2,3}}"]); Ω[℧] # ??????????????????????
 Ω,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{1,5}}"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {1}"]); Ω[℧,:]
 Ω,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {0}"]); Ω[℧,:]
