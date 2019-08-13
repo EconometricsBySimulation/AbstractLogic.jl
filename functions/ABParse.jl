@@ -223,10 +223,16 @@ function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
 
     elseif superoperator == "^^^"
         ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
+ 
+    # this can be dangerous, false equal to false such as with previous exclusions will cause inconsistencies
+    elseif superoperator == "==="
+        ℧η = υ .& (℧left .== ℧right)
 
+    #warning this generally will not work
     elseif superoperator == "---"
         ℧η[υ] = (℧left .- ℧right)[υ]
 
+    #warning this generally will not work
     elseif superoperator == "+++"
         ℧η = ℧left .+ ℧right
 
