@@ -48,12 +48,12 @@ Are twins once you taste them, though different at first sight.
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-Ω,℧ = ABparse(["{{j+1}} == 1 ==> {{j}} == 4"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{j+1}} == 1 ==> {{j}} == 4"], Ω=Ω,℧=℧); Ω[℧]
 
 # Equivalent to:
-ABparse(["b == 1 ==> a == 4","c == 1 ==> b == 4","d == 1 ==> c == 4",
-         "e == 1 ==> d == 4","f == 1 ==> e == 4","g == 1 ==> f == 4"], Ω=Ω,℧=℧)
-
+# ABparse(["b == 1 ==> a == 4","c == 1 ==> b == 4","d == 1 ==> c == 4",
+#          "e == 1 ==> d == 4","f == 1 ==> e == 4","g == 1 ==> f == 4"], Ω=Ω,℧=℧)
+#
 # Wine cannot be in the first bottle since poison is to the left
 Ω,℧ = ABparse(["a != 1"], Ω=Ω,℧=℧)
 

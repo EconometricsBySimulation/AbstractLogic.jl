@@ -186,10 +186,10 @@ end
 function SuperSuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-\^]{4})(\b| )", command)) && return SuperOperatorEval(command, Ω, ℧)
+    (!occursin(r"([><=|!+\\-\^&]{4})", command)) && return SuperOperatorEval(command, Ω, ℧)
 
-    m = match(r"(.*)(\b([><=|!+\\-\^]{4})\b)(.*)",replace(command, " "=>""))
-    left, blank, supersuperoperator, right = m.captures
+    m = match(r"(^.*?)([><=|!+\\-\^&]{4})(.*?$)", replace(command, " "=>""))
+    left, supersuperoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
 
@@ -206,12 +206,11 @@ end
 function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     #println("OperatorEval($command)")
     (sum(℧) == 0) && return (Ω, ℧)
-    (!occursin(r"( |\b)([><=|!+\\-\^]{3})(\b| )", command)) && return OperatorEval(command, Ω, ℧)
+    (!occursin(r"([><=|!+\\-\^&]{3})", command)) && return OperatorEval(command, Ω, ℧)
     occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
 
-
-    m = match(r"(.*)(\b([><=|!+\\-\^]{3})\b)(.*)",replace(command, " "=>""))
-    left, blank, superoperator, right = m.captures
+    m = match(r"(^.*?)([><=|!+\\-\\^&]{3})(.*?$)",replace(command, " "=>""))
+    left, superoperator, right = m.captures
 
     υ = copy(℧); ℧η = copy(℧)
 
@@ -223,7 +222,7 @@ function SuperOperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
 
     elseif superoperator == "^^^"
         ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
- 
+
     # this can be dangerous, false equal to false such as with previous exclusions will cause inconsistencies
     elseif superoperator == "==="
         ℧η = υ .& (℧left .== ℧right)
@@ -267,7 +266,7 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
       command = replace(command, r",*=+,*"=>"|=")
     end
 
-    m = match(r"^(.*)(\b([><=|!]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
+    m = match(r"^(.*?)(([><=|!^]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
 
     (nmin === nothing)  && (nmax === nothing)  &&  (nrange = 1:999)
@@ -283,6 +282,10 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     if operator == "!="
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [!all(lcheck[i,:]) for i in n]
+
+    # elseif operator = "^="
+    #     lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+    #     ℧Δ = [all(lcheck[i,:]) for i in n]
 
     elseif operator  ∈ ["==","="]
         lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
@@ -319,7 +322,7 @@ end
 
 #Ω,℧ = ABparse(["a, b, c, d, e, f  ∈ 6"]); Ω[℧]
 
-Ω,℧ = ABparse(["a, b, c, d, e, f  ∈ 1:6", "{{i}} != {{!i}}"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c ∈ 1:6", "{{i}} != {{!i}}"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
 
@@ -328,9 +331,13 @@ end
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); Ω[℧]
 
+# All equal commands
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); Ω[℧]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"]); Ω[℧]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); Ω[℧]
+
+# Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b ^=   1"]); Ω[℧]
+
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a = 1 ^^^ b = 1"]); Ω[℧]
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b = 1"]); Ω[℧]
