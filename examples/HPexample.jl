@@ -48,7 +48,7 @@ Are twins once you taste them, though different at first sight.
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-Ω,℧ = ABparse(["{{i+1}} == 1 ==> {{i}} == 4"], Ω=Ω,℧=℧)
+Ω,℧ = ABparse(["{{j+1}} == 1 ==> {{j}} == 4"], Ω=Ω,℧=℧)
 
 # Equivalent to:
 ABparse(["b == 1 ==> a == 4","c == 1 ==> b == 4","d == 1 ==> c == 4",
