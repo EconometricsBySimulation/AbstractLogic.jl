@@ -54,7 +54,7 @@ function ABparse(command::String,  Ω::Hotcomb, ℧::AbstractArray{Bool,1})
       end
   end
 
-  if occursin(r"( |\b)([><=|!+\\-\^]{1,4})(\b| )", command)
+  if occursin(r"( |\b)([><=|!+\\-\^\\&]{1,4})(\b| )", command)
       return SuperSuperOperatorEval(command,Ω,℧)
   end
   println("Warning! { $command } not interpretted")
@@ -257,24 +257,23 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
     (sum(℧) == 0) && return (Ω, ℧)
     occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, Ω, ℧)
 
-
     n = 1:sum(℧); ℧Δ = copy(℧); ℧η = copy(℧)
 
     # convert a = b|c to a |= b,c
-    if occursin("|", command) &  occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
+    if occursin("|", command) & occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
       command = replace(command, "|"=>",")
       command = replace(command, r",*=+,*"=>"|=")
     end
 
-    m = match(r"^(.*?)(([><=|!^]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
+    m = match(r"^(.*?)(([><=|!^&]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
 
-    (nmin === nothing)  && (nmax === nothing)  &&  (nrange = 1:999)
-    !(nmin === nothing) && (nmax === nothing) &&  (nrange = integer(nmin):integer(nmin))
+    (nmin === nothing)  && (nmax === nothing)  && (nrange = 1:999)
+    !(nmin === nothing) && (nmax === nothing)  && (nrange = integer(nmin):integer(nmin))
     !(nmin === nothing) && !(nmax === nothing) && (nrange = integer(nmin):integer(nmax))
 
-    leftarg  = strip.(split(left,  r"[,&]"))
-    rightarg = strip.(split(right, r"[,&]"))
+    leftarg  = strip.(split(left,  r"[,&|!]"))
+    rightarg = strip.(split(right, r"[,&|!]"))
 
     leftvals  = hcat([grab(L, Ω, ℧, command=command) for L in leftarg]...)
     rightvals = hcat([grab(R, Ω, ℧, command=command) for R in rightarg]...)
@@ -283,9 +282,25 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [!all(lcheck[i,:]) for i in n]
 
-    # elseif operator = "^="
-    #     lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-    #     ℧Δ = [all(lcheck[i,:]) for i in n]
+    elseif operator == "|"
+        lcheck = [any(leftvals[i,:]  .== 1) for i in n]
+        rcheck = [any(rightvals[i,:] .== 1) for i in n]
+        ℧Δ = [all(lcheck[i,:]) | all(rcheck[i,:]) for i in n]
+
+    elseif operator == "&"
+        lcheck = [all(leftvals[i,:]  .== 1) for i in n]
+        rcheck = [all(rightvals[i,:] .== 1) for i in n]
+        ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
+
+    elseif operator == "!"
+        lcheck = [all(leftvals[i,:]  .== 0) for i in n]
+        rcheck = [all(rightvals[i,:] .== 0) for i in n]
+        ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
+
+    elseif operator == "^="
+         lcheck = [sum(leftvals[i,j]  .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+         rcheck = [sum(rightvals[i,j] .== leftvals[i,:])  for i in n, j in 1:size(rightvals)[2]]
+         ℧Δ = [sum(lcheck[i,:]) + sum(rcheck[i,:]) == 2 for i in n]
 
     elseif operator  ∈ ["==","="]
         lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
@@ -299,16 +314,24 @@ function OperatorEval(command, Ω::Hotcomb, ℧::AbstractArray{Bool,1})
         lcheck = [all(leftvals[i,j] .<= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
-    elseif operator ∈ ["<<","<"]
+    elseif operator == "<"
         lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == "<<"
+        lcheck = [all(leftvals[i,j] .< rightvals[i,:].-1) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
     elseif operator == ">="
         lcheck = [all(leftvals[i,j] .>= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
-    elseif operator ∈ [">>",">"]
+    elseif operator == ">"
         lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
+    elseif operator == ">>"
+        lcheck = [all(leftvals[i,j] .> rightvals[i,:].+1) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
     end
@@ -324,12 +347,34 @@ end
 
 Ω,℧ = ABparse(["a, b, c ∈ 1:6", "{{i}} != {{!i}}"]); Ω[℧]
 
+
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"]); Ω[℧]
 
-
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c ∈ 1:3", "a | b"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c ∈ 1:3", "a|b|c"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c ∈ 1:3", "a | b | c"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c ∈ 1:3", "a,b,c = 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c ∈ 1:3", "a & b & c"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c ∈ 0:2", "a,b,c = 0"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c ∈ 0:2", "a ! b ! c"]); Ω[℧]
+
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); Ω[℧]
+
+# At least 2 less/more >> or <<
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a << b"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a >> b"]); Ω[℧]
+
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b ^= 1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^ b=1"]); Ω[℧]
+Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b=1"]); Ω[℧]
+
 
 # All equal commands
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); Ω[℧]
@@ -337,10 +382,6 @@ end
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); Ω[℧]
 
 # Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b ^=   1"]); Ω[℧]
-
-
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a = 1 ^^^ b = 1"]); Ω[℧]
-Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b = 1"]); Ω[℧]
 
 Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"]); Ω[℧]
 
