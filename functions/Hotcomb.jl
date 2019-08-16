@@ -50,7 +50,7 @@ Base.getindex(x::Hotcomb, ::Colon, ::Colon) = collect(x)
 
 Base.getindex(x::Hotcomb, symb::Union{Array{Symbol,1}, Symbol}) = x[:,symb]
 
-append(x::Hotcomb, y) = Hotcomb(merge(x.intuple, y))
+append(x::Hotcomb, y::NamedTuple) = Hotcomb(merge(x.intuple, y))
 
 x = Hotcomb((a=2,b=2,c=2,d=2))
 
