@@ -7,7 +7,6 @@ end
 
 LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
 
-
 function LogicalCombo(; kwargs...)
     if isempty(kwargs)
         return LogicalCombo(Symbol[],[], Bool[0])
@@ -47,7 +46,7 @@ Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}; bool::Bool=fal
 
 
 function Base.getindex(x::LogicalCombo, row::Integer, col::Symbol)
-  keymatch = findall(y -> y==col, x.keys)
+  keymatch = findall(y -> y == col , x.keys)
   length(keymatch)==0 && throw("Symbol :$col not found")
   x[row, keymatch...]
 end
@@ -67,38 +66,41 @@ Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
 Base.setindex!(x::LogicalCombo, y::Bool, z::Integer)   = x.logical[z] = y
-Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) = x.logical[z] .= y
-Base.setindex!(x::LogicalCombo, y::Array{Bool}, z::Union{UnitRange, AbstractArray}) = x.logical[z] = y
+Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) =
+  x.logical[z] .= y
+
+Base.setindex!(x::LogicalCombo, y::Array{Bool}, z::Union{UnitRange, AbstractArray}) =
+  x.logical[z] = y
 
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
-    [x[i,j] for i in (1:size(x)[1])[x[:]], j in 1:size(x)[2]]
+  [x[i,j] for i in (1:size(x)[1])[x[:]], j in 1:size(x)[2]]
 
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, y::Union{Int64,Symbol,String}) =
-    [x[i,y] for i in (1:size(x)[1])[x[:]]]
+  [x[i,y] for i in (1:size(x)[1])[x[:]]]
 
 Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in v]))
 
 function expand(x::LogicalCombo; kwargs...)
-    if isempty(kwargs)
-        return x
-    elseif size(x)[2]==0
-        # return(kwargs)
-        return LogicalCombo(kwargs...)
-    else
-        mykeys = []; mydomain = []
-        println(kwargs)
-        for (kw, val) in kwargs;
-            push!(mykeys, kw)
-            push!(mydomain, val)
-        end
+  if isempty(kwargs)
+    return x
+  elseif size(x)[2]==0
+    # return(kwargs)
+    return LogicalCombo(kwargs...)
+  else
+    mykeys = []; mydomain = []
+    println(kwargs)
+    for (kw, val) in kwargs;
+        push!(mykeys, kw)
+        push!(mydomain, val)
     end
+  end
 
-    foreach(y -> (y ∈ x.keys) && throw("key :$y already defined ") , mykeys)
+  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined ") , mykeys)
 
-    expander = *(length.(mydomain)...)
-    outlogical = fill(x.logical, each = expander)
+  expander = *(length.(mydomain)...)
+  outlogical = fill(x.logical, each = expander)
 
-    LogicalCombo([x.keys..., mykeys...], [x.domain..., mydomain...], outlogical)
+  LogicalCombo([x.keys..., mykeys...], [x.domain..., mydomain...], outlogical)
 end
 
 function  range(x::LogicalCombo)
@@ -106,7 +108,6 @@ function  range(x::LogicalCombo)
   for i in 1:size(x)[2]; p[x.keys[i]] = sort(unique(x[:,:,i])); end
   p
 end
-
 
 ###################### Testing
 
@@ -141,5 +142,3 @@ range(x2)
 
 # Throw an error
 x3 = expand(x, a=1:2)
-
-LogicalCombo(kwargs...)
