@@ -6,16 +6,15 @@
 integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
                                stop = integer(match(r"[0-9]+$", x).match))
-ABoccursin(y::Symbol) = any( [ y ∈ keys(Ω[i]) for i in 1:length(Ω) ] )
-ABoccursin(x::Hotcomb, y::Symbol) = y ∈ keys(x)
+ABoccursin(x::LogicalCombo, y::Symbol) = y ∈ x.keys
 
-Base.range(Ω::Hotcomb, ℧) = [Symbol(keys(Ω)[i])=> sort(unique(Ω[℧][:,i])) for i in 1:size(Ω)[2]]
+Base.range(Ω::LogicalCombo, ℧) = [Symbol(keys(Ω)[i])=> sort(unique(Ω[℧][:,i])) for i in 1:size(Ω)[2]]
 
 
 #command = "a,b,c,d ∈ 1:5"
 #Ω,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); Ω[℧]
 
-function ABparse(commands::Array{String,1}; Ω::Hotcomb = Hotcomb(0), ℧::AbstractArray{Bool,1} = Bool[0])
+function ABparse(commands::Array{String,1}; Ω::LogicalCombo = LogicalCombo(), ℧::AbstractArray{Bool,1} = Bool[0])
   println("")
 
   for command in commands
