@@ -5,6 +5,9 @@ struct LogicalCombo
   logical::AbstractArray{Bool}
 end
 
+LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
+
+
 function LogicalCombo(; kwargs...)
     if isempty(kwargs)
         return LogicalCombo(Symbol[],[], Bool[0])
@@ -78,6 +81,9 @@ Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in 
 function expand(x::LogicalCombo; kwargs...)
     if isempty(kwargs)
         return x
+    elseif size(x)[2]==0
+        # return(kwargs)
+        return LogicalCombo(kwargs...)
     else
         mykeys = []; mydomain = []
         println(kwargs)
@@ -110,7 +116,7 @@ x[2] = false
 x[3:4] = false
 x[17:18] = fill(false,2)
 
-x[:] == x.logical
+x[:] === x.logical
 x[:,:]
 collect(x)
 x[:,:,:]
@@ -135,3 +141,5 @@ range(x2)
 
 # Throw an error
 x3 = expand(x, a=1:2)
+
+LogicalCombo(kwargs...)
