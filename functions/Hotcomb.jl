@@ -56,6 +56,8 @@ x = Hotcomb((a=2,b=2,c=2,d=2))
 
 append(x, (e=2,f=2, a=2))
 
+###################### Testing
+
 
 x = Hotcomb((a=4,b=4,c=6:15))
 binaryselector = rand(Bool, size(x)[1])
