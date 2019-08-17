@@ -6,16 +6,14 @@
 integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
                                stop = integer(match(r"[0-9]+$", x).match))
-Base.range(x::String) = range(integer(match(r"^[0-9]+", x).match),
-                              stop = integer(match(r"[0-9]+$", x).match))
 logicaloccursin(y::Symbol) = any( [ y ∈ keys(logicset[i]) for i in 1:length(logicset) ] )
 logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
 
 integer("1")
-
 range("1:5")
+
 #command = "a,b,c,d ∈ 1:5"
-#logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
+#logicset = logicalparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
 
 function logicalparse(commands::Array{String,1}; logicset::LogicalCombo = LogicalCombo())
   println("")
@@ -37,15 +35,16 @@ function logicalparse(commands::Array{String,1}; logicset::LogicalCombo = Logica
   logicset
 end
 
-#command = "a,b,c,d ∈ 1:5 {{i}}"
-
 function logicalparse(command::String; logicset::LogicalCombo = LogicalCombo())
   # A vector of non-standard operators to ignore
   exclusionlist = ["\bin\b"]
 
+  occursin(";", command) &&
+    return logicalparse(string.(strip.(split(command, ";"))), logicset=logicset)
+
   if occursin(r"∈|\bin\b", command)
-      (logicset,℧) = definelogicalset(command)
-      return (logicset,℧)
+      logicset = definelogicalset(command)
+      return logicset
   end
 
   # Check for the existance of any symbols in logicset
@@ -63,7 +62,13 @@ function logicalparse(command::String; logicset::LogicalCombo = LogicalCombo())
   println("Warning! { $command } not interpreted!")
 end
 
-command = "a,b,c,d ∈ 1:5"
+logicalparse(commands::Array{String,1}, logicset::LogicalCombo) =
+  logicalparse(commands=commands, logicset=logicset)
+
+logicalparse(commands::String, logicset::LogicalCombo) =
+  logicalparse(commands=commands, logicset=logicset)
+
+
 function definelogicalset(command::String)
   left, right = strip.(split(command, r"∈|\bin\b"))
   vars = split(left, ",") .|> strip
@@ -74,16 +79,17 @@ function definelogicalset(command::String)
   (length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])) &&
     (values = range(values[1]))
 
-  outset = (; zip([Symbol(i) for i in varsVect], fill(vals, length(vars)))...)
+  outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)
+  outset = [Pair(Symbol(i), values) for i in vars]
 
-  logicset  = LogicalCombo(outset...)
+  logicset  = LogicalCombo(outset)
   #logicset[:] = fill(true, size(logicset)[1])
 
-  (logicset)
+  logicset
 end
 
 
-function grab(argument::AbstractString, logicset::LogicalCombo, ℧::AbstractArray{Bool,1}; command = "")
+function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
   matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
 
   m = match(matcher, argument)
@@ -92,12 +98,12 @@ function grab(argument::AbstractString, logicset::LogicalCombo, ℧::AbstractArr
 
   v1, n1, o1, v2, n2 = m.captures
 
-  !(v1 === nothing) && (left  = logicset[℧, Symbol(v1)])
-  !(n1 === nothing) && (left  = fill(integer(n1), length(℧)))
+  !(v1 === nothing) && (left  = logicset[:,:,Symbol(v1)])
+  !(n1 === nothing) && (left  = fill(integer(n1), length(logicset[:])))
 
   (nvar==1) && return left
 
-  !(v2 === nothing) && (right = logicset[℧, Symbol(v2)])
+  !(v2 === nothing) && (right = logicset[:,:,Symbol(v2)])
   !(n2 === nothing) && (right = fill(integer(n2), length(left)))
 
   (o1 == "+") && return left .+ right
@@ -107,7 +113,9 @@ function grab(argument::AbstractString, logicset::LogicalCombo, ℧::AbstractArr
 end
 
 
-function OperatorSpawn(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1})
+function OperatorSpawn(command, logicset::LogicalCombo)
+    logicsetcopy = logicset
+
     tempcommand = command
     m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
     matches = [replace(x[1], r"\{|\}"=>"") for x in collect(m)] |> unique
@@ -125,7 +133,7 @@ function OperatorSpawn(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,
     end
 
     mykeys = keys(logicset)
-    domain = 1:length(mykeys)
+    mydomain = 1:length(mykeys)
 
     iSet  = [m for m in matches if m[end:end] ∈ ["i", "j"]]
     iSet1 = [m[1:1] for m in iSet]
@@ -141,7 +149,7 @@ function OperatorSpawn(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,
     collection = []
 
     println()
-    for i in domain, j in domain
+    for i in mydomain, j in mydomain
       ((length(wild2)  == 0) || wild2[1][1] ∈ 'i':'j') && (j>1)  && continue
       ("!"   ∈ iSet1)       && (i==j) && continue
       (">"   ∈ iSet1)       && (i>=j) && continue
@@ -157,11 +165,11 @@ function OperatorSpawn(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,
        (length(wild)  == 1) && (txtcmd = subout(txtcmd, i, wild[1], mykeys))
 
        if occursin("~~OUTOFBOUNDS~~", txtcmd)
-           ("i" ∈ iSet) && push!(collection, fill(false, length(℧)))
+           ("i" ∈ iSet) && push!(collection, fill(false, length(logicset[:])))
            continue
        end
 
-       ℧∇ = SuperOperatorEval(txtcmd, logicset, ℧)[2]
+       ℧∇ = SuperOperatorEval(txtcmd, logicset)[:]
 
        println(">>> $txtcmd")
 
@@ -171,11 +179,13 @@ function OperatorSpawn(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,
     collector = hcat(collection...)
 
     if (countrange === missing)
-      ℧Δ = ℧ .& [all(collector[i,:]) for i in 1:size(collector)[1]]
+      ℧Δ = logicset[:] .& [all(collector[i,:]) for i in 1:size(collector)[1]]
     else
-      ℧Δ = ℧ .& [sum(collector[i,:]) ∈ countrange for i in 1:size(collector)[1]]
+      ℧Δ = logicset[:] .& [sum(collector[i,:]) ∈ countrange for i in 1:size(collector)[1]]
     end
-    (logicset, ℧Δ)
+
+    logicsetcopy[:] = ℧Δ
+    logicsetcopy
 end
 
 function subout(txtcmd, i, arg, mykeys)
@@ -191,60 +201,62 @@ function subout(txtcmd, i, arg, mykeys)
   txtcmd
 end
 
-function metaoperatoreval(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1})
+function metaoperatoreval(command, logicset::LogicalCombo)
+    logicsetcopy = logicset
+
     #println("OperatorEval($command)")
-    (sum(℧) == 0) && return (logicset, ℧)
-    (!occursin(r"([><=|!+\\-\^&]{4})", command)) && return SuperOperatorEval(command, logicset, ℧)
+    (sum(logicset[:]) == 0) && return logicset
+    (!occursin(r"([><=|!+\\-\^&]{4})", command)) && return SuperOperatorEval(command, logicset)
 
     m = match(r"(^.*?)([><=|!+\\-\^&]{4})(.*?$)", replace(command, " "=>""))
     left, supersuperoperator, right = m.captures
 
-    υ = copy(℧); ℧η = copy(℧)
 
-    ℧left  = metaoperatoreval(left ,logicset,℧)[2]
-    ℧right = metaoperatoreval(right,logicset,℧)[2]
+    ℧left  = metaoperatoreval(left ,logicset)[2]
+    ℧right = metaoperatoreval(right,logicset)[2]
 
-    (supersuperoperator == "====") && (℧η = υ .& (℧left .& ℧right))
-    (supersuperoperator == "||||") && (℧η = υ .& (℧left .| ℧right))
-    (supersuperoperator == "^^^^") && (℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
+    (supersuperoperator == "====") && (℧η = logicset[:] .& (℧left .& ℧right))
+    (supersuperoperator == "||||") && (℧η = logicset[:] .& (℧left .| ℧right))
+    (supersuperoperator == "^^^^") && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
-    (logicset, ℧η)
+    logicsetcopy[:] = ℧η
+    logicsetcopy
 end
 
-function SuperOperatorEval(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1})
+function SuperOperatorEval(command, logicset::LogicalCombo)
+    logicsetcopy = logicset
+
     #println("OperatorEval($command)")
-    (sum(℧) == 0) && return (logicset, ℧)
-    (!occursin(r"([><=|!+\\-\^&]{3})", command)) && return OperatorEval(command, logicset, ℧)
-    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset, ℧)
+    (sum(logicset[:]) == 0) && return logicset
+    (!occursin(r"([><=|!+\\-\^&]{3})", command)) && return OperatorEval(command, logicset)
+    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset)
 
     m = match(r"(^.*?)([><=|!+\\-\\^&]{3})(.*?$)",replace(command, " "=>""))
     left, superoperator, right = m.captures
 
-    υ = copy(℧); ℧η = copy(℧)
-
-    ℧left  = SuperOperatorEval(left ,logicset,℧)[2]
-    ℧right = SuperOperatorEval(right,logicset,℧)[2]
+    ℧left  = SuperOperatorEval(left ,logicset)[2]
+    ℧right = SuperOperatorEval(right,logicset)[2]
 
     if superoperator == "&&&"
-        ℧η = υ .& (℧left .& ℧right)
+        ℧η = logicset[:] .& (℧left .& ℧right)
 
     elseif superoperator == "^^^"
-        ℧η = υ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
+        ℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
 
     # this can be dangerous, false equal to false such as with previous exclusions will cause inconsistencies
     elseif superoperator == "==="
-        ℧η = υ .& (℧left .== ℧right)
+        ℧η = logicset[:] .& (℧left .== ℧right)
 
     #warning this generally will not work
     elseif superoperator == "---"
-        ℧η[υ] = (℧left .- ℧right)[υ]
+        ℧η[logicset[:]] = (℧left .- ℧right)[logicset[:]]
 
     #warning this generally will not work
     elseif superoperator == "+++"
         ℧η = ℧left .+ ℧right
 
     elseif superoperator == "|||"
-        ℧η = υ .& (℧left .| ℧right)
+        ℧η = logicset[:] .& (℧left .| ℧right)
 
     elseif superoperator ∈ ["|=>","==>"]
         ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
@@ -256,16 +268,18 @@ function SuperOperatorEval(command, logicset::LogicalCombo, ℧::AbstractArray{B
         ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
         ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
     end
-    (logicset, ℧η)
+    logicsetcopy[:] = ℧η
+    logicsetcopy
 end
 
-function OperatorEval(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1})
+function OperatorEval(command, logicset::LogicalCombo)
+    logicsetcopy = logicset
+
     #println("OperatorEval($command)")
+    (sum(logicset[:]) == 0) && return logicset
+    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset)
 
-    (sum(℧) == 0) && return (logicset, ℧)
-    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset, ℧)
-
-    n = 1:sum(℧); ℧Δ = copy(℧); ℧η = copy(℧)
+    n = 1:sum(logicset[:])
 
     # convert a = b|c to a |= b,c
     if occursin("|", command) & occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
@@ -283,8 +297,8 @@ function OperatorEval(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1
     leftarg  = strip.(split(left,  r"[,&|!]"))
     rightarg = strip.(split(right, r"[,&|!]"))
 
-    leftvals  = hcat([grab(L, logicset, ℧, command=command) for L in leftarg]...)
-    rightvals = hcat([grab(R, logicset, ℧, command=command) for R in rightarg]...)
+    leftvals  = hcat([grab(L, logicset, command=command) for L in leftarg]...)
+    rightvals = hcat([grab(R, logicset, command=command) for R in rightarg]...)
 
     if operator == "!="
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
@@ -344,98 +358,101 @@ function OperatorEval(command, logicset::LogicalCombo, ℧::AbstractArray{Bool,1
 
     end
 
-    ℧η[℧η] = ℧Δ
+    logicsetcopy.logical[logicsetcopy[:]] = ℧Δ
 
-    (logicset, ℧η)
+    logicsetcopy
 end
 
-logicset,℧ = ABparse(["a, b, c, d, e, f  ∈ 1:6", "{{i}} != {{!i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c, d, e, f  ∈ 1:6", "{{i}} != {{>i}}"]); logicset[℧]
+logicset = logicalparse("a, b , c ∈ 1:3")
+logicalparse("a == b; a != c", logicset=logicset)[:,:,:]
 
-#logicset,℧ = ABparse(["a, b, c, d, e, f  ∈ 6"]); logicset[℧]
+logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{!i}}"])[:,:,:]
+logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{>i}}"])[:,:,:]
 
-logicset,℧ = ABparse(["a, b, c ∈ 1:6", "{{i}} != {{!i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c ∈ 1:6", "{{i}} != {{>i}}"]); logicset[℧]
+#logicset = logicalparse(["a, b, c, d, e, f  ∈ 6"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c ∈ 1:6", "{{i}} > {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:6", "{{i}} != {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:6", "{{i}} != {{>i}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:6", "{{i}} > {{!i}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c ∈ 1:3", "a | b"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c ∈ 1:3", "a|b|c"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c ∈ 1:3", "a | b | c"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:3", "a | b"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c ∈ 1:3", "a,b,c = 1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c ∈ 1:3", "a & b & c"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:3", "a|b|c"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:3", "a | b | c"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c ∈ 0:2", "a,b,c = 0"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c ∈ 0:2", "a ! b ! c"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:3", "a,b,c = 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 1:3", "a & b & c"]); logicset[℧]
+
+logicset = logicalparse(["a, b, c ∈ 0:2", "a,b,c = 0"]); logicset[℧]
+logicset = logicalparse(["a, b, c ∈ 0:2", "a ! b ! c"]); logicset[℧]
 
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
 
 # At least 2 less/more >> or <<
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a << b"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a >> b"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a << b"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a >> b"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b ^= 1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^ b=1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b=1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a,b ^= 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^ b=1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b=1"]); logicset[℧]
 
 
 # All equal commands
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"]); logicset[℧]
 
-# logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a,b ^=   1"]); logicset[℧]
+# logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a,b ^=   1"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} == {{!i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{>i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{2,3}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} == {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{>i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{2,3}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "{{i}} == 1 {{2}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "{{i}} == 1 {{2}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{0}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} <= {{j+1}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{0}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} <= {{j+1}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); logicset[℧]
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{0}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{0}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} = 2 {{2,3}}"]); logicset[℧] # ??????????????????????
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{1,5}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} = 2 {{2,3}}"]); logicset[℧] # ??????????????????????
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{1,5}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); logicset[℧]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"]); logicset[℧]
 
-logicset,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {1}"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b  ∈  [1,2,3]", "a|b = 1 {0}"]); logicset[℧,:]
+logicset = logicalparse(["a, b  ∈  [1,2,3]", "a|b = 1 {1}"]); logicset[℧,:]
+logicset = logicalparse(["a, b  ∈  [1,2,3]", "a|b = 1 {0}"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2 {1}"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2 {1}"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c == 1|2"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a < b,c",  "c |= 1,2"]);logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b < 3 |=> a = b"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == b <=| b << 3"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c == 1|2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a < b,c",  "c |= 1,2"]);logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "b < 3 |=> a = b"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a == b <=| b << 3"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "a == c+b"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]); logicset[℧,:]
-logicset,℧ = ABparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1", "d == a*2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c     ∈  [1,2,3]", "a == c+b"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1", "d == a*2"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]", "a,b,c,d,e,f,g == 1 +++ a,b,c,d,e,f,g == 1 ==== 2"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]", "a,b,c,d,e,f,g == 1 +++ a,b,c,d,e,f,g == 1 ==== 2"]); logicset[℧,:]
 
-logicset,℧ = ABparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1"]); logicset[℧,:]
+logicset = logicalparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1"]); logicset[℧,:]
