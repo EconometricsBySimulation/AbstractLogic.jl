@@ -323,8 +323,8 @@ function OperatorEval(command, logicset::LogicalCombo)
         ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
 
     elseif operator == "^"
-        ℧Δ = (leftvals[:,1] .== 1 .| rightvals[:,1] .== 1) .& (leftvals[:,1] .==0 .| rightvals[:,1] .== 0)
-
+        ℧Δ = (isodd.(leftvals[:,1]) .& iseven.(rightvals[:,1])) .|
+             (iseven.(leftvals[:,1]) .& isodd.(rightvals[:,1]))
 
     elseif operator == "!"
         lcheck = [all(leftvals[i,:]  .== 0) for i in n]
@@ -385,7 +385,10 @@ logicalparse("a, b, c ∈ 1:3; a == b xor a == c", logicset=logicset)|> showfeas
 logicalparse("a, b, c ∈ 1:3; a == b ^^^ a == c", logicset=logicset)|> showfeasible
 logicalparse("a, b, c ∈ 1:3; a ^= b , c ", logicset=logicset)|> showfeasible
 
-logicalparse("a, b, c ∈ 0:1; a ^ b") |> showfeasible  #??????
+logicalparse("a, b, c ∈ 1:3; a, b ^= 1", logicset=logicset)|> showfeasible
+
+logicset = logicalparse("a, b, c ∈ 0:1")
+logicalparse("a, b ∈ 0:3; a ^ b") |> showfeasible  #??????
 
 logicalparse("a, b, c ∈ 1:3; a == b ==== a != c", logicset=logicset)|> showfeasible
 logicalparse("a, b, c ∈ 1:3; a == b <=> c == 2", logicset=logicset)|> showfeasible
