@@ -85,19 +85,16 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, y::Union{Int64,Symbol,String}) =
   [x[i,y] for i in (1:size(x)[1])[x[:]]]
 
-# Set index
+# Set index!
 Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
 Base.setindex!(x::LogicalCombo, y::Bool, z::Integer)   = x.logical[z] = y
 Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) =
   x.logical[z] .= y
-Base.setindex!(x::LogicalCombo, y::BitArray{1}, ::Colon) = x.logical[:] .= y
+Base.setindex!(x::LogicalCombo, y::Union{Array{Bool},Array{Bool,1},BitArray{1}}, ::Colon) = x.logical[:] .= y
 
-Base.setindex!(x::LogicalCombo, y::Array{Bool}, z::Union{UnitRange, AbstractArray}) =
+Base.setindex!(x::LogicalCombo, y::Union{Array{Bool},Array{Bool,1}}, z::Union{UnitRange, AbstractArray}) =
   x.logical[z] = y
-
-setindex!(::LogicalCombo, ::Array{Bool,1}, ::Colon)
-
 
 Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in v]))
 
@@ -127,6 +124,8 @@ function Base.range(x::LogicalCombo)
   for i in 1:size(x)[2]; p[x.keys[i]] = sort(unique(x[:,:,i])); end
   p
 end
+
+showfeasible(x::LogicalCombo) = x[:,:,:]
 
 ###################### Testing
 
