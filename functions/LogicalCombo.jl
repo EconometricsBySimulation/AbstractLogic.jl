@@ -20,6 +20,19 @@ function LogicalCombo(; kwargs...)
     LogicalCombo(keys, domain, fill(true,*(length.(domain)...)))
 end
 
+function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symbol,UnitRange{Int64}},1}})
+    if length(x) == 0
+        return LogicalCombo(Symbol[],[], Bool[0])
+    else
+        mykeys = []; mydomain = []
+        for (kw, val) in x;
+            push!(mykeys, kw)
+            push!(mydomain, val)
+        end
+    end
+    LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
+end
+
 Base.keys(x::LogicalCombo)     = x.keys
 domain(x::LogicalCombo)        = x.domain
 Base.size(x::LogicalCombo)     = [length(x.logical), length(x.keys)]
@@ -63,14 +76,8 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon; bool=false, varnames=false) =
 Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
 Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
-Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
-
-Base.setindex!(x::LogicalCombo, y::Bool, z::Integer)   = x.logical[z] = y
-Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) =
-  x.logical[z] .= y
-
-Base.setindex!(x::LogicalCombo, y::Array{Bool}, z::Union{UnitRange, AbstractArray}) =
-  x.logical[z] = y
+Base.getindex(x::LogicalCombo, y::BitArray{1}) =
+  [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
 
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
   [x[i,j] for i in (1:size(x)[1])[x[:]], j in 1:size(x)[2]]
@@ -78,24 +85,36 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, y::Union{Int64,Symbol,String}) =
   [x[i,y] for i in (1:size(x)[1])[x[:]]]
 
+# Set index
+Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
+
+Base.setindex!(x::LogicalCombo, y::Bool, z::Integer)   = x.logical[z] = y
+Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) =
+  x.logical[z] .= y
+Base.setindex!(x::LogicalCombo, y::BitArray{1}, ::Colon) = x.logical[:] .= y
+
+Base.setindex!(x::LogicalCombo, y::Array{Bool}, z::Union{UnitRange, AbstractArray}) =
+  x.logical[z] = y
+
+setindex!(::LogicalCombo, ::Array{Bool,1}, ::Colon)
+
+
 Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in v]))
 
 function expand(x::LogicalCombo; kwargs...)
   if isempty(kwargs)
     return x
   elseif size(x)[2]==0
-    # return(kwargs)
-    return LogicalCombo(kwargs...)
+    return LogicalCombo([kwargs...])
   else
     mykeys = []; mydomain = []
-    println(kwargs)
     for (kw, val) in kwargs;
         push!(mykeys, kw)
         push!(mydomain, val)
     end
   end
 
-  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined ") , mykeys)
+  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined!") , mykeys)
 
   expander = *(length.(mydomain)...)
   outlogical = fill(x.logical, each = expander)
@@ -103,7 +122,7 @@ function expand(x::LogicalCombo; kwargs...)
   LogicalCombo([x.keys..., mykeys...], [x.domain..., mydomain...], outlogical)
 end
 
-function  range(x::LogicalCombo)
+function Base.range(x::LogicalCombo)
   p = Dict()
   for i in 1:size(x)[2]; p[x.keys[i]] = sort(unique(x[:,:,i])); end
   p
@@ -141,4 +160,7 @@ collect(x2)
 range(x2)
 
 # Throw an error
-x3 = expand(x, a=1:2)
+#x3 = expand(x, a=1:2)
+
+# Expanding on an empty set generates a new set
+expand(LogicalCombo(), a=1:2, b=1) |> collect
