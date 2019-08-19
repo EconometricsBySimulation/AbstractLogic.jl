@@ -41,13 +41,13 @@ end
 
 function logicalparse(command::String; logicset::LogicalCombo = LogicalCombo())
   # A vector of non-standard operators to ignore
-  exclusionlist = ["in","xor","XOR"]
+  exclusionlist = ["in","xor","XOR", "iff", "IFF"]
 
   occursin(";", command) &&
     return logicalparse(string.(strip.(split(command, ";"))), logicset=logicset)
 
   if occursin(r"∈|\bin\b", command)
-      logicset = definelogicalset(command)
+      logicset = definelogicalset(logicset, command)
       return logicset
   end
 
@@ -73,7 +73,7 @@ logicalparse(commands::String, logicset::LogicalCombo) =
   logicalparse(commands=commands, logicset=logicset)
 
 
-function definelogicalset(command::String)
+function definelogicalset(logicset::LogicalCombo, command::String)
   left, right = strip.(split(command, r"∈|\bin\b"))
   vars = split(left, ",") .|> strip
   values = split(replace(right, r"\[|\]" => ""), ",")
@@ -86,7 +86,9 @@ function definelogicalset(command::String)
   outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)
   outset = [Pair(Symbol(i), values) for i in vars]
 
-  logicset  = LogicalCombo(outset)
+  #logicset  = LogicalCombo(outset)
+  logicset  = expand(logicset, outset)
+
   #logicset[:] = fill(true, size(logicset)[1])
 
   logicset
@@ -208,11 +210,13 @@ end
 function metaoperatoreval(command, logicset::LogicalCombo)
     logicsetcopy = deepcopy(logicset)
 
+    metaset = "XOR|IFF"
+
     #println("OperatorEval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(r"([><=|!+\\-\^&]{4}|XOR)", command)) && return SuperOperatorEval(command, logicset)
+    (!occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command)) && return SuperOperatorEval(command, logicset)
 
-    m = match(r"(^.*?)[ ]*([><=|!+\\-\^&]{4}|XOR)[ ]*(.*?$)", command)
+    m = match(Regex("(^.*?)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
     left, metaoperator, right = m.captures
 
     ℧left  = metaoperatoreval(left , logicset)[:]
@@ -220,7 +224,7 @@ function metaoperatoreval(command, logicset::LogicalCombo)
 
     (metaoperator == "&&&&") && (℧η = logicset[:] .& (℧left .& ℧right))
     (metaoperator == "====") && (℧η = logicset[:] .& (℧left .== ℧right))
-    (metaoperator == "||||") && (℧η = logicset[:] .& (℧left .| ℧right))
+    (metaoperator ∈ ["||||", "IFF"]) && (℧η = logicset[:] .& (℧left .| ℧right))
     (metaoperator ∈ ["^^^^", "XOR"]) && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
     logicsetcopy[:] = ℧η
@@ -230,12 +234,14 @@ end
 function SuperOperatorEval(command, logicset::LogicalCombo)
     logicsetcopy = deepcopy(logicset)
 
+    superset = "xor|iff"
+
     #println("OperatorEval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(r"([><=|!+\\-\^&]{3}|xor)", command)) && return OperatorEval(command, logicset)
+    (!occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command)) && return OperatorEval(command, logicset)
     occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset)
 
-    m = match(r"(^.*?)[ ]*([><=|!+\\-\\^&]{3}|xor)[ ]*(.*?$)", command)
+    m = match(Regex("(^.*?)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
     left, superoperator, right = m.captures
 
     ℧left  = SuperOperatorEval(left ,logicset)[:]
@@ -251,7 +257,7 @@ function SuperOperatorEval(command, logicset::LogicalCombo)
         ℧η = ℧ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
 
     # this can be dangerous, false equal to false such as with previous exclusions will cause inconsistencies
-    elseif superoperator == "==="
+    elseif superoperator ∈ ["<=>","===", "iff"]
         ℧η = ℧ .& (℧left .== ℧right)
 
     #warning this generally will not work
@@ -271,9 +277,9 @@ function SuperOperatorEval(command, logicset::LogicalCombo)
     elseif superoperator ∈ ["<=|","<=="]
         ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
 
-    elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
-        ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
-        ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
+    # elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
+    #     ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
+    #     ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
     end
 
     logicsetcopy[:] = ℧η
@@ -377,21 +383,46 @@ end
 logicset = logicalparse("a, b, c ∈ 1:3")
 logicset |> showfeasible
 
+logicalparse("a ∈ 1:3; b ∈ 1:2; c ∈ 2:3") |> showfeasible
+
 logicalparse("a, b, c ∈ 1:3; a == b; a != c")[:,:,:]
 
 logicalparse("a, b, c ∈ 1:3; a == b XOR a == c") |> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b ^^^^ a == c", logicset=logicset)|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b xor a == c", logicset=logicset)|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b ^^^ a == c", logicset=logicset)|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a ^= b , c ", logicset=logicset)|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a == b ^^^^ a == c")|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a == b xor a == c")|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a == b ^^^ a == c")|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a ^= b , c ")|> showfeasible
 
-logicalparse("a, b, c ∈ 1:3; a, b ^= 1", logicset=logicset)|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a, b ^= 1")|> showfeasible
 
-logicset = logicalparse("a, b, c ∈ 0:1")
-logicalparse("a, b ∈ 0:3; a ^ b") |> showfeasible  #??????
+logicalparse("a, b ∈ 0:1; a ^ b") |> showfeasible
 
-logicalparse("a, b, c ∈ 1:3; a == b ==== a != c", logicset=logicset)|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b <=> c == 2", logicset=logicset)|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a == b === a != c")|> showfeasible
+logicalparse("a, b, c ∈ 1:3; a == b <=> a != c")|> showfeasible
+
+function sum_add(x, y)
+  s = 0
+  for i in (x)[y]
+      s += 1
+  end
+  return s
+end
+
+function sum_add2(x, y)
+  s = 0
+  for i in x
+      y[i] && (s += 1)
+  end
+  return s
+end
+
+n = 1000^2
+@time sum_add(1:n,  [true, fill(false, n-1)...])
+@time sum_add2(1:n, [true, fill(false, n-1)...])
+
+@time sum_add(1:n,  sparse([true, fill(false, n-1)...]))
+@time sum_add2(1:n, sparse([true, fill(false, n-1)...]))
+
 
 logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{!i}}"])|> showfeasible
 logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{>i}}"])|> showfeasible
