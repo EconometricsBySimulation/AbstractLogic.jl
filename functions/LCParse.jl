@@ -400,30 +400,6 @@ logicalparse("a, b ∈ 0:1; a ^ b") |> showfeasible
 logicalparse("a, b, c ∈ 1:3; a == b === a != c")|> showfeasible
 logicalparse("a, b, c ∈ 1:3; a == b <=> a != c")|> showfeasible
 
-function sum_add(x, y)
-  s = 0
-  for i in (x)[y]
-      s += 1
-  end
-  return s
-end
-
-function sum_add2(x, y)
-  s = 0
-  for i in x
-      y[i] && (s += 1)
-  end
-  return s
-end
-
-n = 1000^2
-@time sum_add(1:n,  [true, fill(false, n-1)...])
-@time sum_add2(1:n, [true, fill(false, n-1)...])
-
-@time sum_add(1:n,  sparse([true, fill(false, n-1)...]))
-@time sum_add2(1:n, sparse([true, fill(false, n-1)...]))
-
-
 logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{!i}}"])|> showfeasible
 logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{>i}}"])|> showfeasible
 
