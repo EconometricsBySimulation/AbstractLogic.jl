@@ -409,10 +409,10 @@ logicalparse(["a, b, c ∈ 1:6", "{{i}} == {{!i}}"])|> showfeasible
 logicalparse(["a, b, c ∈ 1:6", "{{i}} != {{>i}}"])|> showfeasible
 
 logicalparse(["a, b, c ∈ 1:6", "{{i}} > {{!i}}"])|> showfeasible
+logicalparse(["a, b, c ∈ 1:6", "{{i}} > {{>i}}"])|> showfeasible
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"])|> showfeasible
-
-logicalparse(["a, b, c  ∈  [1,2,3]", "{{i}} != {{!i}}"])|> showfeasible
+logicalparse(["a, b, c  ∈  1:3", "b != a,c", "c =| 1,2"])|> showfeasible
+logicalparse(["a, b, c  ∈  1:3", "{{i}} != {{!i}}"])|> showfeasible
 
 logicalparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"])|> showfeasible
 logicalparse(["a, b, c ∈ 1:3", "a | b"])|> showfeasible
