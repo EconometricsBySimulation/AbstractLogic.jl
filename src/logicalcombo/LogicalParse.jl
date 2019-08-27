@@ -9,13 +9,13 @@ Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
 logicaloccursin(y::Symbol) = any( [ y ∈ keys(logicset[i]) for i in 1:length(logicset) ] )
 logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
 
-integer("1")
-range("1:5")
-
 #command = "a,b,c,d ∈ 1:5"
 #logicset = logicalparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
 
-function logicalparse(commands::Array{String,1}; logicset::LogicalCombo = LogicalCombo())
+function logicalparse(
+    commands::Array{String,1};
+    logicset::LogicalCombo = LogicalCombo(),
+    verbose=true)
   println("")
 
   any(occursin.(";", commands)) &&
@@ -33,18 +33,22 @@ function logicalparse(commands::Array{String,1}; logicset::LogicalCombo = Logica
       (feasibleoutcomes  > 1)  && (check = "✓")
       (feasibleoutcomes == 1)  && (check = "✓✓")
 
-      println(" $filler feasible outcomes $feasibleoutcomes $check")
+      verbose && println(" $filler feasible outcomes $feasibleoutcomes $check")
 
   end
   logicset
 end
 
-function logicalparse(command::String; logicset::LogicalCombo = LogicalCombo())
+function logicalparse(
+    command::String;
+    logicset::LogicalCombo = LogicalCombo(),
+    verbose=true)
   # A vector of non-standard operators to ignore
   exclusionlist = ["in","xor","XOR", "iff", "IFF"]
 
   occursin(";", command) &&
-    return logicalparse(string.(strip.(split(command, ";"))), logicset=logicset)
+    return logicalparse(string.(strip.(split(command, ";"))),
+      logicset=logicset, verbose=verbose)
 
   if occursin(r"∈|\bin\b", command)
       logicset = definelogicalset(logicset, command)
@@ -71,7 +75,6 @@ logicalparse(commands::Array{String,1}, logicset::LogicalCombo) =
 
 logicalparse(commands::String, logicset::LogicalCombo) =
   logicalparse(commands=commands, logicset=logicset)
-
 
 function definelogicalset(logicset::LogicalCombo, command::String)
   left, right = strip.(split(command, r"∈|\bin\b"))
@@ -119,7 +122,12 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 end
 
 
-function OperatorSpawn(command, logicset::LogicalCombo)
+function operatorspawn(command,
+    logicset::LogicalCombo;
+    returnlogical=false,
+    prefix=">>> ",
+    verbose=true)
+
     logicsetcopy = deepcopy(logicset)
 
     tempcommand = command
@@ -154,7 +162,7 @@ function OperatorSpawn(command, logicset::LogicalCombo)
 
     collection = []
 
-    println()
+    verbose && println()
     for i in mydomain, j in mydomain
       ((length(wild2)  == 0) || wild2[1][1] ∈ 'i':'j') && (j>1)  && continue
       ("!"   ∈ iSet1)       && (i==j) && continue
@@ -175,14 +183,16 @@ function OperatorSpawn(command, logicset::LogicalCombo)
            continue
        end
 
-       ℧∇ = SuperOperatorEval(txtcmd, logicset)[:]
+       ℧∇ = superoperatoreval(txtcmd, logicset)[:]
 
-       println(">>> $txtcmd")
+       verbose &&  println(prefix * "$txtcmd")
 
        push!(collection, ℧∇)
     end
 
     collector = hcat(collection...)
+
+    returnlogical && return collector
 
     if (countrange === missing)
       ℧Δ = logicset[:] .& [all(collector[i,:]) for i in 1:size(collector)[1]]
@@ -212,9 +222,9 @@ function metaoperatoreval(command, logicset::LogicalCombo)
 
     metaset = "XOR|IFF"
 
-    #println("OperatorEval($command)")
+    #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command)) && return SuperOperatorEval(command, logicset)
+    (!occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command)) && return superoperatoreval(command, logicset)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
     left, metaoperator, right = m.captures
@@ -231,21 +241,21 @@ function metaoperatoreval(command, logicset::LogicalCombo)
     logicsetcopy
 end
 
-function SuperOperatorEval(command, logicset::LogicalCombo)
+function superoperatoreval(command, logicset::LogicalCombo)
     logicsetcopy = deepcopy(logicset)
 
     superset = "xor|iff"
 
-    #println("OperatorEval($command)")
+    #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command)) && return OperatorEval(command, logicset)
-    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset)
+    (!occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command)) && return operatoreval(command, logicset)
+    occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
     left, superoperator, right = m.captures
 
-    ℧left  = SuperOperatorEval(left ,logicset)[:]
-    ℧right = SuperOperatorEval(right,logicset)[:]
+    ℧left  = superoperatoreval(left ,logicset)[:]
+    ℧right = superoperatoreval(right,logicset)[:]
 
     ℧ = logicset[:]
     ℧η = deepcopy(℧)
@@ -286,12 +296,12 @@ function SuperOperatorEval(command, logicset::LogicalCombo)
     logicsetcopy
 end
 
-function OperatorEval(command, logicset::LogicalCombo)
+function operatoreval(command, logicset::LogicalCombo)
     logicsetcopy = deepcopy(logicset)
 
-    #println("OperatorEval($command)")
+    #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    occursin(r"\{\{.*\}\}", command) && return OperatorSpawn(command, logicset)
+    occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
 
     n = 1:sum(logicset[:])
 
@@ -380,113 +390,73 @@ function OperatorEval(command, logicset::LogicalCombo)
     logicsetcopy
 end
 
-logicset = logicalparse("a, b, c ∈ 1:3")
-logicset |> showfeasible
-
-logicalparse("a ∈ 1:3; b ∈ 1:2; c ∈ 2:3") |> showfeasible
-
-logicalparse("a, b, c ∈ 1:3; a == b; a != c")[:,:,:]
-
-logicalparse("a, b, c ∈ 1:3; a == b XOR a == c") |> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b ^^^^ a == c")|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b xor a == c")|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b ^^^ a == c")|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a ^= b , c ")|> showfeasible
-
-logicalparse("a, b, c ∈ 1:3; a, b ^= 1")|> showfeasible
-
-logicalparse("a, b ∈ 0:1; a ^ b") |> showfeasible
-
-logicalparse("a, b, c ∈ 1:3; a == b === a != c")|> showfeasible
-logicalparse("a, b, c ∈ 1:3; a == b <=> a != c")|> showfeasible
-
-logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{!i}}"])|> showfeasible
-logicalparse(["a, b, c, d, e ∈ 1:5", "{{i}} != {{>i}}"])|> showfeasible
-
-#logicset = logicalparse(["a, b, c, d, e, f  ∈ 6"]); logicset[℧]
-
-logicalparse(["a, b, c ∈ 1:6", "{{i}} == {{!i}}"])|> showfeasible
-logicalparse(["a, b, c ∈ 1:6", "{{i}} != {{>i}}"])|> showfeasible
-
-logicalparse(["a, b, c ∈ 1:6", "{{i}} > {{!i}}"])|> showfeasible
-logicalparse(["a, b, c ∈ 1:6", "{{i}} > {{>i}}"])|> showfeasible
-
-logicalparse(["a, b, c  ∈  1:3", "b != a,c", "c =| 1,2"])|> showfeasible
-logicalparse(["a, b, c  ∈  1:3", "{{i}} != {{!i}}"])|> showfeasible
-
-logicalparse(["a, b, c  ∈  [1,2,3]", "a|b = 1"])|> showfeasible
-logicalparse(["a, b, c ∈ 1:3", "a | b"])|> showfeasible
-
-logicalparse(["a, b, c ∈ 1:3", "a|b|c"])|> showfeasible
-logicalparse(["a, b, c ∈ 1:3", "a | b | c"])|> showfeasible
-
-logicalparse(["a, b, c ∈ 1:3", "a,b,c = 1"])|> showfeasible
-logicalparse(["a, b, c ∈ 1:3", "a & b & c"])|> showfeasible
-
-logicalparse(["a, b, c ∈ 0:2", "a,b,c = 0"])|> showfeasible
-logicalparse(["a, b, c ∈ 0:2", "a ! b ! c"])|> showfeasible
 
 
-logicalparse(["a, b, c  ∈  [1,2,3]"])|> showfeasible
+function checkfeasible(command::String,
+    logicset::LogicalCombo = LogicalCombo();
+    verbose=true)
 
-# At least 2 less/more >> or <<
-logicalparse(["a, b, c  ∈  [1,2,3]", "a << b"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a >> b"])|> showfeasible
+  rowsin = sum(logicset.logical)
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "a,b ^= 1"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^ b=1"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 ^^^^ b=1"])|> showfeasible
+  if rowsin == 0
+      println("No outcomes feasible outcomes with set!")
+      return missing
+  end
 
+  println("Check: $command")
 
-# All equal commands
-logicalparse(["a, b, c  ∈  [1,2,3]", "a,b |=   1"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 |||  b = 1"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a=1 |||| b = 1"])|> showfeasible
+  logicsetout = logicalparse(command, logicset=logicset, verbose=false)
 
-# logicalparse(["a, b, c  ∈  [1,2,3]", "a,b ^=   1"])|> showfeasible
+  rowsout = sum(logicsetout.logical)
+  outcomeratio = rowsout/rowsin
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "a|b = 1 ||| c == 1"])|> showfeasible
+  if verbose
+      (outcomeratio == 0) && print("Query returns 'false',")
+      (outcomeratio == 1) && print("Query returns 'true',")
+      (outcomeratio > 0) && (outcomeratio < 1) && print("Query returns 'possible', ")
+      println("$rowsout out of $rowsin possible combinations 'true'.")
+  end
 
-logicalparse(["a, b, c  ∈  [1,2,3,4]"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} == {{!i}}"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} != {{!i}}"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{>i}}"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{2,3}}"])|> showfeasible
+  return [outcomeratio, logicsetout]
+end
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "{{i}} == 1 {{2}}"])|> showfeasible
+function search(command::String,
+    logicset::LogicalCombo = LogicalCombo();
+    verbose=true)
 
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{i}} > {{i+1}} {{0}}"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} <= {{j+1}}"])|> showfeasible
+    rowsin = sum(logicset.logical)
 
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}}"])|> showfeasible
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{0}}"])|> showfeasible
+    if rowsin == 0
+        println("No outcomes feasible outcomes with set!")
+        return missing
+    end
 
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} = 2 {{2,3}}"])|> showfeasible # ??????????????????????
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "{{i}} != {{!i}} {{1,5}}"])|> showfeasible
+    !occursin(raw"{{", command) &&
+      !occursin(r"^[><=|!^&]", command) &&
+      throw("No syntax match. Enter form '{{i}} = ...' or '= ...'")
 
-logicalparse(["a, b, c  ∈  [1,2,3,4]", "{{j}} > {{j+1}}"])|> showfeasible
+    !occursin(raw"{{", command) &&
+      occursin(r"^[><=|!^&]", command) &&
+      (command = "{{i}} " * command)
 
-logicalparse(["a, b  ∈  [1,2,3]", "a|b = 1 {1}"])|> showfeasible
-logicalparse(["a, b  ∈  [1,2,3]", "a|b = 1 {0}"])|> showfeasible
+    colcheck = operatorspawn(command,
+      logicset,
+      returnlogical=true,
+      prefix="Checking: ",
+      verbose=verbose)
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2 {1}"])|> showfeasible
+    colcount = [sum(colcheck[:,i]) for i in 1:size(colcheck,2)]
 
-logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c == 1|2"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a < b,c",  "c |= 1,2"]);logicset[℧,:]
-logicalparse(["a, b, c  ∈  [1,2,3]", "b < 3 |=> a = b"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a == b <=| b << 3"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a == 1 <=> b == c"])|> showfeasible
-logicalparse(["a, b, c  ∈  [1,2,3]", "a <= b,c", "c |= 1,2"])|> showfeasible
+    if verbose
+        println()
+        for i in 1:size(logicset,2)
+          (colcount[i] == rowsin) && print(":$(logicset.keys[i]) is a match")
+          (colcount[i] == 0) && print(":$(logicset.keys[i]) is a not match")
+          (colcount[i] > 0) && (colcount[i] < rowsin) &&
+            print(":$(logicset.keys[i]) is a possible match")
+          println(" with $(colcount[i]) feasible combinations out of $rowsin.")
+        end
+    end
 
-logicalparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1", "c |= 1,2"])|> showfeasible
-logicalparse(["a, b, c     ∈  [1,2,3]", "a == c+b"])|> showfeasible
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a , b |= c, d"])|> showfeasible
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d"])|> showfeasible
-logicalparse(["a, b, c, d  ∈  [1,2,3,4]", "a != b, c, d", "b != c,d", "c != d", "a == c+1", "d == a*2"])|> showfeasible
-
-logicalparse(["a, b, c  ∈  [1,2,3]", "b != a,c", "c =| 1,2"])|> showfeasible
-
-logicalparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]", "a,b,c,d,e,f,g == 1 +++ a,b,c,d,e,f,g == 1 ==== 2"])|> showfeasible
-
-logicalparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1"])|> showfeasible
+    return colcount ./ rowsin
+end
