@@ -46,13 +46,9 @@ logicset = logicalparse(["{{i}} == 4 {{3}}"], logicset=logicset); showfeasible(l
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-logicset = logicalparse(["{{j+1}} == 1 ==> {{j}} == 4"], logicset=logicset); showfeasible(logicset)
+logicset = logicalparse(["{{i+1}} == 1 ==> {{i}} == 4"], logicset=logicset); showfeasible(logicset)
 # 120 Possibilities
 
-# Equivalent to:
-# logicalparse(["b == 1 ==> a == 4","c == 1 ==> b == 4","d == 1 ==> c == 4",
-#          "e == 1 ==> d == 4","f == 1 ==> e == 4","g == 1 ==> f == 4"], logicset=logicset)
-#
 # Wine cannot be in the first bottle since poison is to the left
 logicset = logicalparse(["a != 1"], logicset=logicset); showfeasible(logicset)
 # 60 possible outcomes
@@ -62,6 +58,7 @@ logicset = logicalparse(["a != g"], logicset=logicset)
 
 # But if you would move onwards, neither is your friend;
 logicset = logicalparse(["a|g == 2 {0}"], logicset=logicset); showfeasible(logicset)
+logicset = logicalparse(["a & g != 2 "], logicset=logicset); showfeasible(logicset)
 # 30 possible outcomes
 
 # But if you would move onwards, neither is your friend;

@@ -117,7 +117,7 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon; bool=false, varnames=false) =
 Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
 Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
-Base.getindex(x::LogicalCombo, y::BitArray{1}) =
+Base.getindex(x::LogicalCombo, y::Union{BitArray{1},Array{Bool,1}}) =
   [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
 
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
@@ -125,6 +125,8 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
 
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, y::Union{Int64,Symbol,String}) =
   [x[i,y] for i in (1:size(x)[1])[x[:]]]
+
+Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, ::Colon) = x[(1:size(x)[1])[x[:]][y],:]
 
 # Set index!
 Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]

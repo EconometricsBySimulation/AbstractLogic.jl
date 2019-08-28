@@ -3,7 +3,7 @@ logicset |> showfeasible
 
 logicalparse("a ∈ 1:3; b ∈ 1:2; c ∈ 2:3") |> showfeasible
 
-logicalparse("a, b, c ∈ 1:3; a == b; a != c")[:,:,:]
+logicalparse("a, b, c ∈ 1:3; a,c != b; a != c")[:,:,:]
 
 logicalparse("a, b, c ∈ 1:3; a == b XOR a == c") |> showfeasible
 logicalparse("a, b, c ∈ 1:3; a == b ^^^^ a == c")|> showfeasible
@@ -13,7 +13,10 @@ logicalparse("a, b, c ∈ 1:3; a ^= b , c ")|> showfeasible
 
 logicalparse("a, b, c ∈ 1:3; a, b ^= 1")|> showfeasible
 
-logicalparse("a, b ∈ 0:1; a ^ b") |> showfeasible
+logicalparse("a, b    ∈ 0:1; a ^ b") |> showfeasible
+logicalparse("a, b, c ∈ 0:1; a ! b") |> showfeasible
+logicalparse("a, b, c ∈ 0:1; a & b & c") |> showfeasible
+logicalparse("a, b, c ∈ 1:2; !a; &b") |> showfeasible
 
 logicalparse("a, b, c ∈ 1:3; a == b === a != c")|> showfeasible
 logicalparse("a, b, c ∈ 1:3; a == b <=> a != c")|> showfeasible

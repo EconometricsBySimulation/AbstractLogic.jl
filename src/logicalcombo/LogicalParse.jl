@@ -16,24 +16,26 @@ function logicalparse(
     commands::Array{String,1};
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
+
   println("")
 
   any(occursin.(";", commands)) &&
     (commands = split.(commands, ";") |> Iterators.flatten |> collect .|> strip .|> string)
 
-
   for command in commands
       print(command)
-      logicset = logicalparse(command,logicset=logicset)
+      logicset = logicalparse(command, logicset=logicset, verbose=verbose)
 
-      feasibleoutcomes = sum(logicset[:])
+      feasibleoutcomes = sum(logicset.logical)
       filler = repeat("\t", max(1, 3-Integer(round(length(command)/18))))
 
-      (feasibleoutcomes == 0)  && (check = "X")
-      (feasibleoutcomes  > 1)  && (check = "✓")
+      (feasibleoutcomes == 0)  && (check = "X ")
+      (feasibleoutcomes  > 1)  && (check = "✓ ")
       (feasibleoutcomes == 1)  && (check = "✓✓")
 
-      verbose && println(" $filler feasible outcomes $feasibleoutcomes $check")
+      ender = (feasibleoutcomes>0) ? ":" * join(logicset[1,:,:], " ") : " [empty set]"
+
+      verbose && println(" $filler feasible outcomes $feasibleoutcomes $check \t $ender")
 
   end
   logicset
@@ -65,16 +67,17 @@ function logicalparse(
       end
   end
 
-  occursin(r"( |\b)([><=|!+\\-\^\\&]{1,4}|XOR|xor)(\b| )", command) && return metaoperatoreval(command,logicset)
+  occursin(r"( |\b|^)([><=|!+\\-\^\\&]{1,4}|XOR|xor)(\b| |$)", command) &&
+    return metaoperatoreval(command,logicset)
 
   println("Warning! { $command } not interpreted!")
 end
 
-logicalparse(commands::Array{String,1}, logicset::LogicalCombo) =
-  logicalparse(commands, logicset=logicset)
+logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
+  logicalparse(commands, logicset=logicset, I...)
 
-logicalparse(command::String, logicset::LogicalCombo) =
-  logicalparse(command, logicset=logicset)
+logicalparse(command::String, logicset::LogicalCombo; I...) =
+  logicalparse(command, logicset=logicset, I...)
 
 function definelogicalset(logicset::LogicalCombo, command::String)
   left, right = strip.(split(command, r"∈|\bin\b"))
@@ -232,7 +235,8 @@ function metaoperatoreval(command, logicset::LogicalCombo)
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command)) && return superoperatoreval(command, logicset)
+    !occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command) &&
+      return superoperatoreval(command, logicset)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
     left, metaoperator, right = m.captures
@@ -256,7 +260,8 @@ function superoperatoreval(command, logicset::LogicalCombo)
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    (!occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command)) && return operatoreval(command, logicset)
+    !occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command) &&
+      return operatoreval(command, logicset)
     occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
@@ -316,8 +321,11 @@ function operatoreval(command, logicset::LogicalCombo)
     # convert a = b|c to a |= b,c
     if occursin("|", command) & occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
       command = replace(command, "|"=>",")
-      command = replace(command, r",*=+,*"=>"|=")
+      command = replace(command, r"="=>"|=")
     end
+
+    command = replace(command, r"^(.*?)[ ]*([!&])[ ]*$"=>s"\1 \2 \1")
+    command = replace(command, r"^[ ]*([!&])[ ]*(.*?)$"=>s"\2 \1 \2")
 
     m = match(r"^(.*?)(([><=|!^&]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
@@ -342,8 +350,8 @@ function operatoreval(command, logicset::LogicalCombo)
         ℧Δ = [all(lcheck[i,:]) | all(rcheck[i,:]) for i in n]
 
     elseif operator == "&"
-        lcheck = [all(leftvals[i,:]  .== 1) for i in n]
-        rcheck = [all(rightvals[i,:] .== 1) for i in n]
+        lcheck = [all(isodd.(leftvals[i,:])) for i in n]
+        rcheck = [all(isodd.(rightvals[i,:])) for i in n]
         ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
 
     elseif operator == "^"
@@ -351,8 +359,8 @@ function operatoreval(command, logicset::LogicalCombo)
              (iseven.(leftvals[:,1]) .& isodd.(rightvals[:,1]))
 
     elseif operator == "!"
-        lcheck = [all(leftvals[i,:]  .== 0) for i in n]
-        rcheck = [all(rightvals[i,:] .== 0) for i in n]
+        lcheck = [all(iseven.(leftvals[i,:])) for i in n]
+        rcheck = [all(iseven.(rightvals[i,:])) for i in n]
         ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
 
     elseif operator == "^="
