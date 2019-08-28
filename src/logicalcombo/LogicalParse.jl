@@ -27,7 +27,7 @@ function logicalparse(
       logicset = logicalparse(command, logicset=logicset, verbose=verbose)
 
       feasibleoutcomes = sum(logicset.logical)
-      filler = repeat("\t", max(1, 3-Integer(round(length(command)/18))))
+      filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
 
       (feasibleoutcomes == 0)  && (check = "X ")
       (feasibleoutcomes  > 1)  && (check = "✓ ")
@@ -139,6 +139,14 @@ function operatorspawn(command,
 
     if occursin(r"^[0-9]+,[0-9]+$", matches[end])
         countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
+        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        matches = matches[1:(end-1)]
+    elseif occursin(r"^[0-9]+,$", matches[end])
+        countrange = integer(matches[end][1:(end-1)]):size(logicset,2)^2
+        tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        matches = matches[1:(end-1)]
+    elseif occursin(r"^,[0-9]+$", matches[end])
+        countrange = 0:integer(matches[end][2:end])
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
         matches = matches[1:(end-1)]
     elseif occursin(r"^[0-9]+$", matches[end])
@@ -319,15 +327,15 @@ function operatoreval(command, logicset::LogicalCombo)
     n = 1:sum(logicset[:])
 
     # convert a = b|c to a |= b,c
-    if occursin("|", command) & occursin(r"(\b| )[|]*=+[|]*(\b| )", command)
+    if occursin("|", command) & occursin(r"(\b| )[!|]*=+[!|]*(\b| )", command)
       command = replace(command, "|"=>",")
-      command = replace(command, r"="=>"|=")
+      command = replace(command, r",*=+"=>"|=")
     end
 
     command = replace(command, r"^(.*?)[ ]*([!&])[ ]*$"=>s"\1 \2 \1")
     command = replace(command, r"^[ ]*([!&])[ ]*(.*?)$"=>s"\2 \1 \2")
 
-    m = match(r"^(.*?)(([><=|!^&]{1,2})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
+    m = match(r"^(.*?)(([><=|!^&]{1,3})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
 
     (nmin === nothing)  && (nmax === nothing)  && (nrange = 1:999)
@@ -340,13 +348,12 @@ function operatoreval(command, logicset::LogicalCombo)
     leftvals  = hcat([grab(L, logicset, command=command) for L in leftarg]...)
     rightvals = hcat([grab(R, logicset, command=command) for R in rightarg]...)
 
-    if operator == "!="
-        lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
-        ℧Δ = [!all(lcheck[i,:]) for i in n]
+    if operator == ""
+        throw("No operator found!")
 
     elseif operator == "|"
-        lcheck = [any(leftvals[i,:]  .== 1) for i in n]
-        rcheck = [any(rightvals[i,:] .== 1) for i in n]
+        lcheck = [any(isodd.(leftvals[i,:])) for i in n]
+        rcheck = [any(isodd.(rightvals[i,:])) for i in n]
         ℧Δ = [all(lcheck[i,:]) | all(rcheck[i,:]) for i in n]
 
     elseif operator == "&"
@@ -372,8 +379,16 @@ function operatoreval(command, logicset::LogicalCombo)
         lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [all(lcheck[i,:]) for i in n]
 
+    elseif operator == "!="
+        lcheck = [all(leftvals[i,j] .!= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [all(lcheck[i,:]) for i in n]
+
     elseif operator ∈ ["|=", "=|"]
         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        ℧Δ = [sum(lcheck[i,:]) ∈ nrange for i in n]
+
+    elseif operator ∈ ["|!=", "|!", "!|", "!|=", "=|!", "|=!"]
+        lcheck = [any(leftvals[i,j] .!= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
         ℧Δ = [sum(lcheck[i,:]) ∈ nrange for i in n]
 
     elseif operator == "<="
@@ -410,7 +425,7 @@ end
 
 function checkfeasible(command::String,
     logicset::LogicalCombo = LogicalCombo();
-    verbose=true)
+    verbose=true, force=false)
 
   rowsin = sum(logicset.logical)
 
@@ -427,9 +442,10 @@ function checkfeasible(command::String,
   outcomeratio = rowsout/rowsin
 
   if verbose
-      (outcomeratio == 0) && print("false,")
+      force && (outcomeratio != 1) && print("false,")
+      !force && (outcomeratio == 0) && print("false,")
       (outcomeratio == 1) && print("true,")
-      (outcomeratio > 0) && (outcomeratio < 1) && print("possible, ")
+      !force && (outcomeratio > 0) && (outcomeratio < 1) && print("possible, ")
       println(" $rowsout out of $rowsin possible combinations 'true'.")
   end
 

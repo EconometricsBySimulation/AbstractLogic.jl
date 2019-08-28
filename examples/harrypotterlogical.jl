@@ -57,19 +57,18 @@ logicset = logicalparse(["a != 1"], logicset=logicset); showfeasible(logicset)
 logicset = logicalparse(["a != g"], logicset=logicset)
 
 # But if you would move onwards, neither is your friend;
-logicset = logicalparse(["a|g == 2 {0}"], logicset=logicset); showfeasible(logicset)
-logicset = logicalparse(["a & g != 2 "], logicset=logicset); showfeasible(logicset)
+logicset = logicalparse(["a,g != 2 "], logicset=logicset); showfeasible(logicset)
 # 30 possible outcomes
 
 # But if you would move onwards, neither is your friend;
 # Third, as you see clearly, all are different size,
 # Neither dwarf nor giant holds death in their insides;
 # c dwarf, f are giant
-logicset = logicalparse(["c|f == 4 {0}"], logicset=logicset); showfeasible(logicset)
+logicset = logicalparse(["c,f != 4"], logicset=logicset); showfeasible(logicset)
 
 # Fourth, the second left and the second on the right
 # Are twins once you taste them, though different at first sight.
-logicset = logicalparse(["b == f"], logicset=logicset)
+logicset = logicalparse(["b != f === a == c"], logicset=logicset)
 
-showfeasible(logicset)
-# You pick the 3rd (move ahead) and the 7th (move back)
+search("=2", logicset) # c is a match, for the third bottle
+search("=3", logicset) # g is a match, for the last bottle
