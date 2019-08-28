@@ -109,10 +109,18 @@ logicalparse(["a, b, c, d, e, f, g  ∈  [1,2,3,4]", "a,b,c,d,e,f,g == 1 +++ a,b
 
 logicalparse(["a, b, c     ∈  [1,2,3]", "b , a == c-1"])|> showfeasible
 
+logicset = logicalparse("a, b, c ∈ 1:3; a = b|c; a = b ==> b = c+1")
+logicset = logicalparse("a = c ==> c = b - 1; c = 2 ||| a=3", logicset)
+logicset |> showfeasible
 
-checkfeasible("{{i}} == b", logicset)[1]
-checkfeasible("{{i}} == b {{2}}", logicset)[2] |> showfeasible
+checkfeasible("a = 2", logicset)[1]
+checkfeasible("b = 3", logicset)[1]
+checkfeasible("c = 1", logicset)[1]
+checkfeasible("{{i}} > 1", logicset)[2]
+checkfeasible("{{i}} < 3 {{2}}", logicset)[2]
 
 logicset |> showfeasible
 
-search("> b", logicset)
+search("{{i}} = 3", logicset)
+search("{{i}} > 2", logicset)
+search("{{i}} > {{i-1}}", logicset)

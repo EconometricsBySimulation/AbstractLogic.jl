@@ -71,10 +71,10 @@ function logicalparse(
 end
 
 logicalparse(commands::Array{String,1}, logicset::LogicalCombo) =
-  logicalparse(commands=commands, logicset=logicset)
+  logicalparse(commands, logicset=logicset)
 
-logicalparse(commands::String, logicset::LogicalCombo) =
-  logicalparse(commands=commands, logicset=logicset)
+logicalparse(command::String, logicset::LogicalCombo) =
+  logicalparse(command, logicset=logicset)
 
 function definelogicalset(logicset::LogicalCombo, command::String)
   left, right = strip.(split(command, r"∈|\bin\b"))
@@ -163,6 +163,9 @@ function operatorspawn(command,
     collection = []
 
     verbose && println()
+
+    iset = Symbol[]
+
     for i in mydomain, j in mydomain
       ((length(wild2)  == 0) || wild2[1][1] ∈ 'i':'j') && (j>1)  && continue
       ("!"   ∈ iSet1)       && (i==j) && continue
@@ -174,12 +177,16 @@ function operatorspawn(command,
 
        txtcmd = tempcommand
 
-       (length(wild2)==1) && !(wild2[1][1] ∈ 'i':'j') &&  (txtcmd = subout(txtcmd, j, wild2[1], mykeys))
-       (length(wild2)==1) &&  (wild2[1][1] ∈ 'i':'j') &&  (txtcmd = subout(txtcmd, i, wild2[1], mykeys))
+       (length(wild2)==1) && !(wild2[1][1] ∈ 'i':'j') &&
+         (txtcmd = subout(txtcmd, j, wild2[1], mykeys))
+
+       (length(wild2)==1) &&  (wild2[1][1] ∈ 'i':'j') &&
+         (txtcmd = subout(txtcmd, i, wild2[1], mykeys))
+
        (length(wild)  == 1) && (txtcmd = subout(txtcmd, i, wild[1], mykeys))
 
        if occursin("~~OUTOFBOUNDS~~", txtcmd)
-           ("i" ∈ iSet) && push!(collection, fill(false, length(logicset[:])))
+           # ("i" ∈ iSet) && push!(collection, fill(false, length(logicset[:])))
            continue
        end
 
@@ -188,11 +195,12 @@ function operatorspawn(command,
        verbose &&  println(prefix * "$txtcmd")
 
        push!(collection, ℧∇)
+       push!(iset, mykeys[i])
     end
 
     collector = hcat(collection...)
 
-    returnlogical && return collector
+    returnlogical && return [collector, iset]
 
     if (countrange === missing)
       ℧Δ = logicset[:] .& [all(collector[i,:]) for i in 1:size(collector)[1]]
@@ -403,7 +411,7 @@ function checkfeasible(command::String,
       return missing
   end
 
-  println("Check: $command")
+  print("Check: $command ... ")
 
   logicsetout = logicalparse(command, logicset=logicset, verbose=false)
 
@@ -411,10 +419,10 @@ function checkfeasible(command::String,
   outcomeratio = rowsout/rowsin
 
   if verbose
-      (outcomeratio == 0) && print("Query returns 'false',")
-      (outcomeratio == 1) && print("Query returns 'true',")
-      (outcomeratio > 0) && (outcomeratio < 1) && print("Query returns 'possible', ")
-      println("$rowsout out of $rowsin possible combinations 'true'.")
+      (outcomeratio == 0) && print("false,")
+      (outcomeratio == 1) && print("true,")
+      (outcomeratio > 0) && (outcomeratio < 1) && print("possible, ")
+      println(" $rowsout out of $rowsin possible combinations 'true'.")
   end
 
   return [outcomeratio, logicsetout]
@@ -445,11 +453,23 @@ function search(command::String,
       prefix="Checking: ",
       verbose=verbose)
 
-    colcount = [sum(colcheck[:,i]) for i in 1:size(colcheck,2)]
+    colcount = Any[]
+
+    for i in 1:size(logicset, 2)
+      select = colcheck[1][:, colcheck[2] .== logicset.keys[i]]
+      (size(select,2) == 0) && push!(colcount,missing)
+      (size(select,2) > 0 ) && push!(colcount, [all(select[j,:]) for j in 1:size(select,1)] |> sum)
+    end
+
+    # colcount = [sum(colcheck[:,i]) for i in 1:size(colcheck,2)]
 
     if verbose
         println()
         for i in 1:size(logicset,2)
+          if colcount[i] === missing
+              println(":$(logicset.keys[i]) could not be evaluated at $command.")
+              continue
+          end
           (colcount[i] == rowsin) && print(":$(logicset.keys[i]) is a match")
           (colcount[i] == 0) && print(":$(logicset.keys[i]) is a not match")
           (colcount[i] > 0) && (colcount[i] < rowsin) &&
