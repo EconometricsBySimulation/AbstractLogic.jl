@@ -26,16 +26,16 @@ function logicalparse(
       print(command)
       logicset = logicalparse(command, logicset=logicset, verbose=verbose)
 
-      feasibleoutcomes = sum(logicset.logical)
+      feasibleN = sum(logicset.logical)
       filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
 
-      (feasibleoutcomes == 0)  && (check = "X ")
-      (feasibleoutcomes  > 1)  && (check = "✓ ")
-      (feasibleoutcomes == 1)  && (check = "✓✓")
+      (feasibleN == 0)  && (check = "X ")
+      (feasibleN  > 1)  && (check = "✓ ")
+      (feasibleN == 1)  && (check = "✓✓")
 
-      ender = (feasibleoutcomes>0) ? ":" * join(logicset[1,:,:], " ") : " [empty set]"
+      ender = (feasibleN>0) ? ":" * join(logicset[rand(1:feasibleN),:,:], " ") : " [empty set]"
 
-      verbose && println(" $filler feasible outcomes $feasibleoutcomes $check \t $ender")
+      verbose && println(" $filler feasible outcomes $feasibleN $check \t $ender")
 
   end
   logicset
@@ -316,9 +316,6 @@ function superoperatoreval(command, logicset::LogicalCombo)
     elseif superoperator ∈ ["<=|","<=="]
         ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
 
-    # elseif superoperator ∈ ["<=>","<=>"] # ???????????????????????????????????
-    #     ℧η[℧right]     .=  ℧[℧right]   .&   ℧left[℧right]
-    #     ℧η[.!℧right]   .=  ℧[.!℧right] .& .!℧left[.!℧right]
     end
 
     logicsetcopy[:] = ℧η
@@ -433,7 +430,9 @@ end
 
 function checkfeasible(command::String,
     logicset::LogicalCombo = LogicalCombo();
-    verbose=true, force=false)
+    verbose=true, force=false, any=false)
+
+  any && force && throw("Both any and force can't be set to true")
 
   rowsin = sum(logicset.logical)
 
@@ -450,12 +449,18 @@ function checkfeasible(command::String,
   outcomeratio = rowsout/rowsin
 
   if verbose
-      force && (outcomeratio != 1) && print("false,")
-      !force && (outcomeratio == 0) && print("false,")
-      (outcomeratio == 1) && print("true,")
-      !force && (outcomeratio > 0) && (outcomeratio < 1) && print("possible, ")
-      println(" $rowsout out of $rowsin possible combinations 'true'.")
+        outcomeratio != 1 && print("false,")
+        outcomeratio == 1 && print("true,")
+  elseif any
+        outcomeratio == 0 && print("false,")
+        outcomeratio != 0 && print("true,")
+  else
+      outcomeratio == 1 && print("true,")
+      outcomeratio == 0 && print("false,")
+      (1 > outcomeratio > 0) && print("possible, ")
   end
+
+  println(" $rowsout out of $rowsin possible combinations 'true'.")
 
   return [outcomeratio, logicsetout]
 end

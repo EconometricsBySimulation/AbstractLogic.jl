@@ -13,12 +13,11 @@ module AbstractLogic
 ##
 ##############################################################################
 
-# export AbstractDataFrame,
-#        All,
-#        Between,
-#        DataFrame,
-#        DataFrame!,
-
+export logicalparse,
+       checkfeasible,
+       search,
+       LogicalCombo,
+       expand
 
 ##############################################################################
 ##
