@@ -1,7 +1,7 @@
 # LSAC JUNE 2007 Form 8LSN75
 # https://www.lsac.org/sites/default/files/legacy/docs/default-source/jd-docs/sampleptjune.pdf
 
-# Question 1
+# Questions 1-5
 
 #A company employee generates a series of five-digit product
 #codes in accordance with the following rules:
