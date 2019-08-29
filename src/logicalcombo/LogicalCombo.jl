@@ -33,9 +33,7 @@ function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symb
     LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
 end
 
-logicset
-
-function expand(x::LogicalCombo, mykeys::Union{Array{String},Array{String,1}}, myvalues::Union{Array{Any},Array{Int}})
+function expand(x::LogicalCombo, mykeys::Union{Array{String},Array{String,1}}, myvalues::Union{Array{Any},Array{Int},Array{String,1}})
   isempty(mykeys) && return x
 
   keyset = map(x->Symbol(x), mykeys)

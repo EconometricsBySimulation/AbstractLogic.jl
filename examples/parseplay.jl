@@ -130,3 +130,6 @@ search("{{i}} > {{i-1}}", logicset)
 
 logicset = logicalparse(["a,b,c ∈  1,2,3"])
 logicset = logicalparse(["d,e,f ∈  1,3"], logicset)
+
+logicset = logicalparse(["animal ∈  dog, cat, rat"], logicset)
+logicset[:,:]

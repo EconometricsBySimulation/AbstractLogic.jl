@@ -65,5 +65,4 @@ export AbstractDataFrame,
 include("logicalcombo/LogicalCombo.jl")
 include("logicalcombo/LogicalParse.jl")
 
-
 end # module AbstractLogic

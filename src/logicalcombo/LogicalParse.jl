@@ -67,7 +67,7 @@ function logicalparse(
       end
   end
 
-  occursin(r"( |\b|^)([><=|!+\\-\^\\&]{1,4}|XOR|xor)(\b| |$)", command) &&
+  occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command) &&
     return metaoperatoreval(command,logicset)
 
   println("Warning! { $command } not interpreted!")
@@ -82,31 +82,34 @@ logicalparse(command::String, logicset::LogicalCombo; I...) =
 function definelogicalset(logicset::LogicalCombo, command::String)
 
   left, right = strip.(split(command, r"∈|\bin\b"))
-  vars = split(left, ",") .|> strip
-  values = split(replace(right, r"\[|\]" => ""), ",")
+  vars   = split(left, ",") .|> strip
+  values = split(right, ",") .|> strip
 
-  (length(values) > 1) &&
-    (values =  [(occursin(r"^[0-9]+$", i) && integer(i)) for i in values])
-  (length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])) &&
-    (values = range(values[1]))
-
-  outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)
-  outset = [Pair(Symbol(i), values) for i in vars]
-
-  #logicset  = LogicalCombo(outset)
-  try
+  if length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])
+    values = range(values[1])
+    outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)
+    outset = [Pair(Symbol(i), values) for i in vars]
     logicset  = expand(logicset, outset)
-  catch
+
+  elseif all([occursin(r"^[0-9]+$", i) for i in values])
+    values =  [integer(i) for i in values]
     logicset  = expand(logicset, string.(vars), values)
+
+  else
+    logicset  = expand(logicset, string.(vars), string.(values))
   end
-  #logicset[:] = fill(true, size(logicset)[1])
 
   logicset
 end
 
- expand(LogicalCombo(), ["a","b","c"],["a","b","c"])
+# definelogicalset(LogicalCombo(), "a,b,c ∈ 1:3")[:,:]
+# definelogicalset(LogicalCombo(), "a,b,c ∈ 1,2,3")[:,:]
+# definelogicalset(LogicalCombo(), "a,b,c ∈ boy, dog, cat")[:,:]
 
 function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
+
+  (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
+
   matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
 
   m = match(matcher, argument)
@@ -340,7 +343,7 @@ function operatoreval(command, logicset::LogicalCombo)
     command = replace(command, r"^(.*?)[ ]*([!&])[ ]*$"=>s"\1 \2 \1")
     command = replace(command, r"^[ ]*([!&])[ ]*(.*?)$"=>s"\2 \1 \2")
 
-    m = match(r"^(.*?)(([><=|!^&]{1,3})\b)(.*?)(\{([0-9]+),?([0-9]+)*\})?$",replace(command, " "=>""))
+    m = match(r"^(.*?)(([><=|!^&]{1,3}))(.*?)(\{([0-9]+),?([0-9]+)*\})?$",command)
     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
 
     (nmin === nothing)  && (nmax === nothing)  && (nrange = 1:999)
