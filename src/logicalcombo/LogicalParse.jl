@@ -80,6 +80,7 @@ logicalparse(command::String, logicset::LogicalCombo; I...) =
   logicalparse(command, logicset=logicset, I...)
 
 function definelogicalset(logicset::LogicalCombo, command::String)
+
   left, right = strip.(split(command, r"∈|\bin\b"))
   vars = split(left, ",") .|> strip
   values = split(replace(right, r"\[|\]" => ""), ",")
@@ -93,13 +94,17 @@ function definelogicalset(logicset::LogicalCombo, command::String)
   outset = [Pair(Symbol(i), values) for i in vars]
 
   #logicset  = LogicalCombo(outset)
-  logicset  = expand(logicset, outset)
-
+  try
+    logicset  = expand(logicset, outset)
+  catch
+    logicset  = expand(logicset, string.(vars), values)
+  end
   #logicset[:] = fill(true, size(logicset)[1])
 
   logicset
 end
 
+ expand(LogicalCombo(), ["a","b","c"],["a","b","c"])
 
 function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
   matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
@@ -436,7 +441,7 @@ function checkfeasible(command::String,
 
   print("Check: $command ... ")
 
-  logicsetout = logicalparse(command, logicset=logicset, verbose=false)
+  logicsetout = logicalparse(command, logicset=logicset) #, verbose=false)
 
   rowsout = sum(logicsetout.logical)
   outcomeratio = rowsout/rowsin

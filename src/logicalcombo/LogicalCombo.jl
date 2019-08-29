@@ -33,6 +33,24 @@ function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symb
     LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
 end
 
+logicset
+
+function expand(x::LogicalCombo, mykeys::Union{Array{String},Array{String,1}}, myvalues::Union{Array{Any},Array{Int}})
+  isempty(mykeys) && return x
+
+  keyset = map(x->Symbol(x), mykeys)
+  mydomain = [myvalues for i in 1:length(mykeys)]
+
+  (size(x)[2]==0) && return LogicalCombo(keyset, mydomain, fill(true,*(length.(mydomain)...)))
+
+  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined!") , keyset)
+
+  expander = *(length.(mydomain)...)
+  outlogical = fill(x.logical, each = expander)
+
+  LogicalCombo([x.keys..., keyset...], [x.domain..., mydomain...], outlogical)
+end
+
 function expand(x::LogicalCombo; kwargs...)
   if isempty(kwargs)
     return x
@@ -54,7 +72,7 @@ function expand(x::LogicalCombo; kwargs...)
   LogicalCombo([x.keys..., mykeys...], [x.domain..., mydomain...], outlogical)
 end
 
-function expand(logicset::LogicalCombo, x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symbol,UnitRange{Int64}},1}})
+function expand(logicset::LogicalCombo, x::Union{Array{Pair{Symbol, Any}}, Array{Pair{Symbol,UnitRange{Int64}},1}})
 
     (length(logicset.keys) == 0) && return LogicalCombo(x)
     (length(x) == 0) && return logicset
