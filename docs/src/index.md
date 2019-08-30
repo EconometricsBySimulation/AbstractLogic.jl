@@ -11,10 +11,36 @@ the intuitive Abstract Logic problem solver in the Julia language.
 
 Abstract logic problems come in many forms. This solver specifically is built
 to handle verbal abstract logic problems which have a finite number of possible
-permutations. A typical kind of problem which one might have encountered
-in an aptitude test at some point in ones life might look like the following.
+permutations. Verbal abstract reasoning problems are often found in cognitive
+testing environments such as employee aptitude testing and prominently as a
+section on the Law School Entrance Exam.
+
+### Why an abstract logic solver?
+
+The cost of hand writing and evaluating items can be expensive. Abstract logic
+items are easy to write but relatively hard to evaluate. This package goes a
+long way to reducing the cost of evaluating items and is intended as a tool
+to aid in the generation of large batches of abstract reasoning items.
+
+The need for large batches of items stems from a great deal of interest by test
+takers in illegally obtaining copies of items from high stakes exams. Cheating
+on high stakes exams is known to be common. This forces testing companies to
+spend a great deal of resources protecting their intellectual capital while
+also creating an environment in which they finds themselves vulnerable to
+accusations of secrecy. Producing tools that reduce the cost of generating and
+evaluating items has the promise of alleviating concerns over item exposure.
+
+In addition to the benefit to testing companies of reduced cost items, reducing
+the cost of items has the promise of aiding in the production of items for the
+use by researchers and companies interested in evaluating the efforts and
+aptitudes of their employees who do not have the means of producing their own
+instrument or of obtaining and providing a secure environment for the deployment
+of a commercial instrument.
 
 ### A Simple Example
+
+A typical kind of problem which one might have encountered in an aptitude test
+at some point in ones life might look like the following.
 
 ```
 Peter is younger than Susan. Sam is younger than Susan but older than Ali.
