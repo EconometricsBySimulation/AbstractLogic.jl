@@ -14,7 +14,7 @@ to handle verbal abstract logic problems which have a finite number of possible
 permutations. A typical kind of problem which one might have encountered
 in an aptitude test at some point in ones life might look like the following.
 
-#### Simple Example
+### A Simple Example
 
 ```
 Peter is younger than Susan. Sam is younger than Susan but older than Ali.
@@ -113,7 +113,7 @@ From the results we can see that Sam could share ages with Li.
 But Abstract Logic can handle problems much more complex then simple
 inequalities!
 
-#### A Scheduling Problem
+### A More Complex Example
 ```
 You would like to figure out your plans for the evenings this week. Each evening
 can do only one activity at most. There are only four options for what you can do
