@@ -19,10 +19,13 @@ in an aptitude test at some point in ones life might look like the following.
 ```
 Peter is younger than Susan. Sam is younger than Susan but older than Ali.
 Li is older than Ali younger than Peter.
+
 Who must be the oldest?
 a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
+
 Who must be the youngest?
 a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
+
 Who could be the same age as Li?
 a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell
 ```
