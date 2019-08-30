@@ -18,7 +18,8 @@ export logicalparse,
        checkfeasible,
        search,
        LogicalCombo,
-       expand
+       expand,
+       showfeasible
 
 ##############################################################################
 ##

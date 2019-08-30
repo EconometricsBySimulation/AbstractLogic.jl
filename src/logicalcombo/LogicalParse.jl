@@ -261,8 +261,10 @@ function metaoperatoreval(command, logicset::LogicalCombo)
     ℧right = metaoperatoreval(right, logicset)[:]
 
     (metaoperator == "&&&&") && (℧η = logicset[:] .& (℧left .& ℧right))
-    (metaoperator == "====") && (℧η = logicset[:] .& (℧left .== ℧right))
-    (metaoperator ∈ ["||||", "IFF"]) && (℧η = logicset[:] .& (℧left .| ℧right))
+    (metaoperator ∈ ["====", "IFF"]) && (℧η = logicset[:] .& (℧left .== ℧right))
+    (metaoperator ∈ ["===>"]) && (℧η[℧left] .= ℧[℧left]  .& ℧right[℧left])
+    (metaoperator ∈ ["<==="]) && (℧η[℧right] = ℧[℧right] .& ℧left[℧right])
+    (metaoperator ∈ ["||||"]) && (℧η = logicset[:] .& (℧left .| ℧right))
     (metaoperator ∈ ["^^^^", "XOR"]) && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
     logicsetcopy[:] = ℧η
