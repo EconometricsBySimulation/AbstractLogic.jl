@@ -16,14 +16,16 @@ in an aptitude test at some point in ones life might look like the following.
 
 #### Simple Example
 
-> Peter is younger than Susan. Sam is younger than Susan but older than Ali.
-> Li is older than Ali younger than Peter.
-> Who must be the oldest?
-> a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
-> Who must be the youngest?
-> a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
-> Who could be the same age as Li?
-> a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell
+```
+Peter is younger than Susan. Sam is younger than Susan but older than Ali.
+Li is older than Ali younger than Peter.
+Who must be the oldest?
+a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
+Who must be the youngest?
+a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
+Who could be the same age as Li?
+a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell
+```
 
 The package AbstractLogic provides a tool for easily evaluating such problems.
 First lets load in the feasible matches. Because there are 5 people in the
@@ -31,6 +33,8 @@ problem we can assign them 5 age categories which represent cardinal ordered
 ages rather than
 ```jldoctest
 julia> myls = logicalparse(["Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5"])
+Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       feasible outcomes 3125 ✓        :4 2 4 3 4
+
 julia> myls = logicalparse("Peter < Susan; Sam < Susan", myls)
 Peter < Susan            feasible outcomes 1250 ✓        :2 3 3 4 4
 Sam < Susan              feasible outcomes 750 ✓         :4 5 4 5 4
@@ -70,8 +74,7 @@ Checking: Ali > Li
 ```
 From this we can see that Susan is the oldest.
 
-> Who must be is the youngest?
-
+`Who must be is the youngest?`
 To check who is the youngest we can do the same but this time setting
 `verbose=false` to reduce the printing.
 ```jldoctest
@@ -87,7 +90,7 @@ The search function returns a ratio of feasible outcomes for each column
 relative to total outcomes. A zero means no feasible combination exist that
 match while a 1 indicates a 100% match.
 
-> Who could be the same age as Li?
+`Who could be the same age as Li?`
 ```jldoctest
 julia> search("{{i}} = Li", myls)
 Checking: Peter = Li
