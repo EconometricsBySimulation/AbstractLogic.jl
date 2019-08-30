@@ -52,10 +52,9 @@ function logicalparse(
     return logicalparse(string.(strip.(split(command, ";"))),
       logicset=logicset, verbose=verbose)
 
-  if occursin(r"∈|\bin\b", command)
-      logicset = definelogicalset(logicset, command)
-      return logicset
-  end
+  (strip(command) == "" || command[1] == '#') && return logicset
+
+  occursin(r"∈|\bin\b", command) && return definelogicalset(logicset, command)
 
   # Check for the existance of any symbols in logicset
   varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
@@ -70,7 +69,7 @@ function logicalparse(
   occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command) &&
     return metaoperatoreval(command,logicset)
 
-  println("Warning! { $command } not interpreted!")
+  println("    Warning! { $command } not interpreted!")
 end
 
 logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
@@ -259,11 +258,12 @@ function metaoperatoreval(command, logicset::LogicalCombo)
 
     ℧left  = metaoperatoreval(left , logicset)[:]
     ℧right = metaoperatoreval(right, logicset)[:]
+    ℧η = logicsetcopy[:]
 
     (metaoperator == "&&&&") && (℧η = logicset[:] .& (℧left .& ℧right))
     (metaoperator ∈ ["====", "IFF"]) && (℧η = logicset[:] .& (℧left .== ℧right))
-    (metaoperator ∈ ["===>"]) && (℧η[℧left] .= ℧[℧left]  .& ℧right[℧left])
-    (metaoperator ∈ ["<==="]) && (℧η[℧right] = ℧[℧right] .& ℧left[℧right])
+    (metaoperator ∈ ["===>"]) && (℧η[℧left] = logicset[:][℧left]  .& ℧right[℧left])
+    (metaoperator ∈ ["<==="]) && (℧η[℧right] = logicset[:][℧right] .& ℧left[℧right])
     (metaoperator ∈ ["||||"]) && (℧η = logicset[:] .& (℧left .| ℧right))
     (metaoperator ∈ ["^^^^", "XOR"]) && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 

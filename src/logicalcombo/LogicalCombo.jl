@@ -9,7 +9,7 @@ LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
 
 function LogicalCombo(; kwargs...)
     if isempty(kwargs)
-        return LogicalCombo(Symbol[],[], Bool[0])
+        return LogicalCombo(Symbol[],[], Bool[])
     else
         keys = []; domain = []
         for (kw, val) in kwargs;
@@ -164,3 +164,6 @@ function Base.range(x::LogicalCombo)
 end
 
 showfeasible(x::LogicalCombo) = x[:,:,:]
+
+nfeasible(x::LogicalCombo) = sum(x.logical)
+pull(x::LogicalCombo) = (nfeasible(x) == 0 ? [] : x[rand(1:nfeasible(x)),:,:])

@@ -19,7 +19,9 @@ export logicalparse,
        search,
        LogicalCombo,
        expand,
-       showfeasible
+       showfeasible,
+       LogicalRepl,
+       nfeasible
 
 ##############################################################################
 ##
@@ -29,5 +31,6 @@ export logicalparse,
 
 include("logicalcombo/LogicalCombo.jl")
 include("logicalcombo/LogicalParse.jl")
+include("logicalcombo/LogicalREPL.jl")
 
 end # module AbstractLogic
