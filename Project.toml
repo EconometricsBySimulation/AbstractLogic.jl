@@ -1,5 +1,6 @@
 name = "AbstractLogic"
 uuid = "bd85187e-0531-4a3e-9fea-713204a818a2"
+maintainer = "Francis Smart"
 version = "0.10.00"
 
 [deps]

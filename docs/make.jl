@@ -1,6 +1,11 @@
 
 using Documenter, AbstractLogic
 
+# Installation
+# ] dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
+
+# Form DataFrames - using as referense
+
 
 # using Documenter, DataFrames
 #
