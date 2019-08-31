@@ -1,4 +1,16 @@
-function LogicalRepl()
+
+
+let commandlist = Any[], logicsetlist = Any[]
+    global globalcommandlistclear()  = commandlist = Any[]
+    global logicsetlistclear()       = logicsetlist = Any[]
+    global globalcommandlist(f)  = f(commandlist)
+    global globallogiclist(f) = f(logicsetlist)
+end
+
+function LogicalRepl(; preserve=false)
+
+  !preserve && (globalcommandlistclear(); logicsetlistclear())
+
   println("Welcome to the abstract logic solver interactive mode!")
   # println("Please note this in not a true REPL and will not store commands.")
   # println("in the same manner as the JuliaShell (so ↑ will not work)")
@@ -33,14 +45,22 @@ function LogicalRepl()
     userinput = readline(stdin) |> strip
     userinput = replace(userinput, r"\bin\b"=>"∈")
 
-    println(length(commandlist))
-    println(length(logicsetlist))
-
     if strip(userinput) == ""
-      println(reportfeasible(activelogicset))
+      println("Last Command: \"$(commandhistory[j])\" - " * reportfeasible(activelogicset))
       continue
 
-    elseif userinput == "show"
+  elseif occursin(r"^show$", userinput)
+      nrow = nfeasible(activelogicset)
+      printset = unique([(1:min(5,nrow))..., 0, (max(nrow-4, 1):nrow)...])
+      (nrow<=10) && (printset = 1:nrow)
+
+      println(join(activelogicset[0,:], "\t"))
+      for i in printset
+        (i != 0) && println(join(activelogicset[i,:,:], "\t"))
+        (i == 0) && println(join(fill("...",  size(activelogicset, 2)), "\t"))
+      end
+
+  elseif occursin(r"^showall$", userinput)
       println(join(activelogicset[0,:], "\t"))
       for i in 1:nfeasible(activelogicset)
         println(join(activelogicset[i,:,:], "\t"))
@@ -61,15 +81,23 @@ function LogicalRepl()
       println("Last Command: \"$(commandhistory[j])\" - " * reportfeasible(activelogicset))
 
     elseif userinput == "clear"
+      push!(commandlist[i], "#clear")
+      globalcommandlist(x -> push!(x, commandlist[i]))
+      globallogiclist(x -> push!(x, activelogicset))
+
       activelogicset = LogicalCombo()
+      logichistory = [activelogicset]
+      commandhistory = ["#Session Cleared"]
+      j = 1
       i += 1
       push!(commandlist, String[])
       push!(logicsetlist, activelogicset)
+
       println("Clear Workspace")
       continue
 
     elseif userinput == "keys"
-      println(join(activelogicset.keys, ", ", "and"))
+      println(join(activelogicset.keys, ", "))
       continue
 
     elseif occursin("check", userinput)
@@ -88,7 +116,7 @@ function LogicalRepl()
 
     elseif userinput == "preserve"
       preservercommandlist = copy(commandlist[i])
-      #push!(commandlist[i], "#preserve")
+      push!(commandlist[i], "#preserve")
       preserver = activelogicset
       preserverj = j
       preservercommandhistory = copy(commandhistory)
@@ -98,20 +126,28 @@ function LogicalRepl()
 
     elseif userinput == "restore"
       (preserver === missing) && (println("Nothing to restore"); continue)
-      #push!(commandlist[i], "#restore")
+      push!(commandlist[i], "#restore")
       push!(commandlist, copy(preservercommandlist))
       push!(logicsetlist, activelogicset)
       i += 1
       activelogicset = preserver
+
       println("Restoring State - " * reportfeasible(activelogicset))
       j = preserverj
+
       commandhistory = copy(preservercommandhistory)
       logichistory = copy(preserverlogichistory)
+
+      globalcommandlist(x -> push!(x, commandlist[i]))
+      globallogiclist(x -> push!(x, activelogicset))
       continue
 
     elseif userinput == "exit"
       push!(logicsetlist, activelogicset)
+      push!(commandlist[i], "#exit")
       println("\nExiting")
+      globalcommandlist(x -> push!(x, commandlist[i]))
+      globallogiclist(x -> push!(x, activelogicset))
       break
 
     else
@@ -123,6 +159,7 @@ function LogicalRepl()
         push!(commandlist[i], userinput)
 
         commandhistory = commandhistory[1:j]
+        logichistory   = logichistory[1:j]
         j += 1
         push!(commandhistory, userinput)
         push!(logichistory, activelogicset)
@@ -138,4 +175,8 @@ function LogicalRepl()
   commandlist, logicsetlist
 end
 
+lrepl = LogicalRepl
+
 # commands, logicset = LogicalRepl()
+commandlist() = globalcommandlist(x -> x)
+logiclist() = globallogiclist(x -> x)
