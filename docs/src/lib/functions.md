@@ -12,14 +12,9 @@ Pages = ["functions.md"]
 
 ```@docs
 checkfeasible
-commandlist
-expand
 LogicalCombo
 logicalparse
-LogicalRepl
-logiclist
-nfeasible
-reportfeasible
+logicalrepl
 search
 showfeasible
 ```

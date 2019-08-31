@@ -16,14 +16,9 @@ module AbstractLogic
 ##############################################################################
 
 export checkfeasible,
-       commandlist,
-       expand,
        LogicalCombo,
        logicalparse,
-       LogicalRepl,
-       logiclist,
-       nfeasible,
-       reportfeasible,
+       logicalrepl,
        search,
        showfeasible
 
@@ -35,7 +30,18 @@ export checkfeasible,
 ##############################################################################
 
 include("logicalcombo/LogicalCombo.jl")
-include("logicalcombo/LogicalParse.jl")
-include("logicalcombo/LogicalREPL.jl")
+
+include("logicalcombo/logicalparse.jl")
+
+include("logicalcombo/operatoreval.jl")
+include("logicalcombo/superoperator.jl")
+include("logicalcombo/metaoperator.jl")
+
+include("logicalcombo/search.jl")
+include("logicalcombo/checkfeasible.jl")
+
+include("logicalcombo/showfeasible.jl")
+
+include("logicalcombo/logicalrepl.jl")
 
 end # module AbstractLogic
