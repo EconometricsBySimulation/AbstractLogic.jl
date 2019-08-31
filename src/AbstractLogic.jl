@@ -21,7 +21,9 @@ export logicalparse,
        expand,
        showfeasible,
        LogicalRepl,
-       nfeasible
+       nfeasible,
+       commandlist,
+       logiclist
 
 ##############################################################################
 ##
