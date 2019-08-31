@@ -1,5 +1,4 @@
 
-
 let commandlist = Any[], logicsetlist = Any[]
     global globalcommandlistclear()  = commandlist = Any[]
     global logicsetlistclear()       = logicsetlist = Any[]
@@ -7,7 +6,12 @@ let commandlist = Any[], logicsetlist = Any[]
     global globallogiclist(f) = f(logicsetlist)
 end
 
-function LogicalRepl(; preserve=false)
+"""
+    logicalrepl(;preserve = false)
+
+Enter the psuedo REPL for abstract logical reasoning.
+"""
+function logicalrepl(; preserve=false)
 
   !preserve && (globalcommandlistclear(); logicsetlistclear())
 
@@ -41,7 +45,7 @@ function LogicalRepl(; preserve=false)
   reportfeasible(x) = "Feasible Outcomes: $(nfeasible(x)) \t:$(joinpull(x))"
 
   while 1==1
-    print("\nAL> ")
+    print("\nAL: ")
     userinput = readline(stdin) |> strip
     userinput = replace(userinput, r"\bin\b"=>"∈")
 
@@ -164,8 +168,8 @@ function LogicalRepl(; preserve=false)
         push!(commandhistory, userinput)
         push!(logichistory, activelogicset)
 
-      catch
-        println("Command Failed")
+    catch ex
+        println("Command Failed - $ex")
         continue
       end
 
@@ -175,7 +179,14 @@ function LogicalRepl(; preserve=false)
   commandlist, logicsetlist
 end
 
-lrepl = LogicalRepl
+lrepl = logicalrepl
+
+@doc """
+    x,y,z ∈ 1,2,3
+    x,y,z ∈ 1:3
+    x,y,z ∈ apples, oranges, grapes
+"""
+Base.:∈(x::LogicalCombo) = ""
 
 # commands, logicset = LogicalRepl()
 commandlist() = globalcommandlist(x -> x)

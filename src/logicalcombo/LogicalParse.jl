@@ -62,7 +62,7 @@ function logicalparse(
   # Checks if any of the variables does not exist in logicset
   for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
       if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
-          throw("In {$command} variable {:$S} not found in logicset")
+          println("   In {$command} variable {:$S} not found in logicset")
       end
   end
 
