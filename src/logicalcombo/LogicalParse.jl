@@ -12,8 +12,38 @@ logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
 #command = "a,b,c,d ∈ 1:5"
 #logicset = logicalparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
 """
+    logicalparse
 
+Takes a command and parses it into logical calls that either assigning
+additional feasible variable ranges or constrain the relationship between
+variables.
 
+```julia
+logicalparse(command::String; logicset::LogicalCombo = LogicalCombo(), verbose=true)
+logicalparse(command::String, logicset::LogicalCombo; ...)
+logicalparse(commands::Array{String,1}, logicset::LogicalCombo; ...)
+logicalparse(commands::Array{String,1}; ...)
+```
+### Arguments
+* `verbose` : specifies to print to screen or not
+
+### Operators
+There are numerous operators available to be used in the logical parse command.
+
+### Examples
+```julia
+julia> myset = logicalparse("a, b, c in 1:3")
+a,b,c in 1:3             feasible outcomes 27 ✓          :3 3 3
+
+julia> myset = logicalparse("a == b", myset)
+a == b                   feasible outcomes 9 ✓           :1 1 2
+
+julia> myset = logicalparse("a > c", myset)
+a > c                    feasible outcomes 3 ✓           :3 3 1
+
+julia> myset = logicalparse("c != 1", myset)
+c != 1                   feasible outcomes 1 ✓✓          :3 3 2
+```
 """
 function logicalparse(
     commands::Array{String,1};
@@ -26,9 +56,7 @@ function logicalparse(
     (commands = split.(commands, ";") |> Iterators.flatten |> collect .|> strip .|> string)
 
   for command in commands
-      print(command)
       logicset = logicalparse(command, logicset=logicset, verbose=verbose)
-
   end
   logicset
 end
@@ -37,44 +65,36 @@ function logicalparse(
     command::String;
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
-  # A vector of non-standard operators to ignore
-  exclusionlist = ["in","xor","XOR", "iff", "IFF"]
+    # A vector of non-standard operators to ignore
+    exclusionlist = ["in","xor","XOR", "iff", "IFF"]
 
-  occursin(";", command) &&
-    return logicalparse(string.(strip.(split(command, ";"))),
-      logicset=logicset, verbose=verbose)
+    occursin(";", command) &&
+      return logicalparse(string.(strip.(split(command, ";"))),
+        logicset=logicset, command=command, verbose=verbose)
 
-  (strip(command) == "" || command[1] == '#') && return logicset
+    print(command)
 
-  occursin(r"∈|\bin\b", command) && return definelogicalset(logicset, command)
+    (strip(command) == "" || command[1] == '#') && return logicset
 
-  # Check for the existance of any symbols in logicset
-  varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
+    occursin(r"∈|\bin\b", command) &&
+      return definelogicalset(logicset, command) |> reportfeasible(command, verbose)
 
-  # Checks if any of the variables does not exist in logicset
-  for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
-    if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
-      println("   In {$command} variable {:$S} not found in logicset")
+    # Check for the existance of any symbols in logicset
+    varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
+
+    # Checks if any of the variables does not exist in logicset
+    for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
+      if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
+        println("   In {$command} variable {:$S} not found in logicset")
+      end
     end
-  end
 
-  if occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command)
-    logicset = metaoperatoreval(command, logicset)
-  else
+    if occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command)
+      return metaoperatoreval(command, logicset) |>
+        reportfeasible(command, verbose)
+    end
+
     println("    Warning! { $command } not interpreted!")
-  end
-
-  feasibleN = sum(logicset.logical)
-  filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
-
-  (feasibleN == 0)  && (check = "X ")
-  (feasibleN  > 1)  && (check = "✓ ")
-  (feasibleN == 1)  && (check = "✓✓")
-
-  ender = (feasibleN>0) ? ":" * join(logicset[rand(1:feasibleN),:,:], " ") : " [empty set]"
-
-  verbose && println(" $filler feasible outcomes $feasibleN $check \t $ender")
-
 end
 
 logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
@@ -83,7 +103,31 @@ logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
 logicalparse(command::String, logicset::LogicalCombo; I...) =
   logicalparse(command, logicset=logicset, I...)
 
-function definelogicalset(logicset::LogicalCombo, command::String)
+
+function reportfeasible(logicset::LogicalCombo;
+    command=""::String,
+    verbose=true::Bool)::LogicalCombo
+
+    !verbose && return logicset
+    filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
+
+    Nfeas = nfeasible(logicset)
+
+    (Nfeas == 0)  && (check = "X ")
+    (Nfeas  > 1)  && (check = "✓ ")
+    (Nfeas == 1)  && (check = "✓✓")
+
+    ender = (Nfeas>0) ? ":" *
+      join(logicset[rand(1:Nfeas),:,:], " ") : " [empty set]"
+
+    println(" $filler feasible outcomes $Nfeas $check \t $ender")
+    return logicset
+end
+
+reportfeasible(command::String, verbose::Bool)::Function =
+  (x -> reportfeasible(x, command=command, verbose=verbose))
+
+function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
 
   left, right = strip.(split(command, r"∈|\bin\b"))
   vars   = split(left, ",") .|> strip
@@ -105,10 +149,6 @@ function definelogicalset(logicset::LogicalCombo, command::String)
 
   logicset
 end
-
-# definelogicalset(LogicalCombo(), "a,b,c ∈ 1:3")[:,:]
-# definelogicalset(LogicalCombo(), "a,b,c ∈ 1,2,3")[:,:]
-# definelogicalset(LogicalCombo(), "a,b,c ∈ boy, dog, cat")[:,:]
 
 function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
@@ -141,7 +181,7 @@ function operatorspawn(command,
     logicset::LogicalCombo;
     returnlogical=false,
     prefix=">>> ",
-    verbose=true)
+    verbose=true)::LogicalCombo
 
     logicsetcopy = deepcopy(logicset)
 

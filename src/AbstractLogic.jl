@@ -7,6 +7,7 @@ module AbstractLogic
 ##
 ##############################################################################
 
+# using ReplMaker
 
 ##############################################################################
 ##
@@ -14,16 +15,18 @@ module AbstractLogic
 ##
 ##############################################################################
 
-export logicalparse,
-       checkfeasible,
-       search,
-       LogicalCombo,
-       expand,
-       showfeasible,
-       LogicalRepl,
-       nfeasible,
+export checkfeasible,
        commandlist,
-       logiclist
+       expand,
+       LogicalCombo,
+       logicalparse,
+       LogicalRepl,
+       logiclist,
+       nfeasible,
+       reportfeasible,
+       search,
+       showfeasible
+
 
 ##############################################################################
 ##
