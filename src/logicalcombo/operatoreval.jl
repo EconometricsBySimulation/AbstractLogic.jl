@@ -1,3 +1,8 @@
+"""
+    x,y,z ∈ 1,2,3
+    x,y,z ∈ 1:3
+    x,y,z ∈ apples, oranges, grapes
+"""
 function operatoreval(command, logicset::LogicalCombo)
     logicsetcopy = deepcopy(logicset)
 
