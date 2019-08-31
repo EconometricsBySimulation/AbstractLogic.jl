@@ -11,7 +11,10 @@ logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
 
 #command = "a,b,c,d ∈ 1:5"
 #logicset = logicalparse(["a, b, c  ∈  [1,2,3]"]); logicset[℧]
+"""
 
+
+"""
 function logicalparse(
     commands::Array{String,1};
     logicset::LogicalCombo = LogicalCombo(),
@@ -25,17 +28,6 @@ function logicalparse(
   for command in commands
       print(command)
       logicset = logicalparse(command, logicset=logicset, verbose=verbose)
-
-      feasibleN = sum(logicset.logical)
-      filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
-
-      (feasibleN == 0)  && (check = "X ")
-      (feasibleN  > 1)  && (check = "✓ ")
-      (feasibleN == 1)  && (check = "✓✓")
-
-      ender = (feasibleN>0) ? ":" * join(logicset[rand(1:feasibleN),:,:], " ") : " [empty set]"
-
-      verbose && println(" $filler feasible outcomes $feasibleN $check \t $ender")
 
   end
   logicset
@@ -61,15 +53,28 @@ function logicalparse(
 
   # Checks if any of the variables does not exist in logicset
   for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
-      if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
-          println("   In {$command} variable {:$S} not found in logicset")
-      end
+    if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
+      println("   In {$command} variable {:$S} not found in logicset")
+    end
   end
 
-  occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command) &&
-    return metaoperatoreval(command,logicset)
+  if occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command)
+    logicset = metaoperatoreval(command, logicset)
+  else
+    println("    Warning! { $command } not interpreted!")
+  end
 
-  println("    Warning! { $command } not interpreted!")
+  feasibleN = sum(logicset.logical)
+  filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
+
+  (feasibleN == 0)  && (check = "X ")
+  (feasibleN  > 1)  && (check = "✓ ")
+  (feasibleN == 1)  && (check = "✓✓")
+
+  ender = (feasibleN>0) ? ":" * join(logicset[rand(1:feasibleN),:,:], " ") : " [empty set]"
+
+  verbose && println(" $filler feasible outcomes $feasibleN $check \t $ender")
+
 end
 
 logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
