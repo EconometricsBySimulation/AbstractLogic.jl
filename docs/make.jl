@@ -6,9 +6,6 @@ using Documenter, AbstractLogic
 
 # Form DataFrames - using as referense
 
-
-using Documenter, AbstractLogic
-
 # Build documentation.
 # ====================
 
@@ -23,6 +20,7 @@ makedocs(
         "Introduction" => "index.md",
         "User Guide" => Any[
             "Getting Started" => "man/getting_started.md",
+            "Order of Operations" => "man/orderofoperations.md.md",
             "Generators" => "man/generators.md",
             "Operators" => "man/operators.md",
             "Super Operators" => "man/superoperators.md",
