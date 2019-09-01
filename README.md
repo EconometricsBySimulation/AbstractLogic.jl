@@ -85,5 +85,7 @@ The best way to see the functionality of `AbstractLogic` is to see it in action.
 [*Snape's* potions problem in J.K. Rowling's "Harry Potter"](examples/harrypotter.jl)
 
 [June LSAC 2007 by the Law School Admission Council q1-5](examples/LSATlogicalQ1.jl)
+
 [June LSAC 2007 by the Law School Admission Council q6-10](examples/LSATlogicalQ2.jl)
+
 [June LSAC 2007 by the Law School Admission Council q11-17](examples/LSATlogicalQ3.jl)

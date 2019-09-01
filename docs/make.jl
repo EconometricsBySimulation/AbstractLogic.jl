@@ -14,7 +14,7 @@ using Documenter, AbstractLogic
 
 makedocs(
     # options
-    modules = [DataFrames],
+    modules = [AbstractLogic],
     doctest = false,
     clean = false,
     sitename = "AbstractLogic.jl",
