@@ -87,5 +87,3 @@ Last command: "a = b" - Feasible Outcomes: 9             :3 3 3
 AL: a > c
 a > c                    feasible outcomes 3 ✓           :3 3 2
 ```
-
-# References
