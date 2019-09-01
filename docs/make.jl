@@ -28,6 +28,7 @@ makedocs(
             "Super Operators" => "man/superoperators.md",
             "Meta Operators" => "man/metaoperators.md",
             "Wildcards" => "man/wildcards.md",
+            "RELP mode" => "man/relpmode.md"
         ],
         "API" => Any[
             "Types" => "lib/types.md",
