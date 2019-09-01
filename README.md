@@ -35,7 +35,7 @@ a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell
 The package AbstractLogic provides a tool for easily evaluating such problems.
 First lets load in the feasible matches. Because there are 5 people in the
 problem we can assign them 5 age categories which represent cardinal ordered
-ages rather than
+ages.
 ```jldoctest
 julia> myls = logicalparse(["Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5"])
 Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       feasible outcomes 3125 ✓        :4 2 4 3 4
