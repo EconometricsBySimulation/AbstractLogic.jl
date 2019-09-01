@@ -30,7 +30,7 @@ Standard operators are the core functionality of the `AbstractLogic` package. Th
 ## Grouping Constraints
 * `{#,#}` or `{#}` it is often helpful to qualify the number of matches that the grouping syntax can make. Specifying `{#}` at the end of a `|` match will force a certain number of matches. Specifying `{#1,#2}` will force a number of matches no less than `#1` and no more than `#2`.
 
-For example: `a|b|c|d = 1 {3}` will force at exactly the of the set `a`,`b`,`c`,`d` to equal 1.
+For example: `a|b|c|d = 1 {3}` will force at exactly three of the set `a`, `b`, `c`, and `d` to equal 1.
 ```julia
 julia> logicalparse("a, b, c, d, e ∈ 1:6; a|b|c|d = 1 {3}")
 a, b, c, d, e ∈ 1:6      feasible outcomes 7776 ✓        :2 5 6 6 1
