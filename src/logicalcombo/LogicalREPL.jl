@@ -68,7 +68,8 @@ let
         elseif userinput == "logicset"              itemprint(logicset)
         elseif userinput == "clear"                 clear()
         elseif userinput == "keys"                  keys()
-        elseif occursin("^check", userinput)        alcheck()
+        elseif occursin(r"^check", userinput)       alcheck(userinput)
+        elseif occursin(r"^search", userinput)       alsearch(userinput)
         elseif userinput == "preserve"              alpreserve()
         elseif userinput == "restore"               restore()
         elseif userinput == "exit"                  exit(); break
@@ -167,17 +168,27 @@ let
         println("Preserving State")
     end
 
-    function alcheck()
+    function alcheck(userinput)
         try
           checker = replace(userinput[6:end], r"^[\\:\\-\\ ]+"=>"")
-          checkfeasible(checker, activelogicset)
-          push!(logicset, activelogicset)
+          checkfeasible(string(checker), activelogicset)
+          # push!(logicset, activelogicset)
         catch
           println("Warning! Check Fail")
           (length(userinput) == 5) && println("Nothing to check")
           println("Typical check has same syntax as a command:")
           println("Check: a = 2|3")
           println("Check: {{i}} != {{i+1}}")
+        end
+    end
+
+    function alsearch(userinput)
+        try
+          checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
+          search(checker, activelogicset)
+          # push!(logicset, activelogicset)
+        catch
+          println("Warning! Search Failed")
         end
     end
 
@@ -219,7 +230,7 @@ let
        end
     end
 
-    function alshow(;n =10)
+    global function alshow(;n =10)
         nrow = nfeasible(activelogicset)
         printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
         (nrow<=n) && (printset = 1:nrow)
