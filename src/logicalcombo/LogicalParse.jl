@@ -157,12 +157,12 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
   v1, n1, o1, v2, n2 = m.captures
 
-  !(v1 === nothing) && (left  = logicset[:,:,Symbol(v1)])
+  !(v1 === nothing) && (left  = logicset[:,Symbol(v1),true])
   !(n1 === nothing) && (left  = fill(integer(n1), length(logicset[:])))
 
   (nvar==1) && return left
 
-  !(v2 === nothing) && (right = logicset[:,:,Symbol(v2)])
+  !(v2 === nothing) && (right = logicset[:,Symbol(v2),true])
   !(n2 === nothing) && (right = fill(integer(n2), length(left)))
 
   (o1 == "+") && return left .+ right

@@ -1,9 +1,34 @@
+"""
+    LogicalCombo <: Any
 
+A LogicalCombo stores the variable names, domains, as well as an binary
+representation of feasible values given constraints.
+
+**Fields**
+
+*keys : Stores the names of variables.
+*domain : Stores the range of possible matches variables can have.
+*logical : A binary vector marking feasibility of length equal to every
+    possible combination of value which the matrix could take on.
+*commandlist : An array collection of the strings input to generate the current
+    state of the the object.
+
+**Indexing**
+
+* [x,y] Where x is numeric or : and y is numeric, colon, or symbol will
+    return matrix point values regardless of feasibility.
+* [:,:] Will collect the entire possible domain and is the same as `collect()`.
+* [x,0] Will return the logical vector values
+* [x,y,true] Will return the xth feasible value of the
+"""
 struct LogicalCombo
-  keys::AbstractArray{Symbol}
+  keys::Array{Symbol}
   domain::AbstractArray
-  logical::AbstractArray{Bool}
+  logical::Array{Bool}
+  commandlist::Array{String}
 end
+
+LogicalCombo(keys, domain, logical) = LogicalCombo(keys, domain, logical, String[])
 
 LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
 
@@ -121,29 +146,52 @@ function Base.getindex(x::LogicalCombo, row::Integer, col::Symbol)
   x[row, keymatch...]
 end
 
+Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
+Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
+Base.getindex(x::LogicalCombo, y::Union{BitArray{1},Array{Bool,1}}) =
+  [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
+
+###############################################################################
+## Logical Combo [x,y] two index
+
 Base.getindex(x::LogicalCombo, row::Integer, col::String) = x[row, Symbol(col)]
+
 Base.getindex(x::LogicalCombo, ::Colon, col::String) = x[:, Symbol(col)]
 
 Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}) =
   [ x[i,col] for i = 1:size(x)[1] ]
 
-Base.getindex(x::LogicalCombo, ::Colon, ::Colon; bool=false, varnames=false) =
-  collect(x,bool=bool,varnames=varnames)
-
-Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
-Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
-
-Base.getindex(x::LogicalCombo, y::Union{BitArray{1},Array{Bool,1}}) =
-  [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
-
+###############################################################################
+## Logical Combo [x,y,z] three index
 Base.getindex(x::LogicalCombo, ::Colon, ::Colon, ::Colon)   =
   [x[i,j] for i in (1:size(x)[1])[x[:]], j in 1:size(x)[2]]
 
-Base.getindex(x::LogicalCombo, ::Colon, ::Colon, y::Union{Int64,Symbol,String}) =
+Base.getindex(x::LogicalCombo, ::Colon, ::Colon, z::Bool)   =
+  [x[i,j] for i in (1:size(x)[1])[x[:] .== z], j in 1:size(x)[2]]
+
+Base.getindex(x::LogicalCombo, ::Colon, y::Union{Int64,Symbol,String}, ::Colon) =
   [x[i,y] for i in (1:size(x)[1])[x[:]]]
 
-Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, ::Colon) = x[(1:size(x)[1])[x[:]][y],:]
+Base.getindex(x::LogicalCombo, ::Colon, y::Union{Int64,Symbol,String}, z::Bool) =
+  [x[i,y] for i in (1:size(x)[1])[x[:] .== z]]
 
+Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, ::Colon) =
+  x[(1:size(x)[1])[x[:]][y],:]
+
+Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, z::Bool) =
+  x[(1:size(x)[1])[x[:] .== z][y],:]
+
+Base.getindex(x::LogicalCombo, j::Int64, y::Union{Int64,Symbol,String}, z::Bool) =
+  x[(1:size(x,1))[x[:] .== z][j],y]
+
+
+###############################################################################
+## Logical Combo [x,y;] two index with named arguments
+
+Base.getindex(x::LogicalCombo, ::Colon, ::Colon; bool=false, varnames=false) =
+  collect(x,bool=bool,varnames=varnames)
+
+###############################################################################
 # Set index!
 Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
@@ -154,6 +202,9 @@ Base.setindex!(x::LogicalCombo, y::Union{Array{Bool},Array{Bool,1},BitArray{1}},
 
 Base.setindex!(x::LogicalCombo, y::Union{Array{Bool},Array{Bool,1}}, z::Union{UnitRange, AbstractArray}) =
   x.logical[z] = y
+
+###############################################################################
+# Extra Functions
 
 Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in v]))
 
@@ -166,3 +217,28 @@ end
 
 nfeasible(x::LogicalCombo) = sum(x.logical)
 pull(x::LogicalCombo) = (nfeasible(x) == 0 ? [] : x[rand(1:nfeasible(x)),:,:])
+
+"""
+    showfeasible
+
+Collects a matrix of only feasible outcomes given the parameter space and the
+constraints. Use `collect` to output a matrix of all possible matches for
+parameter space.
+
+### Examples
+```julia
+julia> myset = logicalparse("a, b, c in 1:3")
+a,b,c in 1:3             feasible outcomes 27 ✓          :3 3 3
+
+julia> myset = logicalparse("a == b; c > b", myset)
+a == b                   feasible outcomes 9 ✓           :1 1 3
+c > b                    feasible outcomes 3 ✓           :2 2 3
+
+julia> showfeasible(myset)
+3×3 Array{Int64,2}:
+ 1  1  2
+ 1  1  3
+ 2  2  3
+```
+"""
+showfeasible(x::LogicalCombo) = x[:,:,true]
