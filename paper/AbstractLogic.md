@@ -23,7 +23,7 @@ bibliography: paper.bib
 
 ``AbstractLogic`` is designed to efficiently evaluate complex logical items
 in a flexible and intuitive way. It is a package entirely built in `Julia` with
-a high degree of semantic flexibility, offering many types of logical operators
+a high degree of semantic flexibility offering many types of logical operators
 for the evaluation of complex expressions.
 
 Logical reasoning items have long been a tool for psychological researchers and practitioners seeking to understand human cognitive capabilities. Yet these
