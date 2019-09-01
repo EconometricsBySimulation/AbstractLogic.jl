@@ -16,7 +16,7 @@ let
 
     preserver = missing
     preservercommandlist = missing
-    preserverj = missing
+    preservercmdlocation = missing
     preservercommandhistory = missing
     preserverlogichistory = missing
     preserverfeasiblehistory = missing
@@ -150,7 +150,7 @@ let
         activelogicset = preserver
 
         println("Restoring State - " * reportfeasible(activelogicset))
-        cmdlocation = preserverj
+        cmdlocation = preservercmdlocation
 
         commandhistory  = copy(preservercommandhistory)
         logichistory    = copy(preserverlogichistory)
@@ -161,7 +161,7 @@ let
         preservercommandlist = copy(commandlist[setlocation])
         push!(commandlist[setlocation], "#preserve")
         preserver = activelogicset
-        preserverj = cmdlocation
+        preservercmdlocation = cmdlocation
         preservercommandhistory = copy(commandhistory)
         preserverlogichistory = copy(logichistory)
         preserverfeasiblehistory = copy(feasiblehistory)

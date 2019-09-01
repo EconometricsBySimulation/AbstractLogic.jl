@@ -33,14 +33,17 @@ include("logicalcombo/LogicalCombo.jl")
 
 include("logicalcombo/logicalparse.jl")
 
-include("logicalcombo/operatoreval.jl")
-include("logicalcombo/superoperator.jl")
-include("logicalcombo/metaoperator.jl")
-
-include("logicalcombo/search.jl")
-include("logicalcombo/checkfeasible.jl")
-
-include("logicalcombo/showfeasible.jl")
+# include("logicalcombo/operatoreval.jl")
+#
+# include("logicalcombo/superoperator.jl")
+#
+# include("logicalcombo/metaoperator.jl")
+#
+# include("logicalcombo/search.jl")
+#
+# include("logicalcombo/checkfeasible.jl")
+#
+# include("logicalcombo/showfeasible.jl")
 
 include("logicalcombo/logicalrepl.jl")
 
