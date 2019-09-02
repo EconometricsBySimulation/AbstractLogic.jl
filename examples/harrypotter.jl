@@ -26,49 +26,49 @@ Are twins once you taste them, though different at first sight.
 
 # Seven Potions a,b,c,d,e,f,g each have 1 of 4 possible values
 # a is left of b which is left of c etc.
-logicset = logicalparse("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
+hpset = logicalparse("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
 
 # Two among our number hold only nettle wine, #code 1
-logicset = logicalparse("{{i}} == 'NW' {{2}}", logicset=logicset); showfeasible(logicset)
-# Equivalent to logicalparse(["a|b|c|d|e|f|g == 1 {2}"], logicset=logicset)
+hpset = logicalparse("{{i}} == 'NW' {{2}}", logicset=hpset); showfeasible(hpset)
+# Equivalent to logicalparse(["a|b|c|d|e|f|g == 1 {2}"], logicset=hpset)
 
 # One among us seven will let you move ahead, #code 2
-logicset = logicalparse("{{i}} == 'MA' {{1}}", logicset=logicset); showfeasible(logicset)
-#logicset = logicalparse(["a|b|c|d|e|f|g == 2 {1}"], logicset=logicset)
+hpset = logicalparse("{{i}} == 'MA' {{1}}", logicset=hpset); showfeasible(hpset)
+#hpset = logicalparse(["a|b|c|d|e|f|g == 2 {1}"], logicset=hpset)
 
 #Another will transport the drinker back instead, #code 3
-logicset = logicalparse("{{i}} == 'MB' {{1}}", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("{{i}} == 'MB' {{1}}", logicset=hpset); showfeasible(hpset)
 
 # Three of us are killers #code 4
-logicset = logicalparse("{{i}} == 'PO' {{3}}", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("{{i}} == 'PO' {{3}}", logicset=hpset); showfeasible(hpset)
 # This last specification does not reduce the feasible set
 
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-logicset = logicalparse("{{i+1}} == 'NW' ==> {{i}} == 'PO'", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("{{i+1}} == 'NW' ==> {{i}} == 'PO'", logicset=hpset); showfeasible(hpset)
 # 120 Possibilities
 
 # Wine cannot be in the first bottle since poison is to the left
-logicset = logicalparse("a != 'NW'", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("a != 'NW'", logicset=hpset); showfeasible(hpset)
 # 60 possible outcomes
 
 # Second, different are those who stand at either end,
-logicset = logicalparse("a != g", logicset=logicset)
+hpset = logicalparse("a != g", logicset=hpset)
 
 # But if you would move onwards, neither is your friend;
-logicset = logicalparse("a,g != 'MA'", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("a,g != 'MA'", logicset=hpset); showfeasible(hpset)
 # 30 possible outcomes
 
 # But if you would move onwards, neither is your friend;
 # Third, as you see clearly, all are different size,
 # Neither dwarf nor giant holds death in their insides;
 # c dwarf, f are giant
-logicset = logicalparse("c,f != 'PO'", logicset=logicset); showfeasible(logicset)
+hpset = logicalparse("c,f != 'PO'", logicset=hpset); showfeasible(hpset)
 
 # Fourth, the second left and the second on the right
 # Are twins once you taste them, though different at first sight.
-logicset = logicalparse("b == f", logicset=logicset)
+hpset = logicalparse("b == f", logicset=hpset)
 
-search("='MA'", logicset) # c is a match, for the third bottle
-search("='MB'", logicset) # g is a match, for the last bottle
+search("='MA'", hpset) # c is a match, for the third bottle
+search("='MB'", hpset) # g is a match, for the last bottle

@@ -25,7 +25,7 @@ struct LogicalCombo
   keys::Array{Symbol}
   domain::AbstractArray
   logical::Array{Bool}
-  commandlist::Array{String}
+  commands::Array{String}
 end
 
 LogicalCombo(keys, domain, logical) = LogicalCombo(keys, domain, logical, String[])

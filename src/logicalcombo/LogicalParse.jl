@@ -45,7 +45,7 @@ function logicalparse(
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
 
-  println("")
+  verbose && println("")
 
   any(occursin.(";", commands)) &&
     (commands = split.(commands, ";") |> Iterators.flatten |> collect .|> strip .|> string)
@@ -60,6 +60,7 @@ function logicalparse(
     command::String;
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
+
     # A vector of non-standard operators to ignore
     exclusionlist = ["in","xor","XOR", "iff", "IFF"]
 
@@ -67,12 +68,15 @@ function logicalparse(
       return logicalparse(string.(strip.(split(command, ";"))),
         logicset=logicset, verbose=verbose)
 
-    print(command)
+
+    verbose && print(command)
 
     (strip(command) == "" || command[1] == '#') && return logicset
 
     occursin(r"∈|\bin\b", command) &&
-      return definelogicalset(logicset, command) |> reportfeasible(command, verbose)
+      return definelogicalset(logicset, command) |>
+        reportfeasible(command, verbose)  |>
+        (x -> (push!(x.commands, command); return x))
 
     # Check for the existance of any symbols in logicset
     varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
@@ -85,8 +89,9 @@ function logicalparse(
     end
 
     if occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command)
-      return metaoperator(command, logicset) |>
-        reportfeasible(command, verbose)
+      return metaoperator(command, logicset, verbose = verbose) |>
+        reportfeasible(command, verbose) |>
+        (x -> (push!(x.commands, command); return x))
     end
 
     println("    Warning! { $command } not interpreted!")
@@ -248,7 +253,7 @@ function operatorspawn(command,
            continue
        end
 
-       ℧∇ = superoperator(txtcmd, logicset)[:]
+       ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
 
        verbose &&  println(prefix * "$txtcmd")
 
@@ -288,20 +293,20 @@ end
 """
 
 """
-function metaoperator(command, logicset::LogicalCombo)
+function metaoperator(command, logicset::LogicalCombo; verbose = true)
     logicsetcopy = deepcopy(logicset)
 
     metaset = "XOR|IFF"
 
     (sum(logicset[:]) == 0) && return logicset
     !occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command) &&
-      return superoperator(command, logicset)
+      return superoperator(command, logicset, verbose=verbose)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
     left, operator, right = m.captures
 
-    ℧left  = metaoperator(left , logicset)[:]
-    ℧right = metaoperator(right, logicset)[:]
+    ℧left  = metaoperator(left , logicset, verbose=verbose)[:]
+    ℧right = metaoperator(right, logicset, verbose=verbose)[:]
     ℧η = logicsetcopy[:]
 
     (operator == "&&&&") && (℧η = logicset[:] .& (℧left .& ℧right))
@@ -319,7 +324,7 @@ end
 ##########################################################################
 
 
-function superoperator(command, logicset::LogicalCombo)
+function superoperator(command, logicset::LogicalCombo; verbose=true)
     logicsetcopy = deepcopy(logicset)
 
     superset = "xor|iff"
@@ -327,14 +332,15 @@ function superoperator(command, logicset::LogicalCombo)
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
     !occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command) &&
-      return operatoreval(command, logicset)
-    occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
+      return operatoreval(command, logicset, verbose=verbose)
+    occursin(r"\{\{.*\}\}", command) &&
+      return operatorspawn(command, logicset, verbose=verbose)
 
     m = match(Regex("(^.*?)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
     left, operator, right = m.captures
 
-    ℧left  = superoperator(left ,logicset)[:]
-    ℧right = superoperator(right,logicset)[:]
+    ℧left  = superoperator(left ,logicset, verbose=verbose)[:]
+    ℧right = superoperator(right,logicset, verbose=verbose)[:]
 
     ℧ = logicset[:]
     ℧η = deepcopy(℧)
@@ -381,12 +387,13 @@ end
     x,y,z ∈ 1:3
     x,y,z ∈ apples, oranges, grapes
 """
-function operatoreval(command, logicset::LogicalCombo)
+function operatoreval(command, logicset::LogicalCombo; verbose=true)
     logicsetcopy = deepcopy(logicset)
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
+    occursin(r"\{\{.*\}\}", command) &&
+      return operatorspawn(command, logicset, verbose=verbose)
 
     n = 1:sum(logicset[:])
 
@@ -650,4 +657,12 @@ function search(command::String, logicset::LogicalCombo; verbose=true)
     end
 
     return colcount ./ rowsin
+end
+
+
+function back(logicset::LogicalCombo; verbose=false)
+  (length(logicset.commands)==0) && (println("Nothing to go back to!"); return logicset)
+  commandlist = copy(logicset.commands)
+  pop!(commandlist)
+  return logicalparse(commandlist, verbose=verbose)
 end
