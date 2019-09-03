@@ -84,7 +84,7 @@ function logicalparse(
     # Checks if any of the variables does not exist in logicset
     for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
       if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
-        println("   In {$command} variable {:$S} not found in logicset")
+        println("\t Warning! In {$command} variable {:$S} not found in logicset")
       end
     end
 
@@ -94,7 +94,7 @@ function logicalparse(
         (x -> (push!(x.commands, command); return x))
     end
 
-    println("    Warning! { $command } not interpreted!")
+    println("\t Warning! { $command } not interpreted!")
 end
 
 logicalparse(commands::Array{String,1}, logicset::LogicalCombo; I...) =
@@ -156,7 +156,7 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
   (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
 
-  matcher = r"^([a-zA-z][a-zA-z0-9]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
+  matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
 
   m = match(matcher, argument)
   nvar = 5-sum([i === nothing for i in m.captures])
@@ -191,6 +191,10 @@ function operatorspawn(command,
     m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
     matches = [replace(x[1], r"\{|\}"=>"") for x in collect(m)] |> unique
 
+    # Check if a {{j}}. structure or {{J}}. structure exists
+    m_dot = eachmatch(r"(\{\{[jJ]\}\})(\.[a-zA-Z0-9_.])", tempcommand)
+    matches_dot = string.([x.captures[2] for x in collect(m_dot)]) |> unique
+
     if occursin(r"^[0-9]+,[0-9]+$", matches[end])
         countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
@@ -211,16 +215,23 @@ function operatorspawn(command,
         countrange = missing
     end
 
-    mykeys = keys(logicset)
-    mydomain = 1:length(mykeys)
 
-    iSet  = [m for m in matches if m[end:end] ∈ ["i", "j"]]
+    iSet  = [m for m in matches if m[end:end] ∈ ["i", "j", "J"]]
     iSet1 = [m[1:1] for m in iSet]
     iSet2 = [m[1:2] for m in iSet if length(m)>=2]
+
     iSetend = unique([m[end:end] for m in iSet])
 
-    (length(iSet)>2) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed with i (or j)")
-    (length(iSetend)>1) && throw("Only one type i or j allowed")
+    (length(iSet)>2) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
+    (length(iSetend)>1) && throw("Only one type i or j wildcard allowed")
+
+    mykeys   = keys(logicset)
+    any(occursin.("J", iSet)) && (mykeys = [v for v in mykeys if !occursin(".", string(v))])
+    any(occursin.("j", iSet)) &&
+      (mykeys = unique([Symbol(replace(v, r"\..*$"=>"")) for v in string.(mykeys)]))
+
+    mydomain = 1:length(mykeys)
+
 
     wild  = matches[length.(matches) .== 1]
     wild2 = matches[length.(matches) .!= 1]
@@ -232,7 +243,7 @@ function operatorspawn(command,
     iset = Symbol[]
 
     for i in mydomain, j in mydomain
-      ((length(wild2)  == 0) || wild2[1][1] ∈ 'i':'j') && (j>1)  && continue
+      ((length(wild2)  == 0) || wild2[1][1] ∈ ["i","j","J"]) && (j>1)  && continue
       ("!"   ∈ iSet1)       && (i==j) && continue
       (">"   ∈ iSet1)       && (i>=j) && continue
       ("<"   ∈ iSet1)       && (i<=j) && continue
@@ -242,10 +253,12 @@ function operatorspawn(command,
 
        txtcmd = tempcommand
 
-       (length(wild2)==1) && !(wild2[1][1] ∈ 'i':'j') &&
+       # Sub out the j match in the command
+       (length(wild2)==1) && !(wild2[1][1] ∈ ["i","j","J"]) &&
          (txtcmd = subout(txtcmd, j, wild2[1], mykeys))
 
-       (length(wild2)==1) &&  (wild2[1][1] ∈ 'i':'j') &&
+       # Sub out the i match in the command
+       (length(wild2)==1) &&  (wild2[1][1] ∈ ["i","j","J"]) &&
          (txtcmd = subout(txtcmd, i, wild2[1], mykeys))
 
        (length(wild)  == 1) && (txtcmd = subout(txtcmd, i, wild[1], mykeys))
@@ -260,7 +273,8 @@ function operatorspawn(command,
        verbose &&  println(prefix * "$txtcmd")
 
        push!(collection, ℧∇)
-       push!(iset, mykeys[i])
+       (length(matches_dot)==0) && push!(iset, mykeys[i])
+       (length(matches_dot)>0) && push!(iset, Symbol(string(mykeys[i]) * matches_dot[1]))
     end
 
     collector = hcat(collection...)
@@ -280,7 +294,7 @@ end
 function subout(txtcmd, i, arg, mykeys)
   lookup(vect, i) = i ∈ 1:length(vect) ? vect[i] : "~~OUTOFBOUNDS~~"
 
-  (arg[end] ∈ ['i', 'j'])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
+  (arg[end] ∈ ['i', 'j', 'J'])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
 
   mod = integer(match(r"([0-9]+$)", arg).match)
 

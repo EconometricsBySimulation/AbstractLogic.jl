@@ -35,6 +35,7 @@ let
     activeshow = false
     global activecommandshow() = activeshow
     global activecommandshow!() = activeshow = !activeshow
+    global returnactivelogicset() = activelogicset
 
     userinput = ""
 
