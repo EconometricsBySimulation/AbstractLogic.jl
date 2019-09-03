@@ -232,7 +232,6 @@ function operatorspawn(command,
 
     mydomain = 1:length(mykeys)
 
-
     wild  = matches[length.(matches) .== 1]
     wild2 = matches[length.(matches) .!= 1]
 
