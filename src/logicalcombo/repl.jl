@@ -1,14 +1,24 @@
-using ReplMaker
+using ReplMaker, Markdown
 
 function parse_to_expr(s)
    abstractlogic(s)
+   nothing
+   println("\n")
+   activecommandshow() &&
+     for i in 1:length(showcommandlist())
+         println(showcommandlist()[i])
+     end
+   showcmdlocation()
 end
+
+printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
+markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
 
 initrepl(
     parse_to_expr,
-    prompt_text="AL: ",
+    prompt_text="abstractlogic> ",
     prompt_color = :blue,
-    start_key=',',
+    start_key='=',
     mode_name="Abstract Logic")
 
 
@@ -22,10 +32,16 @@ let
     global showcommandhistory() = commandhistory
     global showlogichistory() = logichistory
 
+    activeshow = false
+    global activecommandshow() = activeshow
+    global activecommandshow!() = activeshow = !activeshow
+
     userinput = ""
 
     activelogicset = LogicalCombo()
     commandlist  = [String[]]
+
+    commandlistprint = false
 
     preserver = missing
     preservercommandlist = missing
@@ -50,37 +66,32 @@ let
     global function abstractlogic(replinput)
 
         userinput = replinput |> strip |> tounicode
-
+        # println("User input {$userinput}")
         (occursin("()", userinput) || testmode) && (userinput = testcall(userinput))
 
-        if strip(userinput) == ""                   nothing()
-        elseif occursin(r"^show$", userinput)       alshow()
-        elseif occursin(r"^showall$", userinput)    showall()
-        elseif userinput == "back"                  back()
-        elseif userinput == "forward"               forward()
-        elseif userinput == "history"               history()
-        elseif userinput == "commandlist"           itemprint(commandlist)
-        elseif userinput == "logicset"              itemprint(logicset)
-        elseif userinput == "clear"                 clear()
-        elseif userinput == "keys"                  keys()
-        elseif occursin(r"^check", userinput)       alcheck(userinput)
-        elseif occursin(r"^search", userinput)      alsearch(userinput)
-        elseif userinput == "preserve"              alpreserve()
-        elseif userinput == "restore"               restore()
-        else
-            println("command not interpreted")
-                                    
-            alparse(userinput)
+        if strip(userinput) == ""                       nothing()
+        elseif occursin(r"^show$", userinput)           ALshow()
+        elseif occursin(r"^showall$", userinput)        showall()
+        elseif userinput ∈ ["back", "b"]                back()
+        elseif userinput ∈ ["next", "n"]                forward()
+        elseif occursin(r"^show[ ]*active", userinput)  activecommandshow!()
+        elseif userinput == "history"                   history()
+        elseif occursin(r"^command[ ]*list", userinput) itemprint(commandlist)
+        elseif userinput == "logicset"                  itemprint(logicset)
+        elseif userinput == "clear"                     clear()
+        elseif userinput == "keys"                      keys()
+        elseif occursin(r"^check", userinput)           ALcheck(userinput)
+        elseif occursin(r"^search", userinput)          ALsearch(userinput)
+        elseif userinput == "preserve"                  ALpreserve()
+        elseif userinput == "restore"                   restore()
+        else                                            ALparse(userinput)
         end
 
     end
 
     tounicode(x) = replace(x, r"\bin\b"=>"∈")
-    function
-        nothing()
-        println("command not interpreted")
-        println(lastcommand()* " - " * reportfeasible(activelogicset))
-    end
+
+    nothing() = println(lastcommand()* " - " * reportfeasible(activelogicset))
 
     keys() = println(join(activelogicset.keys, ", "))
     function itemprint(x)
@@ -91,23 +102,30 @@ let
     end
 
     function testcall(userinput)
-
         if userinput == "t1()"
-            testcount = 0
-            testmode = true
-            testingset = "t1"
-            return "a,b,c ∈ 1:4"
-        elseif testingset == "t1"
-            testcount += 1
-            (testcount == 1) && return "a|c = 1"
-            (testcount == 2) && return "a > b"
-            (testcount == 3) && (testreset(); return "b > c")
+            clear()
+            abstractlogic("a,b,c ∈ 1:4")
+            abstractlogic("a|c = 1")
+            abstractlogic("a > b")
+            return "b > c"
+        elseif userinput == "hp()"
+            clear()
+            abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
+            abstractlogic("{{i}} == 'NW' {{2}}")
+            abstractlogic("{{i}} == 'MA' {{1}}")
+            abstractlogic("{{i}} == 'MB' {{1}}")
+            abstractlogic("{{i}} == 'PO' {{3}}")
+            abstractlogic("{{i+1}} == 'NW' ==> {{i}} == 'PO'")
+            abstractlogic("a != 'NW'")
+            abstractlogic("a != g")
+            abstractlogic("a,g != 'MA'")
+            abstractlogic("c,f != 'PO'")
+            return "b == f"
         end
         return userinput
-
     end
 
-    function alparse(userinput)
+    function ALparse(userinput)
         if (sum(activelogicset[:])==0) && !occursin(r"∈", userinput)
             print("error: userinput  - ")
             println("You are working with an empty set! Try inputing: a,b,c in 1:3")
@@ -151,7 +169,7 @@ let
         feasiblehistory = copy(feasiblehistory)
     end
 
-    function alpreserve()
+    function ALpreserve()
         preservercommandlist = copy(commandlist[setlocation])
         push!(commandlist[setlocation], "#preserve")
         preserver = activelogicset
@@ -162,7 +180,7 @@ let
         println("Preserving State")
     end
 
-    function alcheck(userinput)
+    function ALcheck(userinput)
         try
           checker = replace(userinput[6:end], r"^[\\:\\-\\ ]+"=>"")
           checkfeasible(string(checker), activelogicset)
@@ -176,7 +194,7 @@ let
         end
     end
 
-    function alsearch(userinput)
+    function ALsearch(userinput)
         try
           checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
           search(checker, activelogicset)
@@ -219,21 +237,30 @@ let
     function history()
        currentfeasible = [feasiblehistory[1:cmdlocation]..., "...", feasiblehistory[(cmdlocation+1):end]...]
        currentcommand = [commandhistory[1:cmdlocation]..., "<< present >>", commandhistory[(cmdlocation+1):end]...]
+       txtout = "| Command | # feasible |\n| --- | --- |\n"
        for i in 1:length(currentcommand)
-           println("\t $(currentcommand[i]) \t \t $(currentfeasible[i])")
+           txtout *= ("| $(markdownescape(currentcommand[i])) | $(currentfeasible[i]) |\n")
        end
+       printmarkdown(txtout)
     end
 
-    global function alshow(;n =10)
+
+    function ALshow(;n =10)
         nrow = nfeasible(activelogicset)
         printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
         (nrow<=n) && (printset = 1:nrow)
 
-        println(join(activelogicset[0,:], "\t"))
+        txtout = "| " * join(activelogicset[0,:], " | ") * " | \n"
+        txtout *= "| " * join(fill(":---:", size(activelogicset,2) ), " | ") * " | \n"
+
         for setlocation in printset
-          (setlocation != 0) && println(join(activelogicset[setlocation,:,:], "\t"))
-          (setlocation == 0) && println(join(fill("...",  size(activelogicset, 2)), "\t"))
+          (setlocation != 0) &&
+            (txtout *= "| " * join(activelogicset[setlocation,:,:], " | ")*" |\n")
+          (setlocation == 0) &&
+            (txtout *= "| " * (join(fill("⋮",  size(activelogicset, 2)), " | "))*"|\n")
         end
+
+        printmarkdown(txtout)
     end
 
     reportfeasible(x) = "Feasible Outcomes: $(nfeasible(x)) \t:$(joinpull(x))"
@@ -241,9 +268,11 @@ let
     joins(x) = join(x, " ")
     joinpull = (joins ∘ pull)
 
-    showall() = alshow(n = nfeasible(activelogicset))
+    showall() = ALshow(n = nfeasible(activelogicset))
 
 end
+
+
 
 """
     logicalrepl(;preserve = false)
