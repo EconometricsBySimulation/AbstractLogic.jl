@@ -133,6 +133,8 @@ function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
   vars   = split(left, ",") .|> strip
   values = split(right, ",") .|> strip
 
+  any(occursin.(" ", vars)) && throw("Variables cannot have spaces. Use '_'")
+
   if length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])
     values = range(values[1])
     outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)

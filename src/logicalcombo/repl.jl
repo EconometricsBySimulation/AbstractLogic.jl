@@ -73,9 +73,9 @@ let
         elseif occursin(r"^show$", userinput)           ALshow()
         elseif occursin(r"^showall$", userinput)        showall()
         elseif userinput ∈ ["back", "b"]                back()
-        elseif userinput ∈ ["next", "n"]                forward()
+        elseif userinput ∈ ["next", "n"]                next()
         elseif occursin(r"^show[ ]*active", userinput)  activecommandshow!()
-        elseif userinput == "history"                   history()
+        elseif userinput ∈ ["history", "h"]             history()
         elseif occursin(r"^command[ ]*list", userinput) itemprint(commandlist)
         elseif userinput == "logicset"                  itemprint(logicset)
         elseif userinput == "clear"                     clear()
@@ -226,8 +226,8 @@ let
         pop!(commandlist[setlocation])
     end
 
-    function forward()
-        (cmdlocation == length(commandhistory)) && (println("Nothing to go forward to"); return )
+    function next()
+        (cmdlocation == length(commandhistory)) && (println("Nothing to go forward to"); return)
         cmdlocation += 1
         activelogicset = logichistory[cmdlocation]
         push!(commandlist[setlocation], commandhistory[cmdlocation])
@@ -244,9 +244,11 @@ let
        printmarkdown(txtout)
     end
 
-
     function ALshow(;n =10)
         nrow = nfeasible(activelogicset)
+
+        (nrow == 0) && return println("Nothing to Show - [Empty Set]")
+
         printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
         (nrow<=n) && (printset = 1:nrow)
 
