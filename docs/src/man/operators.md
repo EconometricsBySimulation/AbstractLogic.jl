@@ -28,7 +28,7 @@ Standard operators are the core functionality of the `AbstractLogic` package. Th
 * `|` on the left (or right) is treated as saying that at least one value on that side must conform to whatever operator follows. `a | b = 1` forces `a` or `b` or both to equal 1. Note: `a, b |= 1` is equivalent to `a | b = 1` but not preferred.
 
 ## Grouping Constraints
-* `{#,#}` or `{#}`: it is often helpful to qualify the number of matches that the grouping syntax can make. Specifying `{#}` at the end of a `|` match will force a certain number of matches. Specifying `{#1,#2}` will force a number of matches no less than `#1` and no more than `#2`.
+* `{#,#}` or `{#}`: it is often helpful to qualify the number of matches `or` syntax can make. Specifying `{#}` at the end of a `|` set will force a certain number of matches. Specifying `{#1,#2}` will force a number of matches no less than `#1` and no more than `#2`.
 
 For example: `a|b|c|d = 1 {3}` will force at exactly three of the set `a`, `b`, `c`, and `d` to equal 1.
 ```julia

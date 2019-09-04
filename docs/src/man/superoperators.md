@@ -1,12 +1,12 @@
 # Superoperators
 
-*Superoperators* allow *AbstractLogic* to evaluate multiple expressions simultaneously. Common type of expressions to be evaluated in this way are if (`==>` or `<==`) and if and only if (`<=>`/`===`) statements. Generally *superoperators* can be identified by noting that they have three symbols together making up the operator or are strings in lowercase.
+*Superoperators* allow *AbstractLogic* to evaluate multiple expressions simultaneously. Common type of expressions to be evaluated in this way are `if ... then` (`==>`), `if` (`<==`), and if only if (`iff`/`<=>`/`===`) statements. Generally *superoperators* can be identified by noting that they have three symbols together making up the operator or are strings in lowercase.
 
 When *AbstractLogic* encounters a *superoperator* it evaluates any expressions on either side of the *superoperator*. These expressions are returned as true or false. Then it follows the rules of the *superoperator* to evaluate the joint expression.
 
 Constraint: `a > b ==> c == a` = x ==> y with x = `a > b` and y = `c == a`
 
-Simple example.
+A simple example.
 
 |  row  |  `a`  |  `b`  |  `c`  | x=`a > b` | y=`c == a`| x ==> y   |
 | :---: | :---: | :---: | :---: |  :---:    |  :---:    |  :---:    |
@@ -21,51 +21,55 @@ A right arrow if constraint (`==>`) only holds if the left side is true. x (`a >
 Notationally `x`, `y`, and `z` will refer to operations composed of at least
 one operator.
 
-* `x &&& y` both x and y must be `true`. Command end operator `;` is often preferred to joint evaluators since it is more efficient. In `x ; y` efficiency is gained by evaluating `x` first, reducing the feasible set, then evaluating `y`. `x and y` is equivalent
+* `x &&& y` both x and y must be `true`. Command end operator `;` is often preferred to joint evaluators since it is more efficient. In `x ; y` efficiency is gained by evaluating `x` first, reducing the feasible set, then evaluating `y`.
+**Note** `x and y` is equivalent expression.
 
-* `x ||| y` either x or y must be `true`. If both are `false` then total expression will return false. `x or y` is equivalent
+* `x ||| y` either x or y must be `true`. If both are `false` then total expression will return false.
+**Note** `x or y` is equivalent
 
-* `x ^^^ y` either x or y must be `true` but not both. If both are `false` or both are `true` then it will return false. `x xor y` and `x !== y` is equivalent (`x` and `y` can only be `true` or `false`)
+* `x ^^^ y` either x or y must be `true` but not both. If both are `false` or both are `true` then it will return false.
+**Note** `x xor y` and `x !== y` is equivalent (`x` and `y` can only be `true` or `false`)
 
-* `x === y` if `x = true` then `y = true` or if `x = false` then `y = false`. `x iff y` and `x <=> y` is equivalent
+* `x === y` if `x = true` then `y = true` or if `x = false` then `y = false`.
+**Note** `x iff y` and `x <=> y` are equivalent
 
-* `x ==> y` if `x = true` then `y` must be `true`. `x then y` is equivalent
+* `x ==> y` if `x = true` then `y` must be `true`.
+**Note** `if x then y` are equivalent
 
-* `x <== y` if `y = true` then `x` must be `true`. `x if y` is equivalent
-
+* `x <== y` if `y = true` then `x` must be `true`.
+**Note** `x if y` is equivalent
 
 ### Chaining Operators
-Superoperators can be chained and when evaluated are evaluated from left to right.
+*Superoperators* can be chained and when evaluated are evaluated from left to right.
 
-> `true` and `false` are replaced dynamically in *AbstractLogic* with `1==1` and `1==0`.
+**Note** `true` and `false` are replaced dynamically in *AbstractLogic* with `1==1` and `1==0`.
 
 Activate the `abstractlogic repl` by typing `=` in console.
 ```julia
-abstractlogic> a,b ∈ 1,2
-a,b ∈ 1,2                feasible outcomes 4 ✓           :2 1
+abstractlogic> a ∈ 1
+a ∈ 1                    feasible outcomes 1 ✓✓          :1
 
 abstractlogic> true
-true                     feasible outcomes 4 ✓           :1 1
+true                     feasible outcomes 1 ✓✓          :1
 
 abstractlogic> false
 false                    feasible outcomes 0 X            [empty set]
 
 abstractlogic> back
-Last command: "true ||| false &&& true" - Feasible Outcomes: 4  :1 1
+Last command: "true" - Feasible Outcomes: 1     :1
 
-abstractlogic> true ||| false ||| true
-true ||| false ||| true          feasible outcomes 4 ✓           :2 2
+abstractlogic> true or false
+true or false            feasible outcomes 1 ✓✓          :1
 
-abstractlogic> true ||| false &&& true
-true ||| false &&& true          feasible outcomes 4 ✓           :2 2
+abstractlogic> true or false and true
+true or false and true   feasible outcomes 1 ✓✓          :1
 
-abstractlogic> true ^^^ false
-true ^^^ false           feasible outcomes 4 ✓           :1 2
+abstractlogic> true xor false
+true xor false           feasible outcomes 1 ✓✓          :1
 
-abstractlogic> true ^^^ false ^^^ true
-true ^^^ false ^^^ true          feasible outcomes 0 X            [empty set]
+abstractlogic> true xor false xor true
+true xor false xor true          feasible outcomes 0 X            [empty set]
 ```
+The last expression returns an empty set (`false`) because it evaluates from left to right `(true xor false) xor true` which becomes `(true) xor true` which is then evaluated at false.
 
-### Wildcards
-
-Please note, wildcards are spawned on the level right above *superoperators*.
+**Note** Wildcards are spawned on the level right above *superoperators*. See *Wildcards* for more information.

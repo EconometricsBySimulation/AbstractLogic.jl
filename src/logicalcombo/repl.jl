@@ -72,6 +72,7 @@ let
         (occursin("()", userinput) || testmode) && (userinput = testcall(userinput))
 
         if strip(userinput) == ""                       nothing()
+        elseif occursin(r"^\?", userinput)              help(userinput)
         elseif occursin(r"^show$", userinput)           ALshow()
         elseif occursin(r"^showall$", userinput)        showall()
         elseif userinput ∈ ["back", "b"]                back()

@@ -6,6 +6,8 @@ module AbstractLogic
 ## Dependencies
 ##
 ##############################################################################
+using Pkg
+Pkg.activate(".")
 
 using ReplMaker,
       Markdown
@@ -34,7 +36,7 @@ include("logicalcombo/LogicalCombo.jl")
 
 include("logicalcombo/logicalparse.jl")
 
-# include("logicalcombo/operatoreval.jl")
+include("logicalcombo/operatoreval.jl")
 #
 # include("logicalcombo/superoperator.jl")
 #
@@ -46,8 +48,8 @@ include("logicalcombo/logicalparse.jl")
 #
 # include("logicalcombo/showfeasible.jl")
 
-include("logicalcombo/help.jl")
-
 include("logicalcombo/repl.jl")
+
+include("logicalcombo/help.jl")
 
 end # module AbstractLogic

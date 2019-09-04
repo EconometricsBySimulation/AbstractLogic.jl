@@ -3,12 +3,13 @@
     x,y,z ∈ 1:3
     x,y,z ∈ apples, oranges, grapes
 """
-function operatoreval(command, logicset::LogicalCombo)
+function operatoreval(command, logicset::LogicalCombo; verbose=true)
     logicsetcopy = deepcopy(logicset)
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    occursin(r"\{\{.*\}\}", command) && return operatorspawn(command, logicset)
+    occursin(r"\{\{.*\}\}", command) &&
+      return operatorspawn(command, logicset, verbose=verbose)
 
     n = 1:sum(logicset[:])
 
