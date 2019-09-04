@@ -9,7 +9,7 @@ For most non-trivial problems order of operations is going to be very important 
 
 *Standard Operators*: Take the form of one or two symbol operators and are often easily identified: `>, <, =, ==, !=` though there are many non-standard operators worth taking a look at.
 
-*Superoperators*: Look similar to operators but hold three characters `==>, <===, <=>, |||, ===, ^^^` as well as `iff`
+*Superoperators*: Evaluate the returns from operator expressions and hold three characters `==>, <==, <=>, |||, ===, ^^^` as well as `iff`, `if`, `then`, `and`, `or`, and `xor`
 
 *Metaoperators*: Are made up of four characters `===>, <===, <==>, ||||`
 
@@ -67,7 +67,7 @@ a < b <=> c > b ===> a = b, c    feasible outcomes 19 ✓          :1 2 2
  It need not be the case that *metaoperators* make the constraints less restrictive. `<==>`, `^^^^`, and `&&&&` all impose joint constraints on both side of the operator.
 
 ## A Note On Wildcards
-Wildcards `{{i}}` are evaluated at the *superoperator* level. This allows mismatching wildcard functions to be handled on either side of a *metaoperator*. Let's say you only wanted values that either ascended monotonically or descended monotonically. You could do that using `{{i}} < {{<i}}` saying that all values to the right of `i` must be greater or `{{i}} > {{<i}}` saying that all values to the right of `i` must be smaller.
+Wildcards `{{i}}` are spawned and evaluated at the level right above *superoperator* but below *metaoperators*. This allows mismatching wildcard functions to be handled on either side of a *metaoperator*. Let's say you only wanted values that either ascended monotonically or descended monotonically. You could do that using `{{i}} < {{<i}}` saying that all values to the right of `i` must be greater or `{{i}} > {{<i}}` saying that all values to the right of `i` must be smaller.
 
 ```julia
 julia>  myset = logicalparse("a, b, c, d, e ∈ 1:6")
@@ -91,5 +91,3 @@ feasible outcomes 12 ✓          :1 2 3 5 6
 6  5  4  3  1
 6  5  4  3  2
 ```
-
-More on wildcards later.
