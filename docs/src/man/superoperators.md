@@ -7,6 +7,7 @@ When *AbstractLogic* encounters a *superoperator* it evaluates any expressions o
 Constraint: `a > b ==> c == a` = x ==> y with x = `a > b` and y = `c == a`
 
 Simple example.
+
 |  row  |  `a`  |  `b`  |  `c`  | x=`a > b` | y=`c == a`| x ==> y   |
 | :---: | :---: | :---: | :---: |  :---:    |  :---:    |  :---:    |
 |   1   |   2   |   1   |   1   |  `true`   |  `false`  |  `false`  |
