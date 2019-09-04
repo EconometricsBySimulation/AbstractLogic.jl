@@ -46,6 +46,8 @@ include("logicalcombo/logicalparse.jl")
 #
 # include("logicalcombo/showfeasible.jl")
 
-include("logicalcombo/logicalrepl.jl")
+include("logicalcombo/help.jl")
+
+include("logicalcombo/repl.jl")
 
 end # module AbstractLogic

@@ -62,12 +62,15 @@ function logicalparse(
     verbose=true)
 
     # A vector of non-standard operators to ignore
-    exclusionlist = ["in","xor","XOR", "iff", "IFF"]
+    generators = "in"
+    superset = "xor|iff|if|then"
+    metaset = "XOR|IFF|IF|THEN|AND|OR"
+
+    exclusions = join([generators, superset, metaset],"|")
 
     occursin(";", command) &&
       return logicalparse(string.(strip.(split(command, ";"))),
         logicset=logicset, verbose=verbose)
-
 
     verbose && print(command)
 
@@ -82,14 +85,20 @@ function logicalparse(
     varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
 
     # Checks if any of the variables does not exist in logicset
-    for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ exclusionlist)]
+    for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ split(exclusions, "|"))]
       if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
         println("\t Warning! In {$command} variable {:$S} not found in logicset")
       end
     end
 
-    if occursin(r"([><=|!+\\-\^\\&]{1,4}|XOR|xor)", command)
-      return metaoperator(command, logicset, verbose = verbose) |>
+    # Replace command
+    commandout = command |>
+     x -> replace(x, r"(\b|\s)true(\b|\s)" =>" 1=1 ") |>
+     x -> replace(x, r"(\b|\s)false(\b|\s)"=>" 1=0 ") |>
+     x -> replace(x, r"^(IF|if|If)"=>"")
+
+    if occursin(Regex("([><=|!+\\-^&]{1,4})"), commandout)
+      return metaoperator(commandout, logicset, verbose = verbose) |>
         reportfeasible(command, verbose) |>
         (x -> (push!(x.commands, command); return x))
     end
@@ -129,28 +138,48 @@ reportfeasible(command::String, verbose::Bool)::Function =
 
 function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
 
-  left, right = strip.(split(command, r"∈|\bin\b"))
-  vars   = split(left, ",") .|> strip
-  values = split(right, ",") .|> strip
+    m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|(.*?)){0,1}$", command)
+    left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
+    vars   = split(left, ",")  .|> strip
+    values = split(right, ",") .|> strip
 
-  any(occursin.(" ", vars)) && throw("Variables cannot have spaces. Use '_'")
+    for v in vars
+        m = match.(r"(\s|\"|\')", v)
+        (m != nothing) && throw("Variable names cannot have {$(m.captures[1])}.")
+    end
 
-  if length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])
-    values = range(values[1])
-    outset = (; zip([Symbol(i) for i in vars], fill(values, length(vars)))...)
-    outset = [Pair(Symbol(i), values) for i in vars]
-    logicset  = expand(logicset, outset)
+    for v in values
+        m = match.(r"(\"|\')", v)
+        (m != nothing) && throw("Variable values cannot be defined with {$(m.captures[1])}.")
+    end
 
-  elseif all([occursin(r"^[0-9]+$", i) for i in values])
-    values =  [integer(i) for i in values]
-    logicset  = expand(logicset, string.(vars), values)
+    varnames = string.(vars)
 
-  else
-    logicset  = expand(logicset, string.(vars), string.(values))
-  end
+    if length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])
+        values = collect(range(values[1]))
+    elseif all([occursin(r"^[0-9]+$", i) for i in values])
+        values =  [integer(i) for i in values]
+    else
+        values = string.(values)
+    end
+
+    if condition == ""
+        logicset  = expand(logicset, varnames, values)
+    else # Loops through conditionals and sets restrictions on data as it is generated
+        for i in 1:length(varnames)
+          logicset  = expand(logicset, [varnames[i]], values)
+          try
+            templogicset = operatorspawn(condition, logicset, verbose=false)
+            logicset = templogicset
+          catch
+          end
+        end
+    end
 
   logicset
 end
+
+definelogicalset(command::String) = definelogicalset(LogicalCombo(), command)
 
 function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
@@ -177,7 +206,6 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
   (o1 == "/") && return left ./ right
   (o1 == "*") && return left .* right
 end
-
 
 function operatorspawn(command,
     logicset::LogicalCombo;
@@ -267,13 +295,16 @@ function operatorspawn(command,
            continue
        end
 
-       ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
-
-       verbose &&  println(prefix * "$txtcmd")
+       ℧∇ = logicset[:]
+       try
+           ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
+           verbose &&  println(prefix * "$txtcmd")
+       catch
+       end
 
        push!(collection, ℧∇)
        (length(matches_dot)==0) && push!(iset, mykeys[i])
-       (length(matches_dot)>0) && push!(iset, Symbol(string(mykeys[i]) * matches_dot[1]))
+       (length(matches_dot)>0)  && push!(iset, Symbol(string(mykeys[i]) * matches_dot[1]))
     end
 
     collector = hcat(collection...)
@@ -311,7 +342,7 @@ end
 function metaoperator(command, logicset::LogicalCombo; verbose = true)
     logicsetcopy = deepcopy(logicset)
 
-    metaset = "XOR|IFF"
+    metaset = "XOR|IFF|IF|THEN|AND|OR"
 
     (sum(logicset[:]) == 0) && return logicset
     !occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command) &&
@@ -324,11 +355,11 @@ function metaoperator(command, logicset::LogicalCombo; verbose = true)
     ℧right = metaoperator(right, logicset, verbose=verbose)[:]
     ℧η = logicsetcopy[:]
 
-    (operator == "&&&&") && (℧η = logicset[:] .& (℧left .& ℧right))
+    (operator ∈ ["&&&&", "AND"]) && (℧η = logicset[:] .& (℧left .& ℧right))
     (operator ∈ ["====", "IFF"]) && (℧η = logicset[:] .& (℧left .== ℧right))
-    (operator ∈ ["===>"]) && (℧η[℧left] = logicset[:][℧left]  .& ℧right[℧left])
-    (operator ∈ ["<==="]) && (℧η[℧right] = logicset[:][℧right] .& ℧left[℧right])
-    (operator ∈ ["||||"]) && (℧η = logicset[:] .& (℧left .| ℧right))
+    (operator ∈ ["===>", "THEN"]) && (℧η[℧left] = logicset[:][℧left]  .& ℧right[℧left])
+    (operator ∈ ["<===", "IF"]) && (℧η[℧right] = logicset[:][℧right] .& ℧left[℧right])
+    (operator ∈ ["||||", "OR"]) && (℧η = logicset[:] .& (℧left .| ℧right))
     (operator ∈ ["^^^^", "XOR"]) && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
     logicsetcopy[:] = ℧η
@@ -342,7 +373,7 @@ end
 function superoperator(command, logicset::LogicalCombo; verbose=true)
     logicsetcopy = deepcopy(logicset)
 
-    superset = "xor|iff"
+    superset = "xor|iff|if|then"
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
@@ -360,31 +391,23 @@ function superoperator(command, logicset::LogicalCombo; verbose=true)
     ℧ = logicset[:]
     ℧η = deepcopy(℧)
 
-    if operator == "&&&"
+    if operator ∈ ["&&&", "and"]
         ℧η = ℧ .& (℧left .& ℧right)
 
-    elseif operator ∈ ["^^^" , "xor"]
+    elseif operator ∈ ["^^^" , "xor", "!=="]
         ℧η = ℧ .& ((℧left .& .!℧right) .| (.!℧left .& ℧right))
 
     # this can be dangerous, false equal to false such as with previous exclusions will cause inconsistencies
     elseif operator ∈ ["<=>","===", "iff"]
         ℧η = ℧ .& (℧left .== ℧right)
 
-    #warning this generally will not work
-    elseif operator == "---"
-        ℧η[℧] = (℧left .- ℧right)[℧]
-
-    #warning this generally will not work
-    elseif operator == "+++"
-        ℧η = ℧left .+ ℧right
-
-    elseif operator == "|||"
+    elseif operator ∈ ["|||", "or"]
         ℧η = ℧ .& (℧left .| ℧right)
 
-    elseif operator ∈ ["|=>","==>"]
+    elseif operator ∈ ["==>", "then"]
         ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
 
-    elseif operator ∈ ["<=|","<=="]
+    elseif operator ∈ ["<==", "if"]
         ℧η[℧right] = ℧[℧right] .& ℧left[℧right]
 
     end

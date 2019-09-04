@@ -2,13 +2,14 @@ using ReplMaker, Markdown
 
 function parse_to_expr(s)
    abstractlogic(s)
-   nothing
-   println("\n")
-   activecommandshow() &&
+   if activecommandshow()
+     println("\n")
      for i in 1:length(showcommandlist())
          println(showcommandlist()[i])
      end
-   showcmdlocation()
+     println(showcmdlocation())
+   end
+   nothing
 end
 
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
