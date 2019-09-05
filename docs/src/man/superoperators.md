@@ -74,13 +74,13 @@ a > b ==> b > c                  feasible outcomes 19 ✓          :3 3 3
 
 * `x <== y` if `y = true` then `x` must be `true`.
 **Note** `x if y` is equivalent
-"""
 #### Example
+```julia
 abstractlogic> a,b,c ∈ 1:3
 a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
 abstractlogic> a > b <== b > c
 a > b <== b > c                  feasible outcomes 19 ✓          :3 1 1
-"""
+```
 ### Chaining Operators
 *Superoperators* can be chained and when evaluated are evaluated from left to right.
 
