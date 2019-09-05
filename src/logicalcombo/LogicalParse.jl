@@ -273,11 +273,11 @@ function operatorspawn(command,
 
        # Sub out the j/i match in the command
        for m in [m for m in matches if occursin(r"^(i|j|J)", m)]
-         txtcmd = subout!(txtcmd, i, replace(m, r"\!$"=>""), mykeys)
+         txtcmd = subout(txtcmd, i, replace(m, r"\!$"=>""), mykeys)
        end
 
-       (length(iSet) >= 2) && (txtcmd = subout!(txtcmd, j, iSet[2], mykeys))
-       (length(iSet) == 3) && (txtcmd = subout!(txtcmd, k, iSet[3], mykeys))
+       (length(iSet) >= 2) && (txtcmd = subout(txtcmd, j, iSet[2], mykeys))
+       (length(iSet) == 3) && (txtcmd = subout(txtcmd, k, iSet[3], mykeys))
 
 
        occursin("~~OUTOFBOUNDS~~", txtcmd) & !occursin("!}}", tempcommand) && continue
@@ -316,7 +316,7 @@ function operatorspawn(command,
 end
 # operatorspawn("{{i}} < {{<i}} ||| {{i}} > {{>i}}", logicset) |> showfeasible
 
-function subout!(txtcmd, i, arg, mykeys)
+function subout(txtcmd, i, arg, mykeys)
   lookup(vect, i) = i ∈ 1:length(vect) ? vect[i] : "~~OUTOFBOUNDS~~"
 
   (arg[end] ∈ ['i', 'j', 'J'])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
@@ -329,7 +329,7 @@ function subout!(txtcmd, i, arg, mykeys)
   txtcmd
 end
 
-subout("{{i+1!}}{{>i}}", 2, "i+1!", [:a, :b, :c])
+# subout("{{i+1!}}{{>i}}", 2, "i+1!", [:a, :b, :c])
 # subout("{{i+1}}{{>i}}", 2, ">i",  [:a, :b, :c])
 
 """

@@ -1,10 +1,11 @@
-# Order of Operations
+# Command Flow
 
-For most non-trivial problems order of operations is going to be very important for programming `AbstractReasoning` problems.
-
-`logicalparse` takes four types operators. Generators, standard operators, superoperators, and metaoperators.
+## Line Break `;`
+Including `;` in a command will break the command into two or more separate commands.
 
 ## Type of Operators
+`logicalparse` takes four types operators. Generators, standard operators, superoperators, and metaoperators.
+
 *Generators*: `∈` and `in` are parse first adding to the `LogicalCombo` set.
 
 *Standard Operators*: Take the form of one or two symbol operators and are often easily identified: `>, <, =, ==, !=` though there are many non-standard operators worth taking a look at.
@@ -14,6 +15,8 @@ For most non-trivial problems order of operations is going to be very important 
 *Metaoperators*: Are made up of four characters `===>, <===, <==>, ||||`
 
 ## Order of Operations
+For most non-trivial problems order of operations is going to be very important for programming `AbstractReasoning` problems.
+
 *Standard operators* are evaluated first with their values returned first to *superoperators* if they exist and then to *metaoperators*.
 
 Lets take a look at a example set, "a, b, c ∈ 1:3". Let's say we wanted to specify that if a is less than b then c must greater than b ("a < b <=> c > b").
@@ -24,11 +27,7 @@ a, b, c ∈ 1:3            feasible outcomes 27 ✓          :2 3 1
  1  1  1
  1  2  3
  2  1  1
- 2  2  1
- 2  2  2
- 3  1  1
- 3  2  1
- 3  2  2
+...
  3  3  1
  3  3  2
  3  3  3
@@ -46,18 +45,7 @@ a < b <=> c > b ===> a = b, c    feasible outcomes 19 ✓          :1 2 2
  1  1  1
  1  1  2
  1  1  3
- 1  2  1
- 1  2  2
- 1  3  1
- 1  3  2
- 1  3  3
- 2  1  2
- ⋮
- 2  2  3
- 2  3  1
- 2  3  2
- 2  3  3
- 3  1  2
+...
  3  1  3
  3  2  3
  3  3  3

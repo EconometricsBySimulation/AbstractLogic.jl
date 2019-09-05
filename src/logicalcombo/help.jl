@@ -430,7 +430,7 @@ metaoperatorlist  = [v[1] for v in catdict if v[2]=="Metaoperator"]  |> sort
 wildcardlist      = [v[1] for v in catdict if v[2]=="Wildcard"]      |> sort
 
 function help(x::String)
-  x = replace(x, r"^\?"=>"")
+  x = replace(x, r"^\?"=>"") |> strip
   if (haskey(fundict, x))
     also = (length(equivdict[x]) == 1 ? "" : "**variantes:** `" * join(equivdict[x],", ") * "` \n")
     "**$(catdict[x])**: `$x` \n " * also * " \n " * fundict[x] |>

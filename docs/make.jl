@@ -20,7 +20,7 @@ makedocs(
         "Introduction" => "index.md",
         "User Guide" => Any[
             "Getting Started" => "man/getting_started.md",
-            "Order of Operations" => "man/orderofoperations.md.md",
+            "Command Snytax" => "man/commandsyntax.md",
             "Generators" => "man/generators.md",
             "Operators" => "man/operators.md",
             "Super Operators" => "man/superoperators.md",

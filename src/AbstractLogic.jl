@@ -6,6 +6,7 @@ module AbstractLogic
 ## Dependencies
 ##
 ##############################################################################
+# cd("/Users/francissmart/Documents/GitHub/AbstractLogic")
 using Pkg
 Pkg.activate(".")
 
