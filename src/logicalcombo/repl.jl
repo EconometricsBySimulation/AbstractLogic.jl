@@ -22,11 +22,10 @@ initrepl(
     start_key='=',
     mode_name="Abstract Logic")
 
-
 let
 
     global showcommandlist()  = commandlist
-    global showlogicset() = logicset
+    global returnlogicset() = logicset
     global showcmdlocation() = cmdlocation
     global showsetlocation() = setlocation
     global showuserinput() = userinput
@@ -55,7 +54,6 @@ let
     commandhistory = String["#Session Initiated"]
     feasiblehistory = [0]
     logichistory = [activelogicset]
-
     logicset     = [activelogicset]
 
     cmdlocation = 1
@@ -76,13 +74,14 @@ let
         elseif occursin(r"^show$", userinput)           ALshow()
         elseif occursin(r"^showall$", userinput)        showall()
         elseif userinput ∈ ["back", "b"]                back()
-        elseif userinput ∈ ["next", "n"]                next()
+        elseif userinput ∈ ["next", "n", "f"]           next()
         elseif occursin(r"^show[ ]*active", userinput)  activecommandshow!()
         elseif userinput ∈ ["history", "h"]             history()
         elseif occursin(r"^command[ ]*list", userinput) itemprint(commandlist)
-        elseif userinput == "logicset"                  itemprint(logicset)
+        elseif userinput ∈ ["logicset","ls"]            itemprint(logicset)
         elseif userinput == "clear"                     clear()
-        elseif userinput == "keys"                      keys()
+        elseif userinput == "clearall"                  clearall()
+        elseif userinput ∈ ["keys", "k"]                keys()
         elseif occursin(r"^check", userinput)           ALcheck(userinput)
         elseif occursin(r"^search", userinput)          ALsearch(userinput)
         elseif userinput == "preserve"                  ALpreserve()
@@ -219,6 +218,14 @@ let
         push!(logicset, activelogicset)
 
         println("Clear Workspace")
+    end
+
+    function clearall()
+       clear()
+       commandhistory = String["#Session Initiated"]
+       feasiblehistory = [0]
+       logichistory = [activelogicset]
+       logicset     = [activelogicset]
     end
 
     function back()

@@ -138,7 +138,7 @@ reportfeasible(command::String, verbose::Bool)::Function =
 
 function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
 
-    m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|(.*?)){0,1}$", command)
+    m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|\|(.*?)){0,1}$", command)
     left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
     vars   = split(left, ",")  .|> strip
     values = split(right, ",") .|> strip
@@ -181,32 +181,6 @@ end
 
 definelogicalset(command::String) = definelogicalset(LogicalCombo(), command)
 
-function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
-
-  (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
-
-  matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
-
-  m = match(matcher, argument)
-  nvar = 5-sum([i === nothing for i in m.captures])
-  (nvar==0) && throw("Argument $argument could not be parsed in $command")
-
-  v1, n1, o1, v2, n2 = m.captures
-
-  !(v1 === nothing) && (left  = logicset[:,Symbol(v1),true])
-  !(n1 === nothing) && (left  = fill(integer(n1), length(logicset[:])))
-
-  (nvar==1) && return left
-
-  !(v2 === nothing) && (right = logicset[:,Symbol(v2),true])
-  !(n2 === nothing) && (right = fill(integer(n2), length(left)))
-
-  (o1 == "+") && return left .+ right
-  (o1 == "-") && return left .- right
-  (o1 == "/") && return left ./ right
-  (o1 == "*") && return left .* right
-end
-
 function operatorspawn(command,
     logicset::LogicalCombo;
     returnlogical=false,
@@ -243,25 +217,26 @@ function operatorspawn(command,
         countrange = missing
     end
 
-
     iSet  = [m for m in matches if m[end:end] ∈ ["i", "j", "J"]]
-    iSet1 = [m[1:1] for m in iSet]
-    iSet2 = [m[1:2] for m in iSet if length(m)>=2]
+    # iSet1 = [m[1:1] for m in iSet]
+    # iSet2 = [m[1:2] for m in iSet if length(m)>=2]
 
-    iSetend = unique([m[end:end] for m in iSet])
+    iSetend = unique([replace(m, r".*(i|j).*$"=>s"\1") for m in matches if m[end:end] ∈ ["i", "j", "J"]])
 
-    (length(iSet)>2) && throw("Only one !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
+    leftmodifier = [replace(m, r"(i|j).*$"=>"") for m in iSet]
+
+    (leftmodifier[1] != "") && throw("i must be the first wildcard expressed")
+    (length(iSet)>3) && throw("Only three !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
     (length(iSetend)>1) && throw("Only one type i or j wildcard allowed")
+    (length(matches)>6) && throw("No more than 6 wildcard values allowed")
 
     mykeys   = keys(logicset)
+    # Reduce the keyset if `j` or `J` are used
     any(occursin.("J", iSet)) && (mykeys = [v for v in mykeys if !occursin(".", string(v))])
     any(occursin.("j", iSet)) &&
       (mykeys = unique([Symbol(replace(v, r"\..*$"=>"")) for v in string.(mykeys)]))
 
     mydomain = 1:length(mykeys)
-
-    wild  = matches[length.(matches) .== 1]
-    wild2 = matches[length.(matches) .!= 1]
 
     collection = []
 
@@ -269,33 +244,52 @@ function operatorspawn(command,
 
     iset = Symbol[]
 
-    for i in mydomain, j in mydomain
-      ((length(wild2)  == 0) || wild2[1][1] ∈ ["i","j","J"]) && (j>1)  && continue
-      ("!"   ∈ iSet1)       && (i==j) && continue
-      (">"   ∈ iSet1)       && (i>=j) && continue
-      ("<"   ∈ iSet1)       && (i<=j) && continue
-      (">="  ∈ iSet2)       && (i<j)  && continue
-      ("<="  ∈ iSet2)       && (i>j)  && continue
+    for i in mydomain, j in mydomain, k in mydomain
+      (length(leftmodifier) < 2) && (j>1) && continue
+      (length(leftmodifier) < 3) && (k>1) && continue
+
+      if length(leftmodifier)  >= 2
+          ("!"  == leftmodifier[2])  && (i   == j)   && continue
+          (">"  == leftmodifier[2])  && (i   >= j)   && continue
+          (">>" == leftmodifier[2])  && (i+1 >= j)   && continue
+          ("<"  == leftmodifier[2])  && (i   <= j)   && continue
+          ("<<" == leftmodifier[2])  && (i-1 <= j)   && continue
+          (">=" == leftmodifier[2])  && (i   <  j)   && continue
+          ("<=" == leftmodifier[2])  && (i   >  j)   && continue
+      end
+
+      if length(leftmodifier)  == 3
+          ("!"  == leftmodifier[3])  && (i   == k)   && continue
+          (">"  == leftmodifier[3])  && (i   >= k)   && continue
+          (">>" == leftmodifier[3])  && (i+1 >= k)   && continue
+          ("<"  == leftmodifier[3])  && (i   <= k)   && continue
+          ("<<" == leftmodifier[3])  && (i-1 <= k)   && continue
+          (">=" == leftmodifier[3])  && (i   <  k)   && continue
+          ("<=" == leftmodifier[3])  && (i   >  k)   && continue
+      end
       #println("$i and $j")
 
-       txtcmd = tempcommand
+       txtcmd = tempcommand |> x -> replace(x, "!}}"=>"}}")
 
-       # Sub out the j match in the command
-       (length(wild2)==1) && !(wild2[1][1] ∈ ["i","j","J"]) &&
-         (txtcmd = subout(txtcmd, j, wild2[1], mykeys))
-
-       # Sub out the i match in the command
-       (length(wild2)==1) &&  (wild2[1][1] ∈ ["i","j","J"]) &&
-         (txtcmd = subout(txtcmd, i, wild2[1], mykeys))
-
-       (length(wild)  == 1) && (txtcmd = subout(txtcmd, i, wild[1], mykeys))
-
-       if occursin("~~OUTOFBOUNDS~~", txtcmd)
-           # ("i" ∈ iSet) && push!(collection, fill(false, length(logicset[:])))
-           continue
+       # Sub out the j/i match in the command
+       for m in [m for m in matches if occursin(r"^(i|j|J)", m)]
+         txtcmd = subout!(txtcmd, i, replace(m, r"\!$"=>""), mykeys)
        end
 
+       (length(iSet) >= 2) && (txtcmd = subout!(txtcmd, j, iSet[2], mykeys))
+       (length(iSet) == 3) && (txtcmd = subout!(txtcmd, k, iSet[3], mykeys))
+
+
+       occursin("~~OUTOFBOUNDS~~", txtcmd) & !occursin("!}}", tempcommand) && continue
+
+       if occursin("~~OUTOFBOUNDS~~", txtcmd) && occursin("!}}", tempcommand)
+           txtcmd = replace(txtcmd, "~~OUTOFBOUNDS~~"=> "999" )
+           # push!(collection, fill(false, length(logicset[:])))
+       end
+       # verbose &&  println(prefix * "$txtcmd")
+
        ℧∇ = logicset[:]
+
        try
            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
            verbose &&  println(prefix * "$txtcmd")
@@ -320,8 +314,9 @@ function operatorspawn(command,
     logicsetcopy[:] = ℧Δ
     logicsetcopy
 end
+# operatorspawn("{{i}} < {{<i}} ||| {{i}} > {{>i}}", logicset) |> showfeasible
 
-function subout(txtcmd, i, arg, mykeys)
+function subout!(txtcmd, i, arg, mykeys)
   lookup(vect, i) = i ∈ 1:length(vect) ? vect[i] : "~~OUTOFBOUNDS~~"
 
   (arg[end] ∈ ['i', 'j', 'J'])  && return replace(txtcmd, "{{$arg}}"=>lookup(mykeys,i))
@@ -334,7 +329,8 @@ function subout(txtcmd, i, arg, mykeys)
   txtcmd
 end
 
-
+subout("{{i+1!}}{{>i}}", 2, "i+1!", [:a, :b, :c])
+# subout("{{i+1}}{{>i}}", 2, ">i",  [:a, :b, :c])
 
 """
 

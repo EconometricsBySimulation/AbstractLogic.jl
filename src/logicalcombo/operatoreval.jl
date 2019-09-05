@@ -107,3 +107,29 @@ function operatoreval(command, logicset::LogicalCombo; verbose=true)
 
     logicsetcopy
 end
+
+function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
+
+  (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
+
+  matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
+
+  m = match(matcher, argument)
+  nvar = 5-sum([i === nothing for i in m.captures])
+  (nvar==0) && throw("Argument $argument could not be parsed in $command")
+
+  v1, n1, o1, v2, n2 = m.captures
+
+  !(v1 === nothing) && (left  = logicset[:,Symbol(v1),true])
+  !(n1 === nothing) && (left  = fill(integer(n1), length(logicset[:])))
+
+  (nvar==1) && return left
+
+  !(v2 === nothing) && (right = logicset[:,Symbol(v2),true])
+  !(n2 === nothing) && (right = fill(integer(n2), length(left)))
+
+  (o1 == "+") && return left .+ right
+  (o1 == "-") && return left .- right
+  (o1 == "/") && return left ./ right
+  (o1 == "*") && return left .* right
+end

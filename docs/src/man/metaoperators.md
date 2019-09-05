@@ -23,22 +23,62 @@ Notationally `x`, `y`, and `z` will refer to operations composed of at least
 one *operator* or *superoperator*.
 
 * `x &&&& y` both x and y must be `true`. Command end operator `;` is often preferred to joint evaluators since it is more efficient. In `x ; y` efficiency is gained by evaluating `x` first, reducing the feasible set, then evaluating `y`.
-**Note** `x AND y` is equivalent expression.
+**Note** `x AND y` is an equivalent expression.
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b &&&& b > c
+a > b &&&& b > c                  feasible outcomes 1 ✓✓          :3 2 1
+```
 
 * `x |||| y` either x or y must be `true`. If both are `false` then total expression will return false.
 **Note** `x OR y` is equivalent
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b |||| b > c
+a > b |||| b > c                  feasible outcomes 17 ✓          :2 2 1
+```
 
-* `x ^^^^ y` either x or y must be `true` but not both. If both are `false` or both are `true` then it will return false.
-**Note** `x XOR y` and `x !=== y` are equivalent (`x` and `y` can only be `true` or `false`)
+* `x !=== y` either x or y must be `true` but not both. If both are `false` or both are `true` then it will return false.
+**Note** `x XOR y` and `x ^^^^ y` are equivalent (`x` and `y` can only be `true` or `false`)
+#### Example
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b !=== b > c
+a > b !=== b > c                  feasible outcomes 16 ✓          :3 3 2
+```
 
 * `x ==== y` if `x = true` then `y = true` or if `x = false` then `y = false`.
 **Note** `x IFF y` and `x <==> y` are equivalent
+#### Example
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b ==== b > c
+a > b ==== b > c                  feasible outcomes 11 ✓          :1 3 3
+```
 
 * `x ===> y` if `x = true` then `y` must be `true`.
 **Note** `IF x THEN y` is equivalent
+#### Example
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b ===> b > c
+a > b ===> b > c                  feasible outcomes 19 ✓          :3 3 3
+```
 
 * `x <=== y` if `y = true` then `x` must be `true`.
 **Note** `x IF y` is equivalent
+#### Example
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
+abstractlogic> a > b <=== b > c
+a > b <=== b > c                  feasible outcomes 19 ✓          :3 1 1
+```
 
 
 ### Chaining Operators
