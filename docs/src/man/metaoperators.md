@@ -130,5 +130,4 @@ abstractlogic> true !=== false !=== true
 true !=== false !=== true        feasible outcomes 0 X            [empty set]
 ```
 
-
 **Note** *Wildcards* are spawned on the level below *metaoperators*. This allows multiple sets of *wildcards* to be evaluated separately.
