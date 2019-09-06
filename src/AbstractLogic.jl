@@ -21,7 +21,17 @@ export abstractlogic,
        search,
        showfeasible,
        discover,
-       abstractlogic
+       returnactivelogicset,
+       dashboard!,
+       dashboard,
+       showlogichistory,
+       showcommandhistory,
+       showuserinput,
+       showsetlocation,
+       showcmdlocation,
+       returnlogicset,
+       showcommandlist
+
 
 ##############################################################################
 ##
