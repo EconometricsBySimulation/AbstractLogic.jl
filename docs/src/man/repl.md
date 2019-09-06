@@ -78,9 +78,8 @@ Empty the current as well as the logicset space.
 **Warning** This cannot be undone!
 
 ---
-#### clearall
-Empty the current as well as the logicset space.
-**Warning** This cannot be undone!
+#### dashboard dash
+Toggles the dashboard printout - primarily used for debugging.
 
 ---
 #### history h

@@ -28,6 +28,7 @@ end
 "Restore the last saved variable space." |> funadd("restore", "REPL")
 "Show command history with # feasible." |> funadd(["history", "h"], "REPL")
 "List variables names." |> funadd(["keys","k"], "REPL")
+"Toggles the dashboard printout - primarily used for debugging." |> funadd(["dashboard", "dash"], "REPL")
 
 """
 Show all logical sets currently in working REPL memmory. Exiting the REPL:
