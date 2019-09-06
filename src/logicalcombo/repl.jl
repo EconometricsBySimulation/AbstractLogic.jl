@@ -160,7 +160,7 @@ let
        y = replace(x, r"^export( as){0,1} " => "")
        Core.eval(Main, Meta.parse("$y = returnactivelogicset()"))
        printmarkdown("`julia> `$y = `returnactivelogicset()`")
-       println("LogicalCombo $y at AbstractLogic.$y")
+       println()
     end
 
     function history()
