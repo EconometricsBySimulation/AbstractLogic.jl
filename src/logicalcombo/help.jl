@@ -18,21 +18,34 @@ function funadd(name::Array{String}, category)
 end
 
 ## Repl
-"print a table of 10 feasible results (head and tail)." |> funadd(["show", "s"], "REPL")
-"print a table of all feasible results." |> funadd("showall", "REPL")
-"go back one command." |> funadd(["back", "b"], "REPL")
-"go forward one command. Only works if you have gone back first." |> funadd(["next", "n", "f"], "REPL")
-"empty the current variable space." |> funadd("clear", "REPL")
-"empty the current as well as the logicset space." |> funadd("clear", "REPL")
-"save the current variable space for use with restore." |> funadd("preserve", "REPL")
-"restore the last saved variable space." |> funadd("restore", "REPL")
-"show command history with # feasible." |> funadd(["history", "h"], "REPL")
-"list variables name.s" |> funadd(["keys","k"], "REPL")
+"Print a table of 10 feasible results (head and tail)." |> funadd(["show", "s"], "REPL")
+"Print a table of all feasible results." |> funadd("showall", "REPL")
+"Go back one command." |> funadd(["back", "b"], "REPL")
+"Go forward one command. Only works if you have gone back first." |> funadd(["next", "n", "f"], "REPL")
+"Empty the current variable space." |> funadd("clear", "REPL")
+"Empty the current as well as the logicset space." |> funadd("clearall", "REPL")
+"Save the current variable space for use with restore." |> funadd("preserve", "REPL")
+"Restore the last saved variable space." |> funadd("restore", "REPL")
+"Show command history with # feasible." |> funadd(["history", "h"], "REPL")
+"List variables names." |> funadd(["keys","k"], "REPL")
+
 """
-show all logical sets currently in working REPL memmory. Exiting the REPL:
+Show all logical sets currently in working REPL memmory. Exiting the REPL:
 `julia> returnactivelogicset()` returns the most recent set
 `julia> returnlogicset()` returns a vector of all sets worked on int REPL
 """ |> funadd(["logicset","ls"], "REPL")
+
+"""
+Returns documentation related to a function or command to the user.
+
+**NOTE** `julia> help(...)` returns identical information.
+###### Example
+abstractlogic> ? >
+  Operator: >
+
+  a > b : a is greater than b
+""" |> funadd(["?", "help"], "REPL")
+
 
 """
 check feasibility of subsequent command
@@ -430,7 +443,7 @@ metaoperatorlist  = [v[1] for v in catdict if v[2]=="Metaoperator"]  |> sort
 wildcardlist      = [v[1] for v in catdict if v[2]=="Wildcard"]      |> sort
 
 function help(x::String)
-  x = replace(x, r"^\?"=>"") |> strip
+  x = replace(x, r"^(\?|help)"=>"") |> strip
   if (haskey(fundict, x))
     also = (length(equivdict[x]) == 1 ? "" : "**variantes:** `" * join(equivdict[x],", ") * "` \n")
     "**$(catdict[x])**: `$x` \n " * also * " \n " * fundict[x] |>

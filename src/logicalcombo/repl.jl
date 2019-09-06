@@ -1,7 +1,7 @@
 using ReplMaker, Markdown
 
 function parse_to_expr(s)
-   abstractlogicrepl(s)
+   abstractlogic(s)
 
    if activecommandshow()
      println("\n")
@@ -64,14 +64,14 @@ let
     testingset = ""
     testreset() = (testmode = false; testset = ""; testcount = 0)
 
-    global function abstractlogicrepl(replinput; returnactive = false)
+    global function abstractlogic(replinput; returnactive = false)
 
         userinput = replinput |> strip |> tounicode
         # println("User input {$userinput}")
         (occursin("t(", userinput) || testmode) && (userinput = testcall(userinput))
 
         if strip(userinput) == ""                       nothing()
-        elseif occursin(r"^\?", userinput)              help(userinput)
+        elseif occursin(r"^(\?|help)", userinput)       help(userinput)
         elseif occursin(r"^show$", userinput)           ALshow()
         elseif occursin(r"^showall$", userinput)        showall()
         elseif userinput ∈ ["back", "b"]                back()
@@ -90,7 +90,7 @@ let
         else                                            ALparse(userinput)
         end
         returnactive && return activelogicset
-        !returnactive && return nothing
+        nothing
     end
 
     tounicode(x) = replace(x, r"\bin\b"=>"∈")
@@ -108,22 +108,22 @@ let
     function testcall(userinput)
         if userinput == "t(1)"
             clear()
-            abstractlogicrepl("a,b,c ∈ 1:4")
-            abstractlogicrepl("a|c = 1")
-            abstractlogicrepl("a > b")
+            abstractlogic("a,b,c ∈ 1:4")
+            abstractlogic("a|c = 1")
+            abstractlogic("a > b")
             return "b > c"
         elseif userinput == "t(hp)"
             clear()
-            abstractlogicrepl("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
-            abstractlogicrepl("{{i}} == 'NW' {{2}}")
-            abstractlogicrepl("{{i}} == 'MA' {{1}}")
-            abstractlogicrepl("{{i}} == 'MB' {{1}}")
-            abstractlogicrepl("{{i}} == 'PO' {{3}}")
-            abstractlogicrepl("{{i+1}} == 'NW' ==> {{i}} == 'PO'")
-            abstractlogicrepl("a != 'NW'")
-            abstractlogicrepl("a != g")
-            abstractlogicrepl("a,g != 'MA'")
-            abstractlogicrepl("c,f != 'PO'")
+            abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
+            abstractlogic("{{i}} == 'NW' {{2}}")
+            abstractlogic("{{i}} == 'MA' {{1}}")
+            abstractlogic("{{i}} == 'MB' {{1}}")
+            abstractlogic("{{i}} == 'PO' {{3}}")
+            abstractlogic("{{i+1}} == 'NW' ==> {{i}} == 'PO'")
+            abstractlogic("a != 'NW'")
+            abstractlogic("a != g")
+            abstractlogic("a,g != 'MA'")
+            abstractlogic("c,f != 'PO'")
             return "b == f"
         end
         return userinput

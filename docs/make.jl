@@ -21,12 +21,12 @@ makedocs(
         "User Guide" => Any[
             "Getting Started" => "man/getting_started.md",
             "Command Snytax" => "man/commandsyntax.md",
+            "RELP" => "man/repl.md",
             "Generators" => "man/generators.md",
             "Operators" => "man/operators.md",
             "Super Operators" => "man/superoperators.md",
             "Meta Operators" => "man/metaoperators.md",
-            "Wildcards" => "man/wildcards.md",
-            "RELP mode" => "man/relpmode.md"
+            "Wildcards" => "man/wildcards.md"
         ],
         "API" => Any[
             "Types" => "lib/types.md",
