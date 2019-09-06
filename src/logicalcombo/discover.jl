@@ -22,6 +22,18 @@ function discover(x::LogicalCombo)
        push!(ncommands, length(x.commands))
        (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
      end
+
+     try
+       x = getfield(AbstractLogic, v)
+       if isa(x, LogicalCombo)
+         push!(logicalcombonames, string(v))
+         push!(variables, join(keys(x),", "))
+         push!(nfeasiblelist, nfeasible(x))
+         push!(ncommands, length(x.commands))
+         (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
+       end
+     catch
+     end
    end
 
    (length(logicalcombonames)==0) && (println("No LogicalCombos found in Main"); return)
