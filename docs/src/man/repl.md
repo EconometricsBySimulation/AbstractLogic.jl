@@ -24,7 +24,7 @@ julia> showfeasible(myset)
 
 ### Basic REPL Interactivity
 The `repl` by default will take any command that the parser will take and sent it to the `logicalparser` for evaluation. The primary difference is that `logicalparser` will return a `LogicalCombo` to user while the `repl` will keep it in active memory to be automatically referenced by future commands.
-###### Example
+##### Example
 ```julia
 abstractlogic> a, b, c ∈ 1:3; a = b|c
 
@@ -114,7 +114,7 @@ Restore the last saved variable space.
 ---
 #### search
 Search for the feasibility of {{i}} match
-### Example
+##### Example
 ```julia
 `abstractlogic>` a,b,c ∈ 1:3
 a,b,c ∈ 1:3              feasible outcomes 27 ✓          :2 3 3
