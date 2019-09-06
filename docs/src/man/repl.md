@@ -82,8 +82,23 @@ Empty the current as well as the logicset space.
 Toggles the dashboard printout - primarily used for debugging.
 
 ---
+#### discover d
+Search `Main` for any `LogicalCombos`.
+**See Also** `import` to bring `LogicalCombo` from `Main` and `export` to send `LogicalCombo` to `Main`
+
+---
+#### export
+send `LogicalCombo` to `Main`
+**See Also** `discover` to search `Main` for any `LogicalCombos` and `import` to  bring `LogicalCombo` from `Main`.
+
+---
 #### history h
 "Show command history with # feasible."
+
+---
+#### import
+bring `LogicalCombo` from `Main`
+**See Also** `discover` to search `Main` for any `LogicalCombos` and `export` to send `LogicalCombo` to `Main`
 
 ---
 #### keys
