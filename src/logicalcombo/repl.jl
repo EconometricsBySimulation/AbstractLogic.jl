@@ -379,7 +379,7 @@ function discover(x::LogicalCombo)
        push!(logicalcombonames, string(v))
        push!(variables, join(keys(x),", "))
        push!(nfeasiblelist, nfeasible(x))
-       push!(ncommands, nfeasible(x))
+       push!(ncommands, length(x.commands))
        (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
      end
    end
