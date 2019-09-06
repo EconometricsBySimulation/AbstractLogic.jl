@@ -10,7 +10,7 @@ pkg> dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
 
 ## Interacting with AbstractLogic
-There are two basic methods of interacting with the solver: `logicalparse` and `logicalrepl`. `logicalparse` is generally preferred when programmatically interacting with the solver while `logicalrepl` is convenient when interacting with the solver less formally.
+There are two basic methods of interacting with the solver: `logicalparse` and the `REPL`. `logicalparse` is generally preferred when programmatically interacting with the solver while `REPL` is convenient when interacting with the solver less formally.
 
 ### Julia AbstractLogic Functions: `logicalparse`, `checkfeasible`, `search`
 One method is using `Julia` functions mainly `logicalparse`, `checkfeasible`, and `search`. This method relies primarily on `LogicalCombo` objects which are generated from and can be passed into `logicalparse`.

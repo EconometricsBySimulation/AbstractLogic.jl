@@ -1,3 +1,4 @@
+
 """
     checkfeasible(command::String, logicset::LogicalCombo; verbose=true, force=false, countany=false)
 

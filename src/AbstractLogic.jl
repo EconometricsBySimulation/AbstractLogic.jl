@@ -10,8 +10,7 @@ module AbstractLogic
 using Pkg
 Pkg.activate(".")
 
-using ReplMaker,
-      Markdown
+using ReplMaker, Markdown, StatsBase
 
 ##############################################################################
 ##
@@ -37,17 +36,25 @@ include("logicalcombo/LogicalCombo.jl")
 
 include("logicalcombo/logicalparse.jl")
 
+include("logicalcombo/expand.jl")
+
+include("logicalcombo/usefulfunctions.jl")
+
+include("logicalcombo/definelogicalset.jl")
+
 include("logicalcombo/operatoreval.jl")
-#
-# include("logicalcombo/superoperator.jl")
-#
-# include("logicalcombo/metaoperator.jl")
-#
-# include("logicalcombo/search.jl")
-#
-# include("logicalcombo/checkfeasible.jl")
-#
-# include("logicalcombo/showfeasible.jl")
+
+include("logicalcombo/superoperator.jl")
+
+include("logicalcombo/metaoperator.jl")
+
+include("logicalcombo/operatorspawn.jl")
+
+include("logicalcombo/search.jl")
+
+include("logicalcombo/checkfeasible.jl")
+
+include("logicalcombo/showfeasible.jl")
 
 include("logicalcombo/repl.jl")
 

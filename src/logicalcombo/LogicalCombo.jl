@@ -58,61 +58,7 @@ function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symb
     LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
 end
 
-function expand(x::LogicalCombo, mykeys::Union{Array{String},Array{String,1}}, myvalues::Union{Array{Any},Array{Int},Array{String,1}})
-  isempty(mykeys) && return x
 
-  keyset = map(x->Symbol(x), mykeys)
-  mydomain = [myvalues for i in 1:length(mykeys)]
-
-  (size(x)[2]==0) && return LogicalCombo(keyset, mydomain, fill(true,*(length.(mydomain)...)))
-
-  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined!") , keyset)
-
-  expander = *(length.(mydomain)...)
-  outlogical = fill(x.logical, each = expander)
-
-  LogicalCombo([x.keys..., keyset...], [x.domain..., mydomain...], outlogical)
-end
-
-function expand(x::LogicalCombo; kwargs...)
-  if isempty(kwargs)
-    return x
-  elseif size(x)[2]==0
-    return LogicalCombo([kwargs...])
-  else
-    mykeys = []; mydomain = []
-    for (kw, val) in kwargs;
-        push!(mykeys, kw)
-        push!(mydomain, val)
-    end
-  end
-
-  foreach(y -> (y ∈ x.keys) && throw("key :$y already defined!") , mykeys)
-
-  expander = *(length.(mydomain)...)
-  outlogical = fill(x.logical, each = expander)
-
-  LogicalCombo([x.keys..., mykeys...], [x.domain..., mydomain...], outlogical)
-end
-
-function expand(logicset::LogicalCombo, x::Union{Array{Pair{Symbol, Any}}, Array{Pair{Symbol,UnitRange{Int64}},1}})
-
-    (length(logicset.keys) == 0) && return LogicalCombo(x)
-    (length(x) == 0) && return logicset
-
-    mykeys = []; mydomain = []
-    for (kw, val) in x;
-        push!(mykeys, kw)
-        push!(mydomain, val)
-    end
-
-  foreach(y -> (y ∈ logicset.keys) && throw("key :$y already defined!"), mykeys)
-
-  expander = *(length.(mydomain)...)
-  outlogical = fill(logicset.logical, each = expander)
-
-  LogicalCombo([logicset.keys..., mykeys...], [logicset.domain..., mydomain...], outlogical)
-end
 
 Base.keys(x::LogicalCombo)     = x.keys
 domain(x::LogicalCombo)        = x.domain
@@ -148,15 +94,20 @@ end
 
 Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
 Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
-Base.getindex(x::LogicalCombo, y::Union{BitArray{1},Array{Bool,1}}) =
+Base.getindex(x::LogicalCombo, y::Union{Array}) =
   [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
 
 ###############################################################################
 ## Logical Combo [x,y] two index
 
-Base.getindex(x::LogicalCombo, row::Integer, col::String) = x[row, Symbol(col)]
+Base.getindex(x::LogicalCombo, row::Union{Integer,Array}, col::String) = x[row, Symbol(col)]
 
 Base.getindex(x::LogicalCombo, ::Colon, col::String) = x[:, Symbol(col)]
+
+Base.getindex(x::LogicalCombo, row::Union{Integer,Array{Int64}}, ::Colon) =
+  hcat([ x[i,:] for i in collect(row) ]...)'
+
+Base.getindex(x::LogicalCombo, row::UnitRange, ::Colon) = x[collect(row),:]
 
 Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}) =
   [ x[i,col] for i = 1:size(x)[1] ]
@@ -178,7 +129,7 @@ Base.getindex(x::LogicalCombo, ::Colon, y::Union{Int64,Symbol,String}, z::Bool) 
 Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, ::Colon) =
   x[(1:size(x)[1])[x[:]][y],:]
 
-Base.getindex(x::LogicalCombo, y::Int64 , ::Colon, z::Bool) =
+Base.getindex(x::LogicalCombo, y::Union{Int64, Array}, ::Colon, z::Bool) =
   x[(1:size(x)[1])[x[:] .== z][y],:]
 
 Base.getindex(x::LogicalCombo, j::Int64, y::Union{Int64,Symbol,String}, z::Bool) =
@@ -214,31 +165,19 @@ function Base.range(x::LogicalCombo)
   p
 end
 
+nfeasible(x::LogicalCombo; feasible::Bool=true) =
+  (feasible ? sum(x.logical) : size(x,1) - sum(x.logical))
+  
+nfeasible(x::LogicalCombo, feasible::Bool) = nfeasible(x::LogicalCombo; feasible=feasible)
 
-nfeasible(x::LogicalCombo) = sum(x.logical)
-pull(x::LogicalCombo) = (nfeasible(x) == 0 ? [] : x[rand(1:nfeasible(x)),:,:])
+function StatsBase.sample(x::LogicalCombo; n=1, feasible=true)
+  if nfeasible(x) == 0
+    return []
+  else
+    y = x[sample(1:nfeasible(x, feasible), n, replace=false),:,feasible]
+    return sort(y, dims=1)
+  end
+end
 
-"""
-    showfeasible
-
-Collects a matrix of only feasible outcomes given the parameter space and the
-constraints. Use `collect` to output a matrix of all possible matches for
-parameter space.
-
-### Examples
-```julia
-julia> myset = logicalparse("a, b, c in 1:3")
-a,b,c in 1:3             feasible outcomes 27 ✓          :3 3 3
-
-julia> myset = logicalparse("a == b; c > b", myset)
-a == b                   feasible outcomes 9 ✓           :1 1 3
-c > b                    feasible outcomes 3 ✓           :2 2 3
-
-julia> showfeasible(myset)
-3×3 Array{Int64,2}:
- 1  1  2
- 1  1  3
- 2  2  3
-```
-"""
-showfeasible(x::LogicalCombo) = x[:,:,true]
+StatsBase.sample(x::LogicalCombo, n; feasible=true) = sample(x, n=n, feasible=feasible)
+StatsBase.sample(x::LogicalCombo, n, feasible) = sample(x, n=n, feasible=feasible)
