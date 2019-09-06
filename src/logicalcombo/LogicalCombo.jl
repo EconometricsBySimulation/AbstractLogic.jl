@@ -6,11 +6,11 @@ representation of feasible values given constraints.
 
 **Fields**
 
-*keys : Stores the names of variables.
-*domain : Stores the range of possible matches variables can have.
-*logical : A binary vector marking feasibility of length equal to every
+* keys : Stores the names of variables.
+* domain : Stores the range of possible matches variables can have.
+* logical : A binary vector marking feasibility of length equal to every
     possible combination of value which the matrix could take on.
-*commandlist : An array collection of the strings input to generate the current
+* commandlist : An array collection of the strings input to generate the current
     state of the the object.
 
 **Indexing**
@@ -19,7 +19,8 @@ representation of feasible values given constraints.
     return matrix point values regardless of feasibility.
 * [:,:] Will collect the entire possible domain and is the same as `collect()`.
 * [x,0] Will return the logical vector values
-* [x,y,true] Will return the xth feasible value of the
+* [x,:,true] Will return the xth feasible value of the LogicalCombo set.
+* [x,:,false] Will return the xth infeasible value of the LogicalCombo set.
 """
 struct LogicalCombo
   keys::Array{Symbol}
