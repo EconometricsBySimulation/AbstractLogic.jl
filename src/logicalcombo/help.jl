@@ -24,7 +24,7 @@ end
 "Go forward one command. Only works if you have gone back first." |> funadd(["next", "n", "f"], "REPL")
 "Empty the current variable space." |> funadd("clear", "REPL")
 "Empty the current as well as the logicset space." |> funadd("clearall", "REPL")
-"Save the current variable space for use with restore." |> funadd("preserve", "REPL")
+"Save the current variable space for use with `restore`." |> funadd("preserve", "REPL")
 "Restore the last saved variable space." |> funadd("restore", "REPL")
 "Show command history with # feasible." |> funadd(["history", "h"], "REPL")
 "List variables names." |> funadd(["keys","k"], "REPL")
