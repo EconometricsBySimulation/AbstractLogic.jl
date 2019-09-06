@@ -21,3 +21,11 @@ julia> showfeasible(myset)
  ⋮      
  3  3  3
 ```
+
+## REPL Commands
+Most commands should be entered directly in the REPL mode after the prompt and are executed with an enter at the end of the line.
+
+### 
+
+---
+#### back b
