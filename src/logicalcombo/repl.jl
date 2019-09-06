@@ -335,12 +335,12 @@ end
 
 
 """
-    logicalrepl(;preserve = false)
+    abstractlogic(;preserve = false)
 
 Enter the psuedo REPL for abstract logical reasoning.
 
 ```julia
-julia> logicalrepl()
+julia> abstractlogic()
 Welcome to the abstract logic solver interactive mode!
 'exit' to exit
 'clear' to empty the environment space
@@ -362,35 +362,4 @@ c != 1                   feasible outcomes 1 ✓✓          :3 3 2
 AL: exit
 ```
 """
-
-function discover(x::LogicalCombo)
-   nameset = names(Main)
-
-   logicalcombonames = String[]
-   variables         = String[]
-   nfeasiblelist     = Int16[]
-   ncommands         = Int16[]
-   lastcommand       = String[]
-
-   for v in nameset
-     # global logicalcombonames, variables, nfeasible, ncommands
-     x = getfield(Main, v)
-     if isa(x, LogicalCombo)
-       push!(logicalcombonames, string(v))
-       push!(variables, join(keys(x),", "))
-       push!(nfeasiblelist, nfeasible(x))
-       push!(ncommands, length(x.commands))
-       (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
-     end
-   end
-
-   txtout = "| Name | Variables | #feasible | #commands | Last Command | \n"
-   txtout *= "| :---: | :---: | :---: | :---: | :---: | \n"
-
-   for i in 1:length(logicalcombonames)
-       txtout *= "| $(logicalcombonames[i]) | $(variables[i]) | " *
-             "$(nfeasiblelist[i]) | $(ncommands[i]) | $(lastcommand[i]) | \n"
-   end
-
-   printmarkdown(txtout)
-end
+abstractlogic = abstractlogic

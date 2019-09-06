@@ -79,12 +79,6 @@ end
 Base.collect(x::LogicalCombo; bool::Bool=true, varnames::Bool=true) =
   [x[i,j] for i in !varnames:size(x)[1], j in !bool:size(x)[2]]
 
-Base.getindex(x::LogicalCombo, row::Int, ::Colon; bool::Bool=false) =
-  [ x[row,i] for i = !bool:size(x)[2] ]
-
-Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}; bool::Bool=false) =
-  [ x[i,col] for i = 1:size(x)[1]]
-
 
 function Base.getindex(x::LogicalCombo, row::Integer, col::Symbol)
   keymatch = findall(y -> y == col , x.keys)
@@ -100,17 +94,23 @@ Base.getindex(x::LogicalCombo, y::Union{Array}) =
 ###############################################################################
 ## Logical Combo [x,y] two index
 
-Base.getindex(x::LogicalCombo, row::Union{Integer,Array}, col::String) = x[row, Symbol(col)]
+Base.getindex(x::LogicalCombo, row::Int, ::Colon; bool::Bool=false) =
+  [ x[row,i] for i = !bool:size(x)[2] ]
+
+Base.getindex(x::LogicalCombo, y::Union{Integer,Array}, col::String) = x[y, Symbol(col)]
 
 Base.getindex(x::LogicalCombo, ::Colon, col::String) = x[:, Symbol(col)]
 
-Base.getindex(x::LogicalCombo, row::Union{Integer,Array{Int64}}, ::Colon) =
-  hcat([ x[i,:] for i in collect(row) ]...)'
+Base.getindex(x::LogicalCombo, y::Union{Integer,Array{Int64}}, ::Colon) =
+  hcat([ x[i,:] for i in collect(y) ]...)'
 
 Base.getindex(x::LogicalCombo, row::UnitRange, ::Colon) = x[collect(row),:]
 
-Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}) =
-  [ x[i,col] for i = 1:size(x)[1] ]
+Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}; bool::Bool=false) =
+  [ x[i,col] for i = 1:size(x)[1]]
+
+# Base.getindex(x::LogicalCombo, ::Colon, col::Union{Int64,Symbol}) =
+#   [ x[i,col] for i = 1:size(x)[1] ]
 
 ###############################################################################
 ## Logical Combo [x,y,z] three index
@@ -167,7 +167,7 @@ end
 
 nfeasible(x::LogicalCombo; feasible::Bool=true) =
   (feasible ? sum(x.logical) : size(x,1) - sum(x.logical))
-  
+
 nfeasible(x::LogicalCombo, feasible::Bool) = nfeasible(x::LogicalCombo; feasible=feasible)
 
 function StatsBase.sample(x::LogicalCombo; n=1, feasible=true)

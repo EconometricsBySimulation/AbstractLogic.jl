@@ -6,10 +6,6 @@ module AbstractLogic
 ## Dependencies
 ##
 ##############################################################################
-# cd("/Users/francissmart/Documents/GitHub/AbstractLogic")
-using Pkg
-Pkg.activate(".")
-
 using ReplMaker, Markdown, StatsBase
 
 ##############################################################################
@@ -23,8 +19,9 @@ export checkfeasible,
        logicalparse,
        logicalrepl,
        search,
-       showfeasible
-
+       showfeasible,
+       discover,
+       abstractlogic
 
 ##############################################################################
 ##
@@ -59,5 +56,7 @@ include("logicalcombo/showfeasible.jl")
 include("logicalcombo/repl.jl")
 
 include("logicalcombo/help.jl")
+
+include("logicalcombo/discover.jl")
 
 end # module AbstractLogic
