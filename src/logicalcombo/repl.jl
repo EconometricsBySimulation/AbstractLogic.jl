@@ -159,7 +159,7 @@ let
     function ALexport(x)
        y = replace(x, r"^export( as){0,1} " => "")
        eval(Meta.parse("$y = returnactivelogicset()"))
-       printmarkdown("`julia>` $y = `returnactivelogicset()`")
+       printmarkdown("`julia>` global $y = `returnactivelogicset()`")
        println()
     end
 

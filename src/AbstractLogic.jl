@@ -14,10 +14,10 @@ using ReplMaker, Markdown, StatsBase
 ##
 ##############################################################################
 
-export checkfeasible,
+export abstractlogic,
+       checkfeasible,
        LogicalCombo,
        logicalparse,
-       logicalrepl,
        search,
        showfeasible,
        discover,
