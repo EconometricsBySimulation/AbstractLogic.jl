@@ -76,26 +76,27 @@ let
         # println("User input {$userinput}")
         (occursin("t(", userinput)) && (userinput = testcall(userinput))
 
-        if strip(userinput) == ""                       nothing()
-        elseif occursin(r"^(\?|help)", userinput)       help(userinput)
-        elseif occursin(r"^show$", userinput)           ALshow()
-        elseif occursin(r"^showall$", userinput)        showall()
-        elseif userinput ∈ ["back", "b"]                back()
-        elseif userinput ∈ ["discover", "d"]            discover(LogicalCombo())
-        elseif userinput ∈ ["next", "n", "f"]           next()
-        elseif occursin(r"^import ", userinput)         ALimport(userinput)
-        elseif occursin(r"^dash(board)?$", userinput)   dashboard!()
-        elseif userinput ∈ ["history", "h"]             history()
-        elseif occursin(r"^command[ ]*list", userinput) itemprint(commandlist)
-        elseif userinput ∈ ["logicset","ls"]            itemprint(logicset)
-        elseif userinput == "clear"                     clear()
-        elseif userinput == "clearall"                  clearall()
-        elseif userinput ∈ ["keys", "k"]                keys()
-        elseif occursin(r"^check", userinput)           ALcheck(userinput)
-        elseif occursin(r"^search", userinput)          ALsearch(userinput)
-        elseif userinput == "preserve"                  ALpreserve()
-        elseif userinput == "restore"                   restore()
-        else                                            ALparse(userinput)
+        if strip(userinput) == ""                         nothing()
+        elseif occursin(r"^(\?|help)", userinput)         help(userinput)
+        elseif occursin(r"^show$", userinput)             ALshow()
+        elseif occursin(r"^showall$", userinput)          showall()
+        elseif userinput ∈ ["back", "b"]                  back()
+        elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())
+        elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
+        elseif userinput ∈ ["next", "n", "f"]             next()
+        elseif occursin(r"^import ", userinput)           ALimport(userinput)
+        elseif occursin(r"^dash(board)?$", userinput)     dashboard!()
+        elseif userinput ∈ ["history", "h"]               history()
+        elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
+        elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
+        elseif userinput == "clear"                       clear()
+        elseif userinput == "clearall"                    clearall()
+        elseif userinput ∈ ["keys", "k"]                  keys()
+        elseif occursin(r"^check", userinput)             ALcheck(userinput)
+        elseif occursin(r"^search", userinput)            ALsearch(userinput)
+        elseif userinput == "preserve"                    ALpreserve()
+        elseif userinput == "restore"                     restore()
+        else                                              ALparse(userinput)
         end
         returnactive && return activelogicset
         nothing
@@ -153,6 +154,13 @@ let
           println("Check: a = 2|3")
           println("Check: {{i}} != {{i+1}}")
         end
+    end
+
+    function ALexport(x)
+       y = replace(x, r"^export( as){0,1} " => "")
+       eval(Meta.parse("$y = returnactivelogicset()"))
+       printmarkdown("`julia>` $y = `returnactivelogicset()`")
+       println()
     end
 
     function history()
@@ -372,7 +380,7 @@ function discover(x::LogicalCombo)
        push!(variables, join(keys(x),", "))
        push!(nfeasiblelist, nfeasible(x))
        push!(ncommands, nfeasible(x))
-       push!(lastcommand, last(x.commands))
+       (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
      end
    end
 
