@@ -3,17 +3,22 @@ using ReplMaker, Markdown
 function parse_to_expr(s)
    abstractlogic(s)
 
-   if activecommandshow()
-     println("\nCommand Lists:")
-     for i in 1:length(showcommandlist())
-         println(showcommandlist()[i])
+   if dashboard()
+     println("\nCommand Lists:" * string(showsetlocation()))
+     for v in showcommandlist()
+         println(v)
      end
-     println("\nLogicSet Lists:")
-     for v in returnlogicset(); println(v); end
+
      println("\nCommand Location:" * string(showcmdlocation()))
      for v in showcommandhistory()
          println(v)
      end
+
+     println("\nLogicSet Lists:" * string(showsetlocation()))
+     for v in returnlogicset()
+         println(join(collect(string(v))[1:(min(200,end))]))
+     end
+
    end
    nothing
 end
@@ -38,9 +43,9 @@ let
     global showcommandhistory() = commandhistory
     global showlogichistory() = logichistory
 
-    activeshow = false
-    global activecommandshow() = activeshow
-    global activecommandshow!() = activeshow = !activeshow
+    dashboardshow = false
+    global dashboard() = dashboardshow
+    global dashboard!() = dashboardshow = !dashboardshow
     global returnactivelogicset() = activelogicset
 
     userinput = ""
@@ -79,7 +84,7 @@ let
         elseif userinput ∈ ["discover", "d"]            discover(LogicalCombo())
         elseif userinput ∈ ["next", "n", "f"]           next()
         elseif occursin(r"^import ", userinput)         ALimport(userinput)
-        elseif occursin(r"^show[ ]*active", userinput)  activecommandshow!()
+        elseif occursin(r"^dash(board)?$", userinput)   dashboard!()
         elseif userinput ∈ ["history", "h"]             history()
         elseif occursin(r"^command[ ]*list", userinput) itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]            itemprint(logicset)
@@ -125,7 +130,7 @@ let
     end
 
     function clearall()
-      commandlist = "#clear"
+      commandlist = [String[]]
       activelogicset = LogicalCombo()
       commandhistory = String["#Session Initiated"]
       feasiblehistory = [0]
@@ -133,7 +138,7 @@ let
       logicset     = [activelogicset]
       cmdlocation  = 1
       setlocation  = 1
-      println("Clearing Every Thing!")
+      println("Clearing Everything!")
     end
 
     function ALcheck(userinput)
@@ -171,7 +176,7 @@ let
 
         push!(commandlist[setlocation], "#$x")
         # push!(commandlist, copy(preservercommandlist))
-        push!(logicset, activelogicset)
+        logicset[setlocation] = activelogicset
         setlocation += 1
         activelogicset = z
         push!(logicset, activelogicset)
@@ -182,7 +187,7 @@ let
         commandhistory  = [x]
         logichistory    = [activelogicset]
         feasiblehistory = [nfeasible(activelogicset)]
-
+        push!(commandlist, [x])
     end
 
     function itemprint(x)
@@ -209,7 +214,6 @@ let
 
         try
           templogicset = logicalparse(userinput, activelogicset)
-
           activelogicset = templogicset
           push!(commandlist[setlocation], userinput)
           commandhistory      = commandhistory[1:cmdlocation]
