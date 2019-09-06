@@ -1,7 +1,7 @@
 name = "AbstractLogic"
-uuid = "bd85187e-0531-4a3e-9fea-713204a818a2"
+uuid = "9c39b985-2367-4ef4-8d0e-10c0e915abb8"
 authors = "Francis Smart"
-version = "0.10.1"
+version = "0.10.2"
 
 [deps]
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
