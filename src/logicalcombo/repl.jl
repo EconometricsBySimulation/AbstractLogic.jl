@@ -73,6 +73,7 @@ let
     global function abstractlogic(replinput; returnactive = false)
 
         userinput = replinput |> strip |> tounicode
+
         # println("User input {$userinput}")
         (occursin("t(", userinput)) && (userinput = testcall(userinput))
 
@@ -159,7 +160,7 @@ let
     function ALexport(x)
        y = replace(x, r"^export( as){0,1} " => "")
        Core.eval(Main, Meta.parse("$y = returnactivelogicset()"))
-       printmarkdown("`julia> `$y = `returnactivelogicset()`")
+       printmarkdown("`julia>` $y = `returnactivelogicset()`")
        println()
     end
 
