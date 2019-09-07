@@ -53,9 +53,13 @@ function geti(x, n, k)
     fset = 1:4
     y = x
     z = 0
-    for j in 0:(k-1)
-        z = ceil(y/(n-j))
-        y = y - floor(y/(n-j)) * (n-j)
+    setout = Int64[]
+    for j in 1:k
+        K = factorial(n-1)
+        z = ceil(y/ K)
+        y = y - (z-1) * K
+        push!(setout, fset[z])
+        fset = fset[(1:(z-1))..., ((z+1):end)...]
     end
     z
 end
