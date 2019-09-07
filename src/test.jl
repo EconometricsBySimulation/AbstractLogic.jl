@@ -53,15 +53,21 @@ function geti(x, n, k)
     fset = 1:4
     y = x
     z = 0
-    setout = Int64[]
+    setout = Integer[]
     for j in 1:k
-        K = factorial(n-1)
-        z = ceil(y/ K)
+        fset, y, z, setout
+        K = factorial(n-j)
+        z = Integer(ceil(y/ K))
         y = y - (z-1) * K
         push!(setout, fset[z])
-        fset = fset[(1:(z-1))..., ((z+1):end)...]
+        fset = fset[[(1:(z-1))..., ((z+1):length(fset))...]]
     end
-    z
+    setout[k]
 end
 
-[geti(i,4,j) for i in 1:24, j in 1:4]
+
+k=1
+
+X = [geti(i,4,j) for i in 1:24, j in 1:4]
+
+unique(X, dims=1)
