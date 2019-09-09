@@ -6,7 +6,7 @@ module AbstractLogic
 ## Dependencies
 ##
 ##############################################################################
-using ReplMaker, Markdown, StatsBase
+using ReplMaker, Markdown, StatsBase, Crayons
 
 ##############################################################################
 ##

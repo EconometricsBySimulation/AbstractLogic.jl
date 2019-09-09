@@ -9,6 +9,12 @@ git-tree-sha1 = "5d1dd8577643ba9014574cd40d9c028cd5e4b85a"
 uuid = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 version = "0.4.2"
 
+[[Crayons]]
+deps = ["Test"]
+git-tree-sha1 = "f621b8ef51fd2004c7cf157ea47f027fdeac5523"
+uuid = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
+version = "4.0.0"
+
 [[DataAPI]]
 git-tree-sha1 = "8903f0219d3472543fc4b2f5ebaf675a07f817c0"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"

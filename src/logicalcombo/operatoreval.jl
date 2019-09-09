@@ -29,8 +29,15 @@ function operatoreval(command, logicset::LogicalCombo; verbose=true)
     !(nmin === nothing) && (nmax === nothing)  && (nrange = integer(nmin):integer(nmin))
     !(nmin === nothing) && !(nmax === nothing) && (nrange = integer(nmin):integer(nmax))
 
-    leftarg  = strip.(split(left,  r"[,&|!]"))
-    rightarg = strip.(split(right, r"[,&|!]"))
+    leftarg  = strip.(split(replace(left, " "=> ""),  r"[,&|!]"))
+    rightarg = strip.(split(replace(right, " "=> ""), r"[,&|!]"))
+
+    (((length(collect(eachmatch(r"[+-]", left)))>0) &&
+      (length(collect(eachmatch(r"[*\\÷]", left)))>0)) ||
+    ((length(collect(eachmatch(r"[+-]", right)))>0) &&
+      (length(collect(eachmatch(r"[*\\÷]", right)))>0))) && verbose &&
+      println(
+      Crayons.Box.GREEN_FG("\nWarning: Math operators are evaluated from left to right. 3 + 1 * 2 = 8"))
 
     leftvals  = hcat([grab(L, logicset, command=command) for L in leftarg]...)
     rightvals = hcat([grab(R, logicset, command=command) for R in rightarg]...)
@@ -112,24 +119,26 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
   (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
 
-  matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
+  # matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
+  # matcher = r"^(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))\s*([+\-*/÷])*\s*(.*?)$"
+  matcher = r"^(.*?)\s*([+\-*/÷]*)\s*(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))$"
 
   m = match(matcher, argument)
-  nvar = 5-sum([i === nothing for i in m.captures])
-  (nvar==0) && throw("Argument $argument could not be parsed in $command")
+  (m==nothing) && throw("Argument $argument could not be parsed in $command")
 
-  v1, n1, o1, v2, n2 = m.captures
+  v1, o1, v2, n2 = m.captures
 
-  !(v1 === nothing) && (left  = logicset[:,Symbol(v1),true])
-  !(n1 === nothing) && (left  = fill(integer(n1), length(logicset[:])))
+  !(v2 === nothing) && (right  = logicset[:,Symbol(v2),true])
+  !(n2 === nothing) && (right  = fill(integer(n2), nfeasible(logicset)))
 
-  (nvar==1) && return left
+  (length(o1)>1) && throw("Math Operators only accepts singletons (+-÷*\\) and no negative multiplication (a*-b)!")
+  (o1 == "")   && return right
 
-  !(v2 === nothing) && (right = logicset[:,Symbol(v2),true])
-  !(n2 === nothing) && (right = fill(integer(n2), length(left)))
+  !(v1 === nothing) && (left = grab(v1, logicset))
 
   (o1 == "+") && return left .+ right
   (o1 == "-") && return left .- right
   (o1 == "/") && return left ./ right
+  (o1 == "÷") && return left .÷ right
   (o1 == "*") && return left .* right
 end

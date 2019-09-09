@@ -335,31 +335,24 @@ function testcall(userinput)
 end
 
 """
-    abstractlogic(;preserve = false)
+    abstractlogic(; returnactive = false)
 
-Enter the psuedo REPL for abstract logical reasoning.
+Call the REPL from Julia. Setting returnactive to *true* returns the last active
+logicset.
 
 ```julia
-julia> abstractlogic()
-Welcome to the abstract logic solver interactive mode!
-'exit' to exit
-'clear' to empty the environment space
-'search {followed by search}' to search the environment space
-'back' to return to previous state or 'forward' to move forward
-
-AL: a, b, c in 1:3
+julia> abstractlogic("a, b, c in 1:3")
 a, b, c ∈ 1:3            feasible outcomes 27 ✓          :1 1 3
 
-AL: a == b
+julia> abstractlogic("a == b")
 a == b                   feasible outcomes 9 ✓           :3 3 3
 
-AL: a > c
+julia> abstractlogic("a > c")
 a > c                    feasible outcomes 3 ✓           :3 3 1
 
-AL: c != 1
+julia> abstractlogic("c != 1")
 c != 1                   feasible outcomes 1 ✓✓          :3 3 2
 
-AL: exit
 ```
 """
 abstractlogic = abstractlogic
