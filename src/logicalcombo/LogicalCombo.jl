@@ -182,16 +182,20 @@ Base.setindex!(x::LogicalCombo, y::Union{Array{Bool},Array{Bool,1}}, z::Union{Un
 
 Base.fill(v; each::Integer) = collect(Iterators.flatten([fill(x, each) for x in v]))
 
-function Base.range(x::LogicalCombo)
+function Base.range(x::LogicalCombo; feasible=true)
   p = Dict()
-  for i in 1:size(x)[2]; p[x.keys[i]] = sort(unique(x[:,:,i])); end
+  for i in 1:size(x,2); p[x.keys[i]] = sort(unique(x[:,i,feasible])); end
   p
 end
+
+variablerange(x::LogicalCombo; feasible=true) = [unique(x[:,i,feasible]) for i in 1:size(x,2)]
 
 nfeasible(x::LogicalCombo; feasible::Bool=true) =
   (feasible ? sum(x.logical) : size(x,1) - sum(x.logical))
 
 nfeasible(x::LogicalCombo, feasible::Bool) = nfeasible(x::LogicalCombo; feasible=feasible)
+
+percievedfeasible(x::LogicalCombo) = prod(length.(variablerange(x)))
 
 using StatsBase
 

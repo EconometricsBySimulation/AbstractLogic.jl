@@ -90,6 +90,7 @@ let
         elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
         elseif userinput == "clear"                       clear()
+        elseif userinput == "range"                       println(range(replset))
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif occursin(r"^check", userinput)             ALcheck(userinput)
@@ -303,7 +304,7 @@ let
         end
     end
 
-    global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t:$(joinsample(replset))"
+    global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
     global lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
     joins(x) = length(x) > 0 ? join(x, " ") : x
     global joinsample = (joins ∘ sample)

@@ -15,6 +15,7 @@ function reportfeasible(logicset::LogicalCombo;
     filler = repeat("\t", max(1, 3-Integer(floor(length(command)/8))))
 
     Nfeas = nfeasible(logicset)
+    Perceived = percievedfeasible(logicset)
 
     (Nfeas == 0)  && (check = "X ")
     (Nfeas  > 1)  && (check = "✓ ")
@@ -23,7 +24,7 @@ function reportfeasible(logicset::LogicalCombo;
     ender = (Nfeas>0) ? ":" *
       join(logicset[rand(1:Nfeas),:,:], " ") : " [empty set]"
 
-    println(" $filler feasible outcomes $Nfeas $check \t $ender")
+    println(" $filler Feasible Outcomes: $Nfeas \t Perceived Outcomes: $Perceived $check \t $ender")
     return logicset
 end
 
