@@ -10,7 +10,7 @@ function superoperator(command, logicset::LogicalCombo; verbose=true)
     occursin(r"\{\{.*\}\}", command) &&
       return operatorspawn(command, logicset, verbose=verbose)
 
-    m = match(Regex("(^.*?)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
+    m = match(Regex("(^.*)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
     left, operator, right = m.captures
 
     ℧left  = superoperator(left ,logicset, verbose=verbose)[:]

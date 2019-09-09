@@ -94,6 +94,8 @@ let
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif occursin(r"^check", userinput)             ALcheck(userinput)
+        elseif occursin(r"^prove", userinput)             ALcheck(userinput)
+        elseif occursin(r"^any", userinput)               ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
         elseif userinput == "preserve"                    ALpreserve()
         elseif userinput == "restore"                     restore()
@@ -145,15 +147,20 @@ let
 
     function ALcheck(userinput)
         try
-          checker = replace(userinput[6:end], r"^[\\:\\-\\ ]+"=>"")
-          checkfeasible(string(checker), replset)
+          occursin(r"^check[\\:\\-\\ ]*", userinput) &&
+            checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")), replset)
+          occursin(r"^prove[\\:\\-\\ ]*", userinput) &&
+            checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")), replset, force=true)
+          occursin(r"^any[\\:\\-\\ ]*", userinput) &&
+            checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")), replset, countany=true)
+
           # push!(logicset, replset)
         catch
           println("Warning! Check Fail")
           (length(userinput) == 5) && println("Nothing to check")
           println("Typical check has same syntax as a command:")
-          println("Check: a = 2|3")
-          println("Check: {{i}} != {{i+1}}")
+          println("check: a = 2|3 or prove: a = 2|3")
+          println("check: {{i}} != {{i+1}} or prove: {{i}} != {{i+1}}")
         end
     end
 

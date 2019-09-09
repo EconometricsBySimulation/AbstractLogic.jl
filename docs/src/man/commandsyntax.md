@@ -38,6 +38,27 @@ a, b, c ∈ 1:3            feasible outcomes 27 ✓          :2 3 1
 
 Lets imagine same scenario as before: (if a is less than b then c must greater than b) then (a must be the same as b and c) "a < b <=> c > b ===> a = b, c".
 
+### Chaining Operators
+Operators evaluated at the same level are always evaluated from left to right.
+
+Initializing the repl (`julia> =`).
+```julia
+abstractlogic> a,b,c ∈ 1:3
+a,b,c ∈ 1:3              Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :1 3 3
+
+abstractlogic> true &&& true &&& false ==> false
+true &&& true &&& false ==> false        Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :3 3 3
+
+abstractlogic> true &&& true &&& false ==> false &&& false
+true &&& true &&& false ==> false &&& false      Feasible Outcomes: 0    Perceived Outcomes: 0 X          [empty set]
+
+abstractlogic> true &&&& true &&&& false ===> false &&& false
+true &&&& true &&&& false ===> false &&& false   Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :3 2 1
+
+abstractlogic> true &&&& true &&&& false ===> false &&&& false
+true &&&& true &&&& false ===> false &&&& false          Feasible Outcomes: 0    Perceived Outcomes: 0 X          [empty set]
+```
+
 ```julia
 julia> logicalparse("a, b, c ∈ 1:3; a < b <=> c > b ===> a = b, c") |> showfeasible
 a < b <=> c > b ===> a = b, c    feasible outcomes 19 ✓          :1 2 2

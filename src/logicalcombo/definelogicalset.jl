@@ -5,7 +5,7 @@ function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
     vars   = split(left, ",")  .|> strip
     values = split(right, ",") .|> strip
 
-    (values[1] == "unique") && return defineuniquelogicalset(logicset, command)
+    occursin(r"unique\s*$", command) && return defineuniquelogicalset(logicset, command)
 
     for v in vars
         m = match.(r"(\s|\"|\')", v)
@@ -48,12 +48,28 @@ definelogicalset(command::String) = definelogicalset(LogicalCombo(), command)
 function defineuniquelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
   (nfeasible(logicset) > 0) && throw("Unique Permutation Sets must be generated from scratch")
 
-  m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|\|(.*?)){0,1}$", command)
+  command = replace(command, r"\|*\s*unique\s*$" => "")
+
+  m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']*)(?:\|\|(.*?)){0,1}$", command)
   left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
-  vars   = split(left, ",")  .|> strip
+  vars   = split(left , ",")  .|> strip
+  values = split(right, ",")  .|> strip
+
+  if length(values) == 1 && occursin(r"^[0-9]+:[0-9]+$", values[1])
+      values = collect(range(values[1]))
+  elseif all([occursin(r"^[0-9]+$", i) for i in values])
+      values =  [integer(i) for i in values]
+  else
+      values = string.(values)
+  end
 
   mykeys    = [Symbol(v) for v in vars]
-  mydomain  = 1:length(mykeys)
+
+  (length(values) == 0) && (mydomain = 1:length(mykeys))
+  (length(values) > 0)  && (mydomain = values)
+
+  (length(mydomain) != length(mykeys)) && throw("Variable Lengths Need to Equal Number of Variables")
+
   mylogical = fill(true, factorial(length(mydomain)))
   LogicalCombo(mykeys, mydomain, mylogical, permutationuniquelookup)
 end

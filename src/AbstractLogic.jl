@@ -73,7 +73,7 @@ include("logicalcombo/discover.jl")
 #
 #
 
-using ReplMaker, Markdown, StatsBase
+using ReplMaker, Markdown, StatsBase, Crayons
 
 Main.include("logicalcombo/LogicalCombo.jl")
 

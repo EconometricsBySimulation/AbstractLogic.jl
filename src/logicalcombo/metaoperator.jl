@@ -10,7 +10,7 @@ function metaoperator(command, logicset::LogicalCombo; verbose = true)
     !occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command) &&
       return superoperator(command, logicset, verbose=verbose)
 
-    m = match(Regex("(^.*?)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
+    m = match(Regex("(^.*)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
     left, operator, right = m.captures
 
     ℧left  = metaoperator(left , logicset, verbose=verbose)[:]
