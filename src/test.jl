@@ -55,3 +55,7 @@ end
 X = [geti(i,6,j) for i in 1:720, j in 1:n]
 
 unique(X, dims=1)
+
+X = LogicalCombo([:a,:b,:c,:d], 1:4, fill(true, factorial(4)), permutationuniquelookup)
+size(X)
+X[:,:]

@@ -14,6 +14,7 @@ function operatorspawn(command,
     m_dot = eachmatch(r"(\{\{[jJ]\}\})(\.[a-zA-Z0-9_.])", tempcommand)
     matches_dot = string.([x.captures[2] for x in collect(m_dot)]) |> unique
 
+
     if occursin(r"^[0-9]+,[0-9]+$", matches[end])
         countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
@@ -34,24 +35,39 @@ function operatorspawn(command,
         countrange = missing
     end
 
-    iSet  = [m for m in matches if m[end:end] ∈ ["i", "j", "J"]]
-    # iSet1 = [m[1:1] for m in iSet]
-    # iSet2 = [m[1:2] for m in iSet if length(m)>=2]
-
-    iSetend = unique([replace(m, r".*(i|j).*$"=>s"\1") for m in matches if m[end:end] ∈ ["i", "j", "J"]])
-
-    leftmodifier = [replace(m, r"(i|j).*$"=>"") for m in iSet]
-
-    (leftmodifier[1] != "") && throw("i must be the first wildcard expressed")
-    (length(iSet)>3) && throw("Only three !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
-    (length(iSetend)>1) && throw("Only one type i or j wildcard allowed")
-    (length(matches)>6) && throw("No more than 6 wildcard values allowed")
+    ijJ = map(x -> x[1], eachmatch(r"(?:\b)(j|J|i)(?:\b)", join(matches, " "))) |>
+              unique .|> string
 
     mykeys   = keys(logicset)
     # Reduce the keyset if `j` or `J` are used
-    any(occursin.("J", iSet)) && (mykeys = [v for v in mykeys if !occursin(".", string(v))])
-    any(occursin.("j", iSet)) &&
-      (mykeys = unique([Symbol(replace(v, r"\..*$"=>"")) for v in string.(mykeys)]))
+    # Remove variables that have attributes
+    (length(ijJ)>0) && (ijJ[1] == "J") && (mykeys = [v for v in mykeys if !occursin(".", string(v))])
+    # Remove attributes but keep variable names
+    (length(ijJ)>0) && (ijJ[1] == "j") && (mykeys = unique([Symbol(replace(v, r"\..*$"=>"")) for v in string.(mykeys)]))
+
+    rangematches = matches[occursin.(r">|<|!.+$" , matches)]
+    imatches = matches[.!occursin.(r">|<|!.+$" , matches)]
+    imatches = [replace(v , "!"=>"") for v in imatches]
+
+   function firstmatch(x::String, y::Array{String})
+     for i in 1:length(y)
+         (x == y[i]) && return i
+     end
+   end
+
+   rangematches0 = copy(rangematches)
+
+    for v in 1:length(rangematches)
+      m = eachmatch(r"(:[a-zA-Z][a-zA-Z0-9._]*)", rangematches[v])
+      for vv in collect(m)
+        rangematches[v] =
+        replace(rangematches[v], string(vv[1]) => firstmatch(string(vv[1])[2:end], string.(mykeys)))
+      end
+    end
+
+    (length(rangematches)>3) && throw("Only three !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
+    (length(ijJ)>1)     && throw("Only one type i or j or J wildcard allowed")
+    (length(matches)>6) && throw("No more than 6 wildcard values allowed")
 
     mydomain = 1:length(mykeys)
 
@@ -61,57 +77,48 @@ function operatorspawn(command,
 
     iset = Symbol[]
 
-    for i in mydomain, j in mydomain, k in mydomain
-      (length(leftmodifier) < 2) && (j>1) && continue
-      (length(leftmodifier) < 3) && (k>1) && continue
+    for i in mydomain, j in mydomain, k in mydomain, l in mydomain
+      (length(imatches) == 0) && (i>1) && continue
+      (length(rangematches) < 1 ) && (j>1) && continue
+      (length(rangematches) < 2 ) && (k>1) && continue
+      (length(rangematches) < 3 ) && (l>1) && continue
 
-      if length(leftmodifier)  >= 2
-          ("!"  == leftmodifier[2])  && (i   == j)   && continue
-          (">"  == leftmodifier[2])  && (i   >= j)   && continue
-          (">>" == leftmodifier[2])  && (i+1 >= j)   && continue
-          ("<"  == leftmodifier[2])  && (i   <= j)   && continue
-          ("<<" == leftmodifier[2])  && (i-1 <= j)   && continue
-          (">=" == leftmodifier[2])  && (i   <  j)   && continue
-          ("<=" == leftmodifier[2])  && (i   >  j)   && continue
-      end
+      txtcmd = tempcommand |> x -> replace(x, "!}}"=>"}}")
 
-      if length(leftmodifier)  == 3
-          ("!"  == leftmodifier[3])  && (i   == k)   && continue
-          (">"  == leftmodifier[3])  && (i   >= k)   && continue
-          (">>" == leftmodifier[3])  && (i+1 >= k)   && continue
-          ("<"  == leftmodifier[3])  && (i   <= k)   && continue
-          ("<<" == leftmodifier[3])  && (i-1 <= k)   && continue
-          (">=" == leftmodifier[3])  && (i   <  k)   && continue
-          ("<=" == leftmodifier[3])  && (i   >  k)   && continue
-      end
-      #println("$i and $j")
+        for v in imatches
+          txtcmd = subout(txtcmd, i, v, mykeys)
+        end
 
-       txtcmd = tempcommand |> x -> replace(x, "!}}"=>"}}")
+        if length(rangematches)  >= 1
+            splitthenskipcheck(rangematches[1], i, j) && continue
+            txtcmd = replace(txtcmd, "{{" * rangematches0[1] * "}}" => String(mykeys[j]))
+        end
+        if length(rangematches)  >= 2
+            splitthenskipcheck(rangematches[2], i, k) && continue
+            txtcmd = replace(txtcmd, "{{" * rangematches0[2] * "}}" => String(mykeys[k]))
+        end
+        if length(rangematches)  >= 3
+            splitthenskipcheck(rangematches[3], i, l) && continue
+            txtcmd = replace(txtcmd, "{{" * rangematches0[3] * "}}" => String(mykeys[l]))
+        end
 
-       # Sub out the j/i match in the command
-       for m in [m for m in matches if occursin(r"^(i|j|J)", m)]
-         txtcmd = subout(txtcmd, i, replace(m, r"\!$"=>""), mykeys)
-       end
+        occursin("~~OUTOFBOUNDS~~", txtcmd) & !occursin("!}}", tempcommand) && continue
 
-       (length(iSet) >= 2) && (txtcmd = subout(txtcmd, j, iSet[2], mykeys))
-       (length(iSet) == 3) && (txtcmd = subout(txtcmd, k, iSet[3], mykeys))
-
-
-       occursin("~~OUTOFBOUNDS~~", txtcmd) & !occursin("!}}", tempcommand) && continue
-
-       if occursin("~~OUTOFBOUNDS~~", txtcmd) && occursin("!}}", tempcommand)
+        if occursin("~~OUTOFBOUNDS~~", txtcmd) && occursin("!}}", tempcommand)
            txtcmd = replace(txtcmd, "~~OUTOFBOUNDS~~"=> "999" )
            # push!(collection, fill(false, length(logicset[:])))
-       end
-       # verbose &&  println(prefix * "$txtcmd")
+        end
+        # verbose &&  println(prefix * "$txtcmd")
 
-       ℧∇ = logicset[:]
+        ℧∇ = logicset[:]
 
-       try
+        try
+           verbose && print(prefix * "$txtcmd")
            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
-           verbose &&  println(prefix * "$txtcmd")
-       catch
-       end
+           println(" ✔")
+        catch
+          println(" 𝚇")
+        end
 
        push!(collection, ℧∇)
        (length(matches_dot)==0) && push!(iset, mykeys[i])

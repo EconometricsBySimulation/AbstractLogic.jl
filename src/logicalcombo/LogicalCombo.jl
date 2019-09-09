@@ -26,10 +26,15 @@ struct LogicalCombo
   keys::Array{Symbol}
   domain::AbstractArray
   logical::Array{Bool}
+  lookup::Function
   commands::Array{String}
 end
 
-LogicalCombo(keys, domain, logical) = LogicalCombo(keys, domain, logical, String[])
+LogicalCombo(keys, domain, logical) =
+    LogicalCombo(keys, domain, logical, permutationlookup, String[])
+
+LogicalCombo(keys, domain, logical, permutationlookup) =
+    LogicalCombo(keys, domain, logical, permutationlookup, String[])
 
 LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
 
@@ -59,17 +64,12 @@ function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symb
     LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
 end
 
-
-
 Base.keys(x::LogicalCombo)     = x.keys
 domain(x::LogicalCombo)        = x.domain
 Base.size(x::LogicalCombo)     = [length(x.logical), length(x.keys)]
 Base.size(x::LogicalCombo, y::Integer) = size(x)[y]
 
-function Base.getindex(x::LogicalCombo, row::Integer, col::Integer)
-    (col==0) && (row==0) && return :keys
-    (row==0) && return keys(x)[col]
-    (col==0) && return x.logical[row]
+function permutationlookup(x::LogicalCombo, row::Integer, col::Integer)
     # Divisor is calculating based on how many values remains how many times to repeat the current value
     divisor = (col+1 > size(x)[2] ? 1 : x.domain[(col+1):size(x)[2]] .|> length |> prod)
     # indexvalue finds the index to select from the column of interest
@@ -77,9 +77,31 @@ function Base.getindex(x::LogicalCombo, row::Integer, col::Integer)
     domain(x)[col][indexvalue]
 end
 
+function permutationuniquelookup(x::LogicalCombo, row::Integer, col::Integer)
+    n = size(x,2)
+    fset = 1:n
+    y = row
+    z = 0
+    setout = Integer[]
+    for j in 1:col
+        K = factorial(n-j)
+        z = Integer(ceil(y/ K))
+        y = y - (z-1) * K
+        push!(setout, fset[z])
+        fset = fset[[(1:(z-1))..., ((z+1):length(fset))...]]
+    end
+    setout[col]
+end
+
+function Base.getindex(x::LogicalCombo, row::Integer, col::Integer)
+    (col==0) && (row==0) && return :keys
+    (row==0) && return keys(x)[col]
+    (col==0) && return x.logical[row]
+    x.lookup(x, row, col)
+end
+
 Base.collect(x::LogicalCombo; bool::Bool=true, varnames::Bool=true) =
   [x[i,j] for i in !varnames:size(x)[1], j in !bool:size(x)[2]]
-
 
 function Base.getindex(x::LogicalCombo, row::Integer, col::Symbol)
   keymatch = findall(y -> y == col , x.keys)
@@ -103,7 +125,7 @@ Base.getindex(x::LogicalCombo, y::Union{Integer,Array}, col::String) = x[y, Symb
 Base.getindex(x::LogicalCombo, ::Colon, col::String) = x[:, Symbol(col)]
 
 Base.getindex(x::LogicalCombo, y::Union{Integer,Array{Int64}}, ::Colon) =
-  hcat([ x[i,:] for i in collect(y) ]...)'
+  hcat([ x[i,:] for i in collect(y) ]...)
 
 Base.getindex(x::LogicalCombo, row::UnitRange, ::Colon) = x[collect(row),:]
 
@@ -171,9 +193,13 @@ nfeasible(x::LogicalCombo; feasible::Bool=true) =
 
 nfeasible(x::LogicalCombo, feasible::Bool) = nfeasible(x::LogicalCombo; feasible=feasible)
 
+using StatsBase
+
 function StatsBase.sample(x::LogicalCombo; n=1, feasible=true)
   if nfeasible(x) == 0
     return []
+  elseif nfeasible(x) == 1
+    return x[:,:,:]
   else
     y = x[sample(1:nfeasible(x, feasible), n, replace=false),:,feasible]
     return sort(y, dims=1)

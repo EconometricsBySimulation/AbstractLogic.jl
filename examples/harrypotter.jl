@@ -46,11 +46,8 @@ hpset = logicalparse("{{i}} == 'PO' {{3}}", logicset=hpset); showfeasible(hpset)
 # First, however slyly the poison tries to hide
 # You will always find some on nettle wine’s left side;
 # So if b is poison then a is nettle wine
-hpset = logicalparse("{{i+1}} == 'NW' ==> {{i}} == 'PO'", logicset=hpset); showfeasible(hpset)
-# 120 Possibilities
-
-# Wine cannot be in the first bottle since poison is to the left
-hpset = logicalparse("a != 'NW'", logicset=hpset); showfeasible(hpset)
+# The i-1! indicates that outofbounds matches are considered "false"
+hpset = logicalparse("{{i}} == 'NW' ==> {{i-1!}} == 'PO'", logicset=hpset); showfeasible(hpset)
 # 60 possible outcomes
 
 # Second, different are those who stand at either end,

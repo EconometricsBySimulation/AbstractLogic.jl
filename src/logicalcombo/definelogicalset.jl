@@ -5,6 +5,8 @@ function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
     vars   = split(left, ",")  .|> strip
     values = split(right, ",") .|> strip
 
+    (values[1] == "unique") && return defineuniquelogicalset(logicset, command)
+
     for v in vars
         m = match.(r"(\s|\"|\')", v)
         (m != nothing) && throw("Variable names cannot have {$(m.captures[1])}.")
@@ -42,3 +44,16 @@ function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
 end
 
 definelogicalset(command::String) = definelogicalset(LogicalCombo(), command)
+
+function defineuniquelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
+  (nfeasible(logicset) > 0) && throw("Unique Permutation Sets must be generated from scratch")
+
+  m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|\|(.*?)){0,1}$", command)
+  left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
+  vars   = split(left, ",")  .|> strip
+
+  mykeys    = [Symbol(v) for v in vars]
+  mydomain  = 1:length(mykeys)
+  mylogical = fill(true, factorial(length(mydomain)))
+  LogicalCombo(mykeys, mydomain, mylogical, permutationuniquelookup)
+end

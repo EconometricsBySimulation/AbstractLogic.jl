@@ -46,11 +46,10 @@ let
     dashboardshow = false
     global dashboard() = dashboardshow
     global dashboard!() = dashboardshow = !dashboardshow
-    global returnactivelogicset() = activelogicset
 
     userinput = ""
 
-    activelogicset = LogicalCombo()
+    global replset = LogicalCombo()
     commandlist  = [String[]]
 
     commandlistprint = false
@@ -64,8 +63,8 @@ let
 
     commandhistory = String["#Session Initiated"]
     feasiblehistory = [0]
-    logichistory = [activelogicset]
-    logicset     = [activelogicset]
+    logichistory = [replset]
+    logicset     = [replset]
 
     cmdlocation = 1
     setlocation = 1
@@ -99,45 +98,45 @@ let
         elseif userinput == "restore"                     restore()
         else                                              ALparse(userinput)
         end
-        returnactive && return activelogicset
+        returnactive && return replset
         nothing
     end
 
     tounicode(x) = replace(x, r"\bin\b"=>"∈")
 
-    nothing() = println(lastcommand()* " - " * reportfeasible(activelogicset))
+    nothing() = println(lastcommand()* " - " * reportfeasible())
 
-    keys() = println(join(activelogicset.keys, ", "))
+    keys() = println(join(replset.keys, ", "))
 
     function back()
         (cmdlocation == 1) && (println("Nothing to go back to"); return)
         cmdlocation -= 1
-        activelogicset = logichistory[cmdlocation]
-        println(lastcommand() * " - " * reportfeasible(activelogicset))
+        replset = logichistory[cmdlocation]
+        println(lastcommand() * " - " * reportfeasible())
         pop!(commandlist[setlocation])
     end
 
     function clear()
         push!(commandlist[setlocation], "#clear")
-        activelogicset = LogicalCombo()
-        logichistory = [activelogicset]
+        replset = LogicalCombo()
+        logichistory = [replset]
         commandhistory = ["#Session Cleared"]
         feasiblehistory = [0]
         cmdlocation = 1
         setlocation += 1
         push!(commandlist, String[])
-        push!(logicset, activelogicset)
+        push!(logicset, replset)
 
         println("Clear Workspace")
     end
 
     function clearall()
       commandlist = [String[]]
-      activelogicset = LogicalCombo()
+      replset = LogicalCombo()
       commandhistory = String["#Session Initiated"]
       feasiblehistory = [0]
-      logichistory = [activelogicset]
-      logicset     = [activelogicset]
+      logichistory = [replset]
+      logicset     = [replset]
       cmdlocation  = 1
       setlocation  = 1
       println("Clearing Everything!")
@@ -146,8 +145,8 @@ let
     function ALcheck(userinput)
         try
           checker = replace(userinput[6:end], r"^[\\:\\-\\ ]+"=>"")
-          checkfeasible(string(checker), activelogicset)
-          # push!(logicset, activelogicset)
+          checkfeasible(string(checker), replset)
+          # push!(logicset, replset)
         catch
           println("Warning! Check Fail")
           (length(userinput) == 5) && println("Nothing to check")
@@ -159,8 +158,8 @@ let
 
     function ALexport(x)
        y = replace(x, r"^export( as){0,1} " => "")
-       Core.eval(Main, Meta.parse("$y = returnactivelogicset()"))
-       printmarkdown("`julia>` $y = `returnactivelogicset()`")
+       Core.eval(Main, Meta.parse("$y = returnreplset()"))
+       printmarkdown("`julia>` $y = `returnreplset()`")
        println()
     end
 
@@ -185,17 +184,17 @@ let
 
         push!(commandlist[setlocation], "#$x")
         # push!(commandlist, copy(preservercommandlist))
-        logicset[setlocation] = activelogicset
+        logicset[setlocation] = replset
         setlocation += 1
-        activelogicset = z
-        push!(logicset, activelogicset)
+        replset = z
+        push!(logicset, replset)
 
-        println("Importing $y - " * reportfeasible(activelogicset))
+        println("Importing $y - " * reportfeasible())
         cmdlocation = 1
 
         commandhistory  = [x]
-        logichistory    = [activelogicset]
-        feasiblehistory = [nfeasible(activelogicset)]
+        logichistory    = [replset]
+        feasiblehistory = [nfeasible(replset)]
         push!(commandlist, [x])
     end
 
@@ -209,21 +208,21 @@ let
     function next()
         (cmdlocation == length(commandhistory)) && (println("Nothing to go forward to"); return)
         cmdlocation += 1
-        activelogicset = logichistory[cmdlocation]
+        replset = logichistory[cmdlocation]
         push!(commandlist[setlocation], commandhistory[cmdlocation])
-        println(lastcommand() * " - " * reportfeasible(activelogicset))
+        println(lastcommand() * " - " * reportfeasible())
     end
 
     function ALparse(userinput)
-        if (sum(activelogicset[:])==0) && !occursin(r"∈", userinput)
+        if (sum(replset[:])==0) && !occursin(r"∈", userinput)
             print("error: userinput  - ")
             println("You are working with an empty set! Try inputing: a,b,c in 1:3")
             return
         end
 
         try
-          templogicset = logicalparse(userinput, activelogicset)
-          activelogicset = templogicset
+          templogicset = logicalparse(userinput, replset)
+          replset = templogicset
           push!(commandlist[setlocation], userinput)
           commandhistory      = commandhistory[1:cmdlocation]
           logichistory        = logichistory[1:cmdlocation]
@@ -231,10 +230,10 @@ let
 
           cmdlocation += 1
           push!(commandhistory, userinput)
-          push!(logichistory, activelogicset)
-          push!(feasiblehistory, nfeasible(activelogicset))
+          push!(logichistory, replset)
+          push!(feasiblehistory, nfeasible(replset))
 
-          logicset[setlocation] = activelogicset
+          logicset[setlocation] = replset
 
         catch ex
           println("\tcommand Failed - $ex")
@@ -244,7 +243,7 @@ let
     function ALpreserve()
         preservercommandlist = copy(commandlist[setlocation])
         push!(commandlist[setlocation], "#preserve")
-        preserver = activelogicset
+        preserver = replset
         preservercmdlocation = cmdlocation
         preservercommandhistory = copy(commandhistory)
         preserverlogichistory = copy(logichistory)
@@ -256,11 +255,11 @@ let
         (preserver === missing) && (println("Nothing to restore"); return)
         push!(commandlist[setlocation], "#restore")
         push!(commandlist, copy(preservercommandlist))
-        push!(logicset, activelogicset)
+        push!(logicset, replset)
         setlocation += 1
-        activelogicset = preserver
+        replset = preserver
 
-        println("Restoring State - " * reportfeasible(activelogicset))
+        println("Restoring State - " * reportfeasible())
         cmdlocation = preservercmdlocation
 
         commandhistory  = copy(preservercommandhistory)
@@ -269,71 +268,70 @@ let
     end
 
     function ALshow(;n =10)
-        nrow = nfeasible(activelogicset)
+        nrow = nfeasible(replset)
 
         (nrow == 0) && return println("Nothing to Show - [Empty Set]")
 
         printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
         (nrow<=n) && (printset = 1:nrow)
 
-        txtout = "| " * join(activelogicset[0,:], " | ") * " | \n"
-        txtout *= "| " * join(fill(":---:", size(activelogicset,2) ), " | ") * " | \n"
+        txtout = ""
+        (nrow > n) && (txtout *= "*Showing $n of $nrow rows*\n\n")
+
+        txtout *= "| " * join(replset[0,:], " | ") * " | \n"
+        txtout *= "| " * join(fill(":---:", size(replset,2) ), " | ") * " | \n"
 
         for setlocation in printset
           (setlocation != 0) &&
-            (txtout *= "| " * join(activelogicset[setlocation,:,:], " | ")*" |\n")
+            (txtout *= "| " * join(replset[setlocation,:,:], " | ")*" |\n")
           (setlocation == 0) &&
-            (txtout *= "| " * (join(fill("⋮",  size(activelogicset, 2)), " | "))*"|\n")
+            (txtout *= "| " * (join(fill("⋮",  size(replset, 2)), " | "))*"|\n")
         end
 
         printmarkdown(txtout)
     end
 
-    showall() = ALshow(n = nfeasible(activelogicset))
+    showall() = ALshow(n = nfeasible(replset))
 
     function ALsearch(userinput)
         try
           checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
-          search(checker, activelogicset)
-          # push!(logicset, activelogicset)
+          search(checker, replset)
+          # push!(logicset, replset)
         catch
           println("Warning! Search Failed")
         end
     end
 
-    function testcall(userinput)
-        if userinput == "t(1)"
-            clear()
-            abstractlogic("a,b,c ∈ 1:4")
-            abstractlogic("a|c = 1")
-            abstractlogic("a > b")
-            return "b > c"
-        elseif userinput == "t(hp)"
-            clear()
-            abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
-            abstractlogic("{{i}} == 'NW' {{2}}")
-            abstractlogic("{{i}} == 'MA' {{1}}")
-            abstractlogic("{{i}} == 'MB' {{1}}")
-            abstractlogic("{{i}} == 'PO' {{3}}")
-            abstractlogic("{{i+1}} == 'NW' ==> {{i}} == 'PO'")
-            abstractlogic("a != 'NW'")
-            abstractlogic("a != g")
-            abstractlogic("a,g != 'MA'")
-            abstractlogic("c,f != 'PO'")
-            return "b == f"
-        end
-        return userinput
-    end
-
-    reportfeasible(x) = "Feasible Outcomes: $(nfeasible(x)) \t:$(joinsample(x))"
-    lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
-    joins(x) = join(x, " ")
-    joinsample = (joins ∘ sample)
-
+    global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t:$(joinsample(replset))"
+    global lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
+    joins(x) = length(x) > 0 ? join(x, " ") : x
+    global joinsample = (joins ∘ sample)
 
 end
 
-
+function testcall(userinput)
+    if userinput == "t(1)"
+        abstractlogic("clear")
+        abstractlogic("a,b,c ∈ 1:4")
+        abstractlogic("a|c = 1")
+        abstractlogic("a > b")
+        return "b > c"
+    elseif userinput == "t(hp)"
+        abstractlogic("clear")
+        abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
+        abstractlogic("{{i}} == 'NW' {{2}}")
+        abstractlogic("{{i}} == 'MA' {{1}}")
+        abstractlogic("{{i}} == 'MB' {{1}}")
+        abstractlogic("{{i}} == 'PO' {{3}}")
+        abstractlogic("{{i!}} == 'NW' ==> {{i-1}} == 'PO'")
+        abstractlogic("a != g")
+        abstractlogic("a,g != 'MA'")
+        abstractlogic("c,f != 'PO'")
+        return "b == f"
+    end
+    return userinput
+end
 
 """
     abstractlogic(;preserve = false)

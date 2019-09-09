@@ -46,6 +46,78 @@ function subout(txtcmd, i, arg, mykeys)
   txtcmd
 end
 
+subout("{{i + 1}}", 1, "i + 1", [:a,:b,:c,:d])
+
+##########################################################################
+##########################################################################
+
+function stringnumparse(x)
+    !occursin(r"\+|\-",x) && return integer(x)
+
+    x2 = split(x, r"\+|\-")
+
+    occursin("+", x) && return +(integer.(x2)...)
+    occursin("-", x) && return -(integer.(x2)...)
+
+    throw("$x not interpreted!")
+end
+
+Base.:+(x::String, y::String) = x * " " * y
+
+function skipthischeck(txt, i, j; verbose=false)
+    txt = replace(txt, " "=>"")
+
+
+    occursin(r"^!(i|j|J)$", txt) && (i  == j) && return true
+
+      m = match(r"^\*?([>=<]{0,2})(.*)([>=<]{0,2})\*?$", txt)
+      if m.match != nothing
+        centernum = stringnumparse(strip.(m.captures[2]))
+        verbose && print(" (" +
+         (m.captures[1] == "" ? "" : string(j) + string(m.captures[1])) *
+           " $centernum " *
+         (m.captures[3] == "" ? "" : string(m.captures[3]) + string(j)) * ") ")
+        # * [operator] center
+        (m.captures[1] == ">")  && !(j >  centernum    ) && return true
+        (m.captures[1] == ">=") && !(j >= centernum    ) && return true
+        (m.captures[1] == ">>") && !(j >  centernum + 1) && return true
+        (m.captures[1] == "<")  && !(j <  centernum    ) && return true
+        (m.captures[1] == "<=") && !(j <= centernum    ) && return true
+        (m.captures[1] == "<<") && !(j <  centernum - 1) && return true
+
+        # center [operator] *
+        (m.captures[3] == "<")  && !(centernum     <  j) && return true
+        (m.captures[3] == "<=") && !(centernum     <= j) && return true
+        (m.captures[3] == "<<") && !(centernum - 1 << j) && return true
+        (m.captures[3] == ">")  && !(centernum     >  j) && return true
+        (m.captures[3] == ">=") && !(centernum     >= j) && return true
+        (m.captures[3] == ">>") && !(centernum + 1 >> j) && return true
+
+        (m.captures[1] ∈ ["=","=="]) && (centernum != j) && return true
+        (m.captures[3] ∈ ["=","=="]) && (centernum != j) && return true
+      end
+    false
+end
+
+function splitthenskipcheck(txt, i, j; verbose=false)
+    rangematchessplit =
+       strip.(split(replace(txt, r"i|j|J"=>i), r"(,|\|)"))
+
+    occursin("|", txt) && return all(skipthischeck.(rangematchessplit, i, j, verbose=verbose))
+
+    !occursin("|", txt) && return any(skipthischeck.(rangematchessplit, i, j, verbose=verbose))
+
+    false
+end
+
+# txt = "*=i+1"
+#
+# for i in 1:5, j in 1:5
+#     print("i = $i, j = $j skipthis {{$txt}} Skip? ")
+#     println(splitthenskipcheck(txt, i, j, verbose=true))
+# end
+
+
 ##########################################################################
 ##########################################################################
 
