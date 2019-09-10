@@ -3,7 +3,7 @@ An Abstract Reasoning Logic Interface for Julia.
 
 ## Installation
 
-The AbstractLogic package is available through gitbub and can be installed using the following commands after entering the package REPL by typeing `]` in the console.
+The AbstractLogic package is available through gitbub and can be installed using the following commands after entering the package REPL by typing `]` in the console.
 ```julia
 pkg> dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
 ```
@@ -54,22 +54,7 @@ Li < Peter               feasible outcomes 13 ✓          :4 5 4 3 2
 julia> search("{{i}} > {{!i}}", myls)
 Checking: Peter > Susan
 Checking: Peter > Sam
-Checking: Peter > Li
-Checking: Peter > Ali
-Checking: Susan > Peter
-Checking: Susan > Sam
-Checking: Susan > Li
-Checking: Susan > Ali
-Checking: Sam > Peter
-Checking: Sam > Susan
-Checking: Sam > Li
-Checking: Sam > Ali
-Checking: Li > Peter
-Checking: Li > Susan
-Checking: Li > Sam
-Checking: Li > Ali
-Checking: Ali > Peter
-Checking: Ali > Susan
+...
 Checking: Ali > Sam
 Checking: Ali > Li
 
