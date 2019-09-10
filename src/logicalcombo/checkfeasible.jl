@@ -38,26 +38,26 @@ function checkfeasible(command::String,
       return missing
   end
 
-  print("Check: $command ... ")
+  verbose && print("Check: $command ... ")
 
-  logicsetout = logicalparse(command, logicset=logicset) #, verbose=false)
+  logicsetout = logicalparse(command, logicset=logicset, verbose=verbose)
 
   rowsout = sum(logicsetout.logical)
   outcomeratio = rowsout/rowsin
 
   if force
-        outcomeratio != 1 && print("false,")
-        outcomeratio == 1 && print("true,")
+        outcomeratio != 1 && print("false")
+        outcomeratio == 1 && print("true")
   elseif countany
-        outcomeratio == 0 && print("false,")
-        outcomeratio != 0 && print("true,")
+        outcomeratio == 0 && print("false")
+        outcomeratio != 0 && print("true")
   else
-      outcomeratio == 1 && print("true,")
-      outcomeratio == 0 && print("false,")
-      (1 > outcomeratio > 0) && print("possible, ")
+      outcomeratio == 1 && print("true")
+      outcomeratio == 0 && print("false")
+      (1 > outcomeratio > 0) && print("possible")
   end
 
-  println(" $rowsout out of $rowsin possible combinations 'true'.")
+  verbose && println(", $rowsout out of $rowsin possible combinations 'true'.")
 
   return [outcomeratio, logicsetout]
 end

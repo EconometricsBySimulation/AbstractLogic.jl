@@ -88,6 +88,19 @@ a > b ===> b > c                  feasible outcomes 19 ✓          :3 3 3
 ```
 
 ---
+#### `x !==> y`
+If `x = false` then `y` must be `true`.
+
+###### Example
+```julia
+abstractlogic> a,b,c ∈ 1:3; a > b !==> b > c
+
+a,b,c ∈ 1:3              Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :1 3 3
+a > b !==> b > c         Feasible Outcomes: 17   Perceived Outcomes: 27 ✓        :1 3 2
+```
+
+
+---
 #### `x <=== y`
 If `y = true` then `x` must be `true`.
 **Note** `x IF y` is equivalent

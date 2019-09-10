@@ -69,12 +69,19 @@ let
     cmdlocation = 1
     setlocation = 1
 
+    global replcmdverbose = true
+    global replverboseall = true
+
     global function abstractlogic(replinput; returnactive = false)
 
         userinput = replinput |> strip |> tounicode
 
         # println("User input {$userinput}")
         (occursin("t(", userinput)) && (userinput = testcall(userinput))
+
+        replcmdverbose = !occursin("[silent]", userinput)
+        userinput = replace(userinput, "[silent]"=>"")
+
 
         if strip(userinput) == ""                         nothing()
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
@@ -93,9 +100,7 @@ let
         elseif userinput == "range"                       println(range(replset))
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
-        elseif occursin(r"^check", userinput)             ALcheck(userinput)
-        elseif occursin(r"^prove", userinput)             ALcheck(userinput)
-        elseif occursin(r"^any", userinput)               ALcheck(userinput)
+        elseif occursin(r"^(prove|force|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
         elseif userinput == "preserve"                    ALpreserve()
         elseif userinput == "restore"                     restore()
@@ -145,32 +150,6 @@ let
       println("Clearing Everything!")
     end
 
-    function ALcheck(userinput)
-        try
-          occursin(r"^check[\\:\\-\\ ]*", userinput) &&
-            checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")), replset)
-          occursin(r"^prove[\\:\\-\\ ]*", userinput) &&
-            checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")), replset, force=true)
-          occursin(r"^any[\\:\\-\\ ]*", userinput) &&
-            checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")), replset, countany=true)
-
-          # push!(logicset, replset)
-        catch
-          println("Warning! Check Fail")
-          (length(userinput) == 5) && println("Nothing to check")
-          println("Typical check has same syntax as a command:")
-          println("check: a = 2|3 or prove: a = 2|3")
-          println("check: {{i}} != {{i+1}} or prove: {{i}} != {{i+1}}")
-        end
-    end
-
-    function ALexport(x)
-       y = replace(x, r"^export( as){0,1} " => "")
-       Core.eval(Main, Meta.parse("$y = returnreplset()"))
-       printmarkdown("`julia>` $y = `returnreplset()`")
-       println()
-    end
-
     function history()
        currentfeasible = [feasiblehistory[1:cmdlocation]..., "...", feasiblehistory[(cmdlocation+1):end]...]
        currentcommand = [commandhistory[1:cmdlocation]..., "<< present >>", commandhistory[(cmdlocation+1):end]...]
@@ -206,13 +185,6 @@ let
         push!(commandlist, [x])
     end
 
-    function itemprint(x)
-       for v in x
-          vstring = string(v)
-          println(vstring[1:min(90,end)] * (length(vstring) > 90 ? "..." : ""))
-       end
-    end
-
     function next()
         (cmdlocation == length(commandhistory)) && (println("Nothing to go forward to"); return)
         cmdlocation += 1
@@ -229,7 +201,8 @@ let
         end
 
         try
-          templogicset = logicalparse(userinput, replset)
+          templogicset = logicalparse(userinput, replset,
+                                      verbose = replcmdverbose & replverboseall)
           replset = templogicset
           push!(commandlist[setlocation], userinput)
           commandhistory      = commandhistory[1:cmdlocation]
@@ -301,21 +274,72 @@ let
 
     showall() = ALshow(n = nfeasible(replset))
 
-    function ALsearch(userinput)
-        try
-          checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
-          search(checker, replset)
-          # push!(logicset, replset)
-        catch
-          println("Warning! Search Failed")
-        end
-    end
 
     global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
     global lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
     joins(x) = length(x) > 0 ? join(x, " ") : x
     global joinsample = (joins ∘ sample)
 
+end
+"""
+    abstractlogic(; returnactive = false)
+
+Call the REPL from Julia. Setting returnactive to *true* returns the last active
+logicset.
+
+```julia
+julia> abstractlogic("a, b, c in 1:3")
+a, b, c ∈ 1:3            feasible outcomes 27 ✓          :1 1 3
+
+julia> abstractlogic("a == b")
+a == b                   feasible outcomes 9 ✓           :3 3 3
+
+julia> abstractlogic("a > c")
+a > c                    feasible outcomes 3 ✓           :3 3 1
+
+julia> abstractlogic("c != 1")
+c != 1                   feasible outcomes 1 ✓✓          :3 3 2
+
+```
+"""
+abstractlogic = abstractlogic
+
+function ALcheck(userinput)
+    try
+      occursin(r"^check[\\:\\-\\ ]+", userinput) &&
+        checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")),
+        replset, verbose = replcmdverbose & replverboseall)
+      occursin(r"^(prove|force)[\\:\\-\\ ]+", userinput) &&
+        checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")),
+        replset, force=true, verbose = replcmdverbose & replverboseall)
+      occursin(r"^any[\\:\\-\\ ]+", userinput) &&
+        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
+        replset, countany=true, verbose = replcmdverbose & replverboseall)
+      occursin(r"^✓[\\:\\-\\ ]*", userinput) &&
+        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
+        replset, countany=true, verbose=false)
+      # push!(logicset, replset)
+    catch
+      println("Warning! Check Fail")
+      (length(userinput) == 5) && println("Nothing to check")
+      println("Typical check has same syntax as a command:")
+      println("check: a = 2|3 or prove: a = 2|3")
+      println("check: {{i}} != {{i+1}} or prove: {{i}} != {{i+1}}")
+    end
+end
+
+function ALexport(x)
+   y = replace(x, r"^export( as){0,1} " => "")
+   Core.eval(Main, Meta.parse("$y = returnreplset()"))
+   printmarkdown("`julia>` $y = `returnreplset()`")
+   println()
+end
+
+function itemprint(x)
+   for v in x
+      vstring = string(v)
+      println(vstring[1:min(90,end)] * (length(vstring) > 90 ? "..." : ""))
+   end
 end
 
 function testcall(userinput)
@@ -341,25 +365,12 @@ function testcall(userinput)
     return userinput
 end
 
-"""
-    abstractlogic(; returnactive = false)
-
-Call the REPL from Julia. Setting returnactive to *true* returns the last active
-logicset.
-
-```julia
-julia> abstractlogic("a, b, c in 1:3")
-a, b, c ∈ 1:3            feasible outcomes 27 ✓          :1 1 3
-
-julia> abstractlogic("a == b")
-a == b                   feasible outcomes 9 ✓           :3 3 3
-
-julia> abstractlogic("a > c")
-a > c                    feasible outcomes 3 ✓           :3 3 1
-
-julia> abstractlogic("c != 1")
-c != 1                   feasible outcomes 1 ✓✓          :3 3 2
-
-```
-"""
-abstractlogic = abstractlogic
+function ALsearch(userinput)
+    try
+      checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
+      search(checker, replset, verbose = replcmdverbose & replverboseall)
+      # push!(logicset, replset)
+    catch
+      println("Warning! Search Failed")
+    end
+end

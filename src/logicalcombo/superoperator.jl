@@ -1,7 +1,7 @@
 function superoperator(command, logicset::LogicalCombo; verbose=true)
     logicsetcopy = deepcopy(logicset)
 
-    superset = "xor|iff|if|then|or|and"
+    superset = "xor|iff|if|or|and|notthen|then"
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
@@ -34,6 +34,9 @@ function superoperator(command, logicset::LogicalCombo; verbose=true)
 
     elseif operator ∈ ["==>", "then"]
         ℧η[℧left] .= ℧[℧left]  .& ℧right[℧left]
+
+    elseif operator ∈ ["!=>"]
+        ℧η[.!℧left] .= ℧[.!℧left]  .& ℧right[.!℧left]
 
     elseif operator ∈ ["<==", "if"]
         ℧η[℧right] = ℧[℧right] .& ℧left[℧right]

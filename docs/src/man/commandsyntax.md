@@ -42,38 +42,43 @@ Lets imagine same scenario as before: (if a is less than b then c must greater t
 Operators evaluated at the same level are always evaluated from left to right.
 
 Initializing the repl (`julia> =`).
+The `✓` is shorthand for `abstract logic> check ... [silent]`
+calls silent check same
 ```julia
-abstractlogic> a,b,c ∈ 1:3
-a,b,c ∈ 1:3              Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :1 3 3
+abstractlogic> a ∈ 1
+a ∈ 1                    Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓        :1
 
-abstractlogic> true &&& true &&& false ==> false
-true &&& true &&& false ==> false        Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :3 3 3
+abstractlogic> ✓ true ==> false
+false
 
-abstractlogic> true &&& true &&& false ==> false &&& false
-true &&& true &&& false ==> false &&& false      Feasible Outcomes: 0    Perceived Outcomes: 0 X          [empty set]
+abstractlogic> ✓ true &&& false ==> false
+true
 
-abstractlogic> true &&&& true &&&& false ===> false &&& false
-true &&&& true &&&& false ===> false &&& false   Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :3 2 1
-
-abstractlogic> true &&&& true &&&& false ===> false &&&& false
-true &&&& true &&&& false ===> false &&&& false          Feasible Outcomes: 0    Perceived Outcomes: 0 X          [empty set]
+abstractlogic> ✓ true &&& false ==> false &&& false
+false
 ```
 
+Formulating a problem. Let's say we would like a constraint specifies the only time
+`a` is less than or equal to `b` or `c`, is when `a`, `b`, and `c` are all equal.
 ```julia
-julia> logicalparse("a, b, c ∈ 1:3; a < b <=> c > b ===> a = b, c") |> showfeasible
-a < b <=> c > b ===> a = b, c    feasible outcomes 19 ✓          :1 2 2
-19×3 Array{Int64,2}:
- 1  1  1
- 1  1  2
- 1  1  3
-...
- 3  1  3
- 3  2  3
- 3  3  3
- ```
- The results above might be surprising as the *metaoperator* on first glance would seem to introduce more constraints. However, this is not the case. Only in the case `a < b < c` or when this is not true is `a == b == c`.
+abstractlogic> a, b, c ∈ 1:3; a <= b ||| a <= c ==> a = b, c [clear]
+Clear Workspace
 
- It need not be the case that *metaoperators* make the constraints less restrictive. `<==>`, `^^^^`, and `&&&&` all impose joint constraints on both side of the operator.
+a, b, c ∈ 1:3            Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :3 3 2
+a <= b ||| a <= c ==> a = b, c   Feasible Outcomes: 8    Perceived Outcomes: 27 ✓        :3 2 2
+
+abstractlogic> show
+a b c
+– – –
+1 1 1
+2 1 1
+2 2 2
+3 1 1
+3 1 2
+3 2 1
+3 2 2
+3 3 3
+```
 
 ## A Note On Wildcards
 Wildcards `{{i}}` are spawned and evaluated at the level right above *superoperator* but below *metaoperators*. This allows mismatching wildcard functions to be handled on either side of a *metaoperator*. Let's say you only wanted values that either ascended monotonically or descended monotonically. You could do that using `{{i}} < {{<i}}` saying that all values to the right of `i` must be greater or `{{i}} > {{<i}}` saying that all values to the right of `i` must be smaller.
