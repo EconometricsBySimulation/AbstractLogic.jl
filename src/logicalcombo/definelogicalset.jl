@@ -7,6 +7,8 @@ function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
 
     occursin(r"\[*unique(\s|\])*$", command) && return defineuniquelogicalset(logicset, command)
 
+    (logicset.type == "UniquePermutation") && throw("Unique sets cannot have variables added to them!")
+
     for v in vars
         m = match.(r"(\s|\"|\')", v)
         (m != nothing) && throw("Variable names cannot have {$(m.captures[1])}.")
@@ -65,11 +67,11 @@ function defineuniquelogicalset(logicset::LogicalCombo, command::String)::Logica
 
   mykeys    = [Symbol(v) for v in vars]
 
-  (length(values) == 1) && (length(mykeys) > 1) && (mydomain = 1:length(mykeys))
+  (right == "") && (mydomain = 1:length(mykeys))
   (length(values) > 1)  && (mydomain = values)
 
   (length(mydomain) != length(mykeys)) && throw("Variable Lengths Need to Equal Number of Variables")
 
   mylogical = fill(true, factorial(length(mydomain)))
-  LogicalCombo(mykeys, mydomain, mylogical, permutationuniquelookup)
+  LogicalCombo(mykeys, mydomain, mylogical, permutationuniquelookup, "UniquePermutation")
 end

@@ -37,6 +37,7 @@ let
 
     global showcommandlist()  = commandlist
     global returnlogicset() = logicset
+    global returnreplset() = replset
     global showcmdlocation() = cmdlocation
     global showsetlocation() = setlocation
     global showuserinput() = userinput

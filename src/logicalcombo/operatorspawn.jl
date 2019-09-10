@@ -115,9 +115,9 @@ function operatorspawn(command,
         try
            verbose && print(prefix * "$txtcmd")
            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
-           println(" ✔")
+           verbose && println(" ✔")
         catch
-          println(" 𝚇")
+          verbose && println(" 𝚇")
         end
 
        push!(collection, ℧∇)

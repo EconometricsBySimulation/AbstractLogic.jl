@@ -27,14 +27,15 @@ struct LogicalCombo
   domain::AbstractArray
   logical::Array{Bool}
   lookup::Function
+  type::String
   commands::Array{String}
 end
 
 LogicalCombo(keys, domain, logical) =
-    LogicalCombo(keys, domain, logical, permutationlookup, String[])
+    LogicalCombo(keys, domain, logical, permutationlookup, "Permutation", String[])
 
-LogicalCombo(keys, domain, logical, permutationlookup) =
-    LogicalCombo(keys, domain, logical, permutationlookup, String[])
+LogicalCombo(keys, domain, logical, permutationlookup, type) =
+    LogicalCombo(keys, domain, logical, permutationlookup, type, String[])
 
 LogicalCombo() = LogicalCombo(Symbol[],[], Bool[])
 
@@ -90,7 +91,7 @@ function permutationuniquelookup(x::LogicalCombo, row::Integer, col::Integer)
         push!(setout, fset[z])
         fset = fset[[(1:(z-1))..., ((z+1):length(fset))...]]
     end
-    setout[col]
+    domain(x)[setout[col]]
 end
 
 function Base.getindex(x::LogicalCombo, row::Integer, col::Integer)
