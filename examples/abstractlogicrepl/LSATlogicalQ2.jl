@@ -15,6 +15,7 @@ following conditions apply:
 # Three films Greed, Harvest, and Limelight as well as 0 no film
 # t1 is the first film, t2 the second, and t3 are the last film on Thursday
 # f1, f2, f3 and s1, s2, s3 are similarly coded for friday and saturday
+clear
 t.1, t.2, t.3, f.1, f.2, f.3, s.1, s.2, s.3  ∈  _, Greed, Harvest, Limelight
 
 # On each day at least one film is shown. Since 3 is last slot then .3 can't be empty.
