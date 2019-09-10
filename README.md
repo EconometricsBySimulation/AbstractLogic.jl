@@ -39,19 +39,19 @@ ages.
 
 Enter the REPL by hitting `=` at command prompt.
 ```julia
-julia> myls = logicalparse(["Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5"])
+abstractlogic> Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5
 Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       feasible outcomes 3125 ✓        :4 2 4 3 4
 
-julia> myls = logicalparse("Peter < Susan; Sam < Susan", myls)
+abstractlogic> Peter < Susan; Sam < Susan
 Peter < Susan            feasible outcomes 1250 ✓        :2 3 3 4 4
 Sam < Susan              feasible outcomes 750 ✓         :4 5 4 5 4
 
-myls = logicalparse("Sam > Ali; Li > Ali; Li < Peter", myls)
+abstractlogic> Sam > Ali; Li > Ali; Li < Peter
 Sam > Ali                feasible outcomes 175 ✓         :1 3 2 3 1
 Li > Ali                 feasible outcomes 121 ✓         :4 5 2 5 1
 Li < Peter               feasible outcomes 13 ✓          :4 5 4 3 2
 
-julia> search("{{i}} > {{!i}}", myls)
+abstractlogic> search {{i}} > {{!i}}
 Checking: Peter > Susan
 Checking: Peter > Sam
 ...
