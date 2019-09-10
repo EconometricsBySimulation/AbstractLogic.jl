@@ -45,6 +45,8 @@ function logicalparse(
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
 
+  clearcounter()
+
   verbose && println("")
 
   any(occursin.(";", commands)) &&
@@ -61,9 +63,11 @@ function logicalparse(
     logicset::LogicalCombo = LogicalCombo(),
     verbose=true)
 
+    clearcounter()
+
     # A vector of non-standard operators to ignore
     generators = "in"
-    superset = "xor|iff|if|then"
+    superset = "xor|iff|if|then|notthen"
     metaset = "XOR|IFF|IF|THEN|AND|OR"
 
     exclusions = join([generators, superset, metaset],"|")

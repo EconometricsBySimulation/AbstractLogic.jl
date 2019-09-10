@@ -63,11 +63,18 @@ function stringnumparse(x)
     throw("$x not interpreted!")
 end
 
+##########################################################################
+##########################################################################
+
 Base.:+(x::String, y::String) = x * " " * y
 
 function skipthischeck(txt, i, j; verbose=false)
     txt = replace(txt, " "=>"")
 
+    occursin(r"!(i|j|J)", txt) && return i==j
+
+    occursin(r"![0-9]+$", txt) &&
+     return integer(match(r"^!([0-9])+$", txt).captures[1]) == j
 
     occursin(r"^!(i|j|J)$", txt) && (i  == j) && return true
 
@@ -100,6 +107,9 @@ function skipthischeck(txt, i, j; verbose=false)
     false
 end
 
+##########################################################################
+##########################################################################
+
 function splitthenskipcheck(txt, i, j; verbose=false)
     rangematchessplit =
        strip.(split(replace(txt, r"i|j|J"=>i), r"(,|\|)"))
@@ -111,13 +121,13 @@ function splitthenskipcheck(txt, i, j; verbose=false)
     false
 end
 
-# txt = "*=i+1"
+# txt = "!1,!3"
 #
 # for i in 1:5, j in 1:5
 #     print("i = $i, j = $j skipthis {{$txt}} Skip? ")
 #     println(splitthenskipcheck(txt, i, j, verbose=true))
 # end
-
+#
 
 ##########################################################################
 ##########################################################################

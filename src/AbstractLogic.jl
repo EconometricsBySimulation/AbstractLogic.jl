@@ -21,7 +21,6 @@ export abstractlogic,
        search,
        showfeasible,
        discover,
-       returnactivelogicset,
        dashboard!,
        dashboard,
        showlogichistory,
@@ -29,7 +28,6 @@ export abstractlogic,
        showuserinput,
        showsetlocation,
        showcmdlocation,
-       returnlogicset,
        showcommandlist
 
 
@@ -38,6 +36,8 @@ export abstractlogic,
 ## Load files
 ##
 ##############################################################################
+
+include("logicalcombo/counter.jl")
 
 include("logicalcombo/LogicalCombo.jl")
 
@@ -73,38 +73,40 @@ include("logicalcombo/discover.jl")
 #
 #
 
-using Pkg
-Pkg.activate(".")
-using ReplMaker, Markdown, StatsBase, Crayons
-
-Main.include("logicalcombo/LogicalCombo.jl")
-
-Main.include("logicalcombo/logicalparse.jl")
-
-Main.include("logicalcombo/expand.jl")
-
-Main.include("logicalcombo/usefulfunctions.jl")
-
-Main.include("logicalcombo/definelogicalset.jl")
-
-Main.include("logicalcombo/operatoreval.jl")
-
-Main.include("logicalcombo/superoperator.jl")
-
-Main.include("logicalcombo/metaoperator.jl")
-
-Main.include("logicalcombo/operatorspawn.jl")
-
-Main.include("logicalcombo/search.jl")
-
-Main.include("logicalcombo/checkfeasible.jl")
-
-Main.include("logicalcombo/showfeasible.jl")
-
-Main.include("logicalcombo/repl.jl")
-
-Main.include("logicalcombo/help.jl")
-
-Main.include("logicalcombo/discover.jl")
+# using Pkg
+# Pkg.activate(".")
+# using ReplMaker, Markdown, StatsBase, Crayons
+#
+# Main.include("logicalcombo/counter.jl")
+#
+# Main.include("logicalcombo/LogicalCombo.jl")
+#
+# Main.include("logicalcombo/logicalparse.jl")
+#
+# Main.include("logicalcombo/expand.jl")
+#
+# Main.include("logicalcombo/usefulfunctions.jl")
+#
+# Main.include("logicalcombo/definelogicalset.jl")
+#
+# Main.include("logicalcombo/operatoreval.jl")
+#
+# Main.include("logicalcombo/superoperator.jl")
+#
+# Main.include("logicalcombo/metaoperator.jl")
+#
+# Main.include("logicalcombo/operatorspawn.jl")
+#
+# Main.include("logicalcombo/search.jl")
+#
+# Main.include("logicalcombo/checkfeasible.jl")
+#
+# Main.include("logicalcombo/showfeasible.jl")
+#
+# Main.include("logicalcombo/repl.jl")
+#
+# Main.include("logicalcombo/help.jl")
+#
+# Main.include("logicalcombo/discover.jl")
 
 end # module AbstractLogic

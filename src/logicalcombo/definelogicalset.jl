@@ -1,11 +1,11 @@
 function definelogicalset(logicset::LogicalCombo, command::String)::LogicalCombo
-
+    counter!()
     m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']+)(?:\|\|(.*?)){0,1}$", command)
     left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
     vars   = split(left, ",")  .|> strip
     values = split(right, ",") .|> strip
 
-    occursin(r"unique\s*$", command) && return defineuniquelogicalset(logicset, command)
+    occursin(r"\[*unique(\s|\])*$", command) && return defineuniquelogicalset(logicset, command)
 
     for v in vars
         m = match.(r"(\s|\"|\')", v)
@@ -50,7 +50,7 @@ function defineuniquelogicalset(logicset::LogicalCombo, command::String)::Logica
 
   command = replace(command, r"\|*\s*unique\s*$" => "")
 
-  m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s)([a-zA-Z0-9,._ :\"']*)(?:\|\|(.*?)){0,1}$", command)
+  m = match(r"^\s*(.+?)(?:\b|\s)(?:in|∈)(?:\b|\s|)([a-zA-Z0-9,._ :\"']*)(?:\|\|(.*?)){0,1}$", command)
   left, right, condition = strip.((x -> x === nothing ? "" : x).(m.captures))
   vars   = split(left , ",")  .|> strip
   values = split(right, ",")  .|> strip
@@ -65,8 +65,8 @@ function defineuniquelogicalset(logicset::LogicalCombo, command::String)::Logica
 
   mykeys    = [Symbol(v) for v in vars]
 
-  (length(values) == 0) && (mydomain = 1:length(mykeys))
-  (length(values) > 0)  && (mydomain = values)
+  (length(values) == 1) && (length(mykeys) > 1) && (mydomain = 1:length(mykeys))
+  (length(values) > 1)  && (mydomain = values)
 
   (length(mydomain) != length(mykeys)) && throw("Variable Lengths Need to Equal Number of Variables")
 

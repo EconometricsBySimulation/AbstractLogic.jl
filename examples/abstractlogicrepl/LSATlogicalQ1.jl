@@ -6,9 +6,9 @@
 #A company employee generates a series of five-digit product
 #codes in accordance with the following rules:
 #The codes use the digits 0, 1, 2, 3, and 4, and no others.
-clear
+
 # unique forces each value to be different
-a, b, c, d, e  ∈  0:4 || unique
+a, b, c, d, e  ∈  0:4 || unique [clear]
 
 #The second digit has a value exactly twice that of the first digit.
 b == a*2

@@ -1,3 +1,25 @@
+using Pkg
+Pkg.activate(".")
+
+include("AbstractLogic.jl")
+
+using AbstractLogic: abstractlogic,
+       checkfeasible,
+       LogicalCombo,
+       logicalparse,
+       search,
+       showfeasible,
+       discover,
+       dashboard!,
+       dashboard,
+       showlogichistory,
+       showcommandhistory,
+       showuserinput,
+       showsetlocation,
+       showcmdlocation,
+       showcommandlist
+
+
 using SparseArrays, Serialization
 
 # v7 = logicalparse("a,b,c,d,e,f,g ∈ 1:7 || {{i}} != {{>i}}")

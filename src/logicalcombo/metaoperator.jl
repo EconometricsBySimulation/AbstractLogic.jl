@@ -1,7 +1,12 @@
 """
+    metaoperator
 
+Top level operator.
+**jula> help("Metaoperator")
 """
 function metaoperator(command, logicset::LogicalCombo; verbose = true)
+    counter!()
+    
     logicsetcopy = deepcopy(logicset)
 
     metaset = "XOR|IFF|IF|THEN|AND|OR"
@@ -23,7 +28,9 @@ function metaoperator(command, logicset::LogicalCombo; verbose = true)
     (operator ∈ ["!==>"]) && (℧η[.!℧left] = logicset[:][.!℧left]  .& ℧right[.!℧left])
     (operator ∈ ["<===", "IF"]) && (℧η[℧right] = logicset[:][℧right] .& ℧left[℧right])
     (operator ∈ ["||||", "OR"]) && (℧η = logicset[:] .& (℧left .| ℧right))
-    (operator ∈ ["^^^^", "XOR", "!==="]) && (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
+
+    (operator ∈ ["^^^^", "XOR", "!==="]) &&
+      (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
 
     logicsetcopy[:] = ℧η
     logicsetcopy

@@ -29,6 +29,8 @@ function checkfeasible(command::String,
     logicset::LogicalCombo = LogicalCombo();
     verbose=true, force=false, countany=false)
 
+  clearcounter()
+
   countany && force && throw("Both any and force can't be set to true")
 
   rowsin = sum(logicset.logical)

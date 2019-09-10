@@ -45,6 +45,8 @@ Checking: v3 > v2
 """
 function search(command::String, logicset::LogicalCombo; verbose=true)
 
+    clearcounter()
+
     rowsin = nfeasible(logicset)
 
     if rowsin == 0

@@ -4,6 +4,7 @@
     x,y,z ∈ apples, oranges, grapes
 """
 function operatoreval(command, logicset::LogicalCombo; verbose=true)
+    counter!()
     logicsetcopy = deepcopy(logicset)
 
     #println("operatoreval($command)")

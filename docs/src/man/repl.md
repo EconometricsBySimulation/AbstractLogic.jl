@@ -69,12 +69,18 @@ Check: a == 3 ... a == 3                         feasible outcomes 1 ✓✓     
 true, 1 out of 1 possible combinations 'true'.
 ```
 ---
-#### clear
+#### clear [clear]
 Empty the current variable space.
+**Note** Specifying the option `[clear]` in any part of a `REPL` command will call the clear function before processing the rest of the command.
+```julia
+abstractlogic> a, b, c ∈ 1:3 [clear]
+Clear Workspace
+a, b, c ∈ 1:3            Feasible Outcomes: 27   Perceived Outcomes: 27 ✓        :1 2 1
+```
 
 ---
 #### clearall
-Empty the current as well as the logicset space.
+Empty the current as well as the history set space.
 **Warning** This cannot be undone!
 
 ---

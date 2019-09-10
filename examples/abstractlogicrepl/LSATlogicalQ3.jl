@@ -12,8 +12,7 @@ for at least one of the weeks. The following conditions apply to Freedom’s sch
 """
 
 # exactly one of four destinations: Guadeloupe, Jamaica, Martinique, or Trinidad
-clear
-w1, w2, w3, w4, w5, w6, w7  ∈ Guadeloupe, Jamaica, Martinique, Trinidad
+w1, w2, w3, w4, w5, w6, w7  ∈ Guadeloupe, Jamaica, Martinique, Trinidad [clear]
 
 # Each destination will be scheduled for at least one of the weeks.
 {{i}} = 'Guadeloupe' {{1,}}

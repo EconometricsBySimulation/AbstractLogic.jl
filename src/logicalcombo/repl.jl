@@ -82,6 +82,10 @@ let
         replcmdverbose = !occursin("[silent]", userinput)
         userinput = replace(userinput, "[silent]"=>"")
 
+        occursin("[clear]", userinput) && clear()
+        userinput = replace(userinput, "[clear]"=>"")
+
+        verbose = replcmdverbose & replverboseall
 
         if strip(userinput) == ""                         nothing()
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
@@ -100,11 +104,14 @@ let
         elseif userinput == "range"                       println(range(replset))
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
-        elseif occursin(r"^(prove|force|check|any|✓)", userinput) ALcheck(userinput)
-        elseif occursin(r"^search", userinput)            ALsearch(userinput)
         elseif userinput == "preserve"                    ALpreserve()
         elseif userinput == "restore"                     restore()
-        else                                              ALparse(userinput)
+        elseif userinput == "silence"                     replverboseall = false
+        elseif userinput == "noisy"                       replverboseall = true
+
+        elseif occursin(r"^(prove|force|check|any|✓)", userinput) ALcheck(userinput)
+        elseif occursin(r"^search", userinput)            ALsearch(userinput)
+        else                                              ALparse(userinput, verbose)
         end
         returnactive && return replset
         nothing
@@ -193,7 +200,7 @@ let
         println(lastcommand() * " - " * reportfeasible())
     end
 
-    function ALparse(userinput)
+    function ALparse(userinput, verbose)
         if (sum(replset[:])==0) && !occursin(r"∈", userinput)
             print("error: userinput  - ")
             println("You are working with an empty set! Try inputing: a,b,c in 1:3")
@@ -201,8 +208,7 @@ let
         end
 
         try
-          templogicset = logicalparse(userinput, replset,
-                                      verbose = replcmdverbose & replverboseall)
+          templogicset = logicalparse(userinput, logicset = replset, verbose = verbose)
           replset = templogicset
           push!(commandlist[setlocation], userinput)
           commandhistory      = commandhistory[1:cmdlocation]

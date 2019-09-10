@@ -21,7 +21,7 @@ abstractlogic> {{i}} > {{<i}}
 
 In the above example we can see that three constraints were spawned from the input `{{i}} > {{<i}}`. This is because `i` is first given the variable name `a` but the right hand side takes value `<i` which means in terms of the variable set this term can take any values to the left of `i` which is this case is no values. So `a` is skipped for the `i` value. Next `i` is set to `b`. `b` only has one variable to the left `a`. This is evaluated. Next we look at `c` which has both `a` and `b` to the left which are evaluated. Finally the parser combined the joint feasibility of the three generated constraints and only keeps values in which all three are true. In this case, `a=1, b=2, c=3`.
 
-## Set Wildcards
+## `i` Reference Wildcards
 
 * `{{i}}` the most basic wildcard reference is `{{i}}`. It can take any variable name from the set of variables so far defined.
 #### Example
@@ -53,7 +53,7 @@ abstractlogic> {{i}} == {{!i}}
                  feasible outcomes 3 ✓           :3 3 3
 ```
 
-* `{{>i}}` any variable to the right of `i`.
+* `{{>i}}` any variable to the right of wildcard `i`.
 #### Example
 ```julia
 abstractlogic> a,b,c ∈ 1:3
@@ -127,6 +127,9 @@ abstractlogic> {{i}} = 1 ==> {{i+1!}} = 2
 >>> c = 1 ==> 999 = 2
          feasible outcomes 12 ✓          :1 2 3
 ```
+
+## Variable Reference Wildcards
+
 
 ## Constraints
 

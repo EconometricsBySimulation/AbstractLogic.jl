@@ -26,8 +26,7 @@ Are twins once you taste them, though different at first sight.
 
 # Seven Potions a,b,c,d,e,f,g each have 1 of 4 possible values
 # a is left of b which is left of c etc.
-clear
-a, b, c, d, e, f, g  ∈  NW, MA, MB, PO
+a, b, c, d, e, f, g  ∈  NW, MA, MB, PO [clear]
 
 # Two among our number hold only nettle wine, #code 1
 {{i}} == 'NW' {{2}}

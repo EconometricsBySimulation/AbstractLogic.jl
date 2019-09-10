@@ -1,4 +1,6 @@
 function superoperator(command, logicset::LogicalCombo; verbose=true)
+    counter!()
+    
     logicsetcopy = deepcopy(logicset)
 
     superset = "xor|iff|if|or|and|notthen|then"
