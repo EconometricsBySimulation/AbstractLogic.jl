@@ -1,9 +1,9 @@
-using Pkg
-Pkg.activate(".")
-
-include("AbstractLogic.jl")
-
-
+# using Pkg
+# Pkg.activate(".")
+#
+# include("AbstractLogic.jl")
+#
+#
 using Pkg
 Pkg.activate(".")
 Pkg.test()
@@ -25,7 +25,8 @@ import AbstractLogic: abstractlogic,
        showuserinput,
        showsetlocation,
        showcmdlocation,
-       showcommandlist
+       showcommandlist,
+       abrepl
 
 import AbstractLogic
 
