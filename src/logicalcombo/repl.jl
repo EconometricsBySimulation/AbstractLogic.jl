@@ -26,15 +26,14 @@ end
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
 markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
 
-initrepl(
-    parse_to_expr,
-    prompt_text="abstractlogic> ",
-    prompt_color = :blue,
-    start_key='=',
-    mode_name="Abstract Logic")
+# initrepl(
+#     parse_to_expr,
+#     prompt_text="abstractlogic> ",
+#     prompt_color = :blue,
+#     start_key='=',
+#     mode_name="Abstract Logic")
 
 let
-
     global showcommandlist()  = commandlist
     global returnlogicset() = logicset
     global returnreplset() = replset
