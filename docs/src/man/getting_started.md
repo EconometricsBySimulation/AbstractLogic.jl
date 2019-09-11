@@ -2,7 +2,7 @@
 
 ## Installation
 
-The AbstractLogic package is available through gitbub and can be installed using the following commands after entering the package REPL by typeing `]` in the console.
+The `AbstractLogic` package is available through gitbub and can be installed using the following commands after entering the package REPL by typeing `]` in the console.
 ```julia
 pkg> dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
 ```
@@ -21,7 +21,7 @@ To set up an initial logical set. Pass a text command to logicalparse with the v
 julia> logicalset = logicalparse("a, b, c ∈ 1, 2, 3")
 a, b, c ∈ 1, 2, 3        feasible outcomes 27 ✓          :3 1 3
 ```
-`logicalparse` will now generate a lookup object of type `LogicalCombo` which tells `AbstractLogic` options what combinations feasible as well as which ones have been excluded. Every time `logicalparse` runs it prints the number of feasible outcomes in the set given the current constraints as well as a random single feasible value that the variables can hold.
+`logicalparse` will now generate a lookup object of type `LogicalCombo` which tells `AbstractLogic` what options are feasible as well as which ones have been excluded. Every time `logicalparse` runs it prints the number of feasible outcomes, the number of "percieved" outcomes in terms of (product of the # of options) in the set given the current constraints as well as a random single feasible value that the variables can hold.
 
 While many logical problems do have equivalent value ranges for each variable `AbstractLogic` has no such constraint. Additional variables can be added to a set in an equivalent as those added upon set initiation.
 ```julia
@@ -101,53 +101,45 @@ Checking: ali == 3
 From this we can see that variables a and c are possible matches.
 
 ### Julia logicalrepl
-Alternatively you can interact with the logical problem solver through the psuedo-repl interface. It is initiated by in julia by calling the `logicalrepl` function.
+Alternatively you can interact with the logical problem solver through the `repl` interface. It is initiated by in julia by typing `=` in `julia>` repl.
 
 ```julia
-julia> logicalrepl()
-Welcome to the abstract logic solver interactive mode!
-Type 'exit' to exit.
-'clear' to clear the environment space
-'search {followed by search}' to search the environment space
-'back' to return to previous state or 'next' to move forward
+abstractlogic>
 ```
 
 #### Setting up a logical set
 The interface is much cleaner to work with.
 ```julia
-julia> logicalrepl()
-...
-
-AL: a, b, c ∈ 1, 2, 3
+abstractlogic> a, b, c ∈ 1, 2, 3
 a, b, c ∈ 1, 2, 3        feasible outcomes 27 ✓          :1 3 3
 
-AL: d ∈ 3, 4, 5
+abstractlogic> d ∈ 3, 4, 5
 d ∈ 3, 4, 5              feasible outcomes 81 ✓          :2 3 3 4
 
-AL: e,f in red, green, blue
+abstractlogic> e,f in red, green, blue
 e,f ∈ red, green, blue   feasible outcomes 729 ✓         :2 3 3 4 red red
 ```
 
 #### Constraining the logical set
-Writing contraints within the `repl` is largely equivalent to that of `logicalparse`.
+Writing contraints within the `repl` is equivalent to that of `logicalparse`.
 ```julia
-AL: a = c
+abstractlogic> a = c
 a = c                    feasible outcomes 243 ✓         :3 1 3 3 red blue
 
-AL: e != f
+abstractlogic> e != f
 e != f                   feasible outcomes 162 ✓         :1 1 1 3 blue green
 ```
 
 We can also force variables to take the value of a constant.
 ```julia
-AL: f = 'blue'
+abstractlogic> f = 'blue'
 f = 'blue'               feasible outcomes 54 ✓          :2 3 2 4 red blue
 ```
 
 #### Checking the Feasibility of a Statement
 We might often like to check the feasiblility of a claim. This is done with the check command
 ```julia
-AL: check a=2
+abstractlogic> check a=2
 Check: a=2 ... a=2                       feasible outcomes 18 ✓          :2 1 2 4 green blue
 possible,  18 out of 54 possible combinations 'true'.
 ```
@@ -155,7 +147,7 @@ possible,  18 out of 54 possible combinations 'true'.
 #### Search for a Possible Match
 We might instead want to ask the question, which variables could take on a value equal to 3.
 ```julia
-AL: search ==3
+abstractlogic> search ==3
 
 Checking: a ==3
 Checking: b ==3
