@@ -10,9 +10,9 @@ Including `;` in a command will break the command into two or more separate comm
 
 *Standard Operators*: Take the form of one or two symbol operators and are often easily identified: `>, <, =, ==, !=` though there are many non-standard operators worth taking a look at.
 
-*Superoperators*: Evaluate the returns from operator expressions and hold three characters `==>, <==, <=>, |||, ===, ^^^` as well as `iff`, `if`, `then`, `and`, `or`, and `xor`
+*Superoperators*: Evaluate the returns from operator expressions and hold three characters or lowercase strings `==>, <==, <=>, ===, !==, |||, &&&, ^^^, !=>` as well as `iff`, `if`, `then`, `and`, `or`, and `xor`
 
-*Metaoperators*: Are made up of four characters `===>, <===, <==>, ||||`
+*Metaoperators*: Are made up of four characters or UPPERCASE characters `===>, <===, <==>, ====, !===, ||||, &&&&, ^^^^, !==>`
 
 ## Order of Operations
 For most non-trivial problems order of operations is going to be very important for programming `AbstractReasoning` problems.
@@ -32,9 +32,9 @@ a, b, c ∈ 1:3            feasible outcomes 27 ✓          :2 3 1
  3  3  2
  3  3  3
  ```
- From the array above we can see that when a is less than b, c is greater than b and when a is not less than b, c is not greater than b.
+From the array above we can see that when a is less than b, c is greater than b and when a is not less than b, c is not greater than b.
 
- The above statement uses a *superoperator* the `<=>` which is identical to `===` and `iff`. A *metaoperator* could functionally do the same as a *superoperator* in this case. But more complex conditional assertions might exist.
+The above statement uses a *superoperator* the `<=>` which is identical to `===` and `iff`. A *metaoperator* could functionally do the same as a *superoperator* in this case. But more complex conditional assertions might exist.
 
 Lets imagine same scenario as before: (if a is less than b then c must greater than b) then (a must be the same as b and c) "a < b <=> c > b ===> a = b, c".
 
