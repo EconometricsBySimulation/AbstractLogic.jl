@@ -1,4 +1,5 @@
 # Command Flow
+Command flow follows a first in last out functional ruling with standard relational operators are evaluated first, then *superoperators*, then *metaoperators*. When *wildcards* are used, they generate code at the *superoperator* level which is evaluated.
 
 ## Line Break `;`
 Including `;` in a command will break the command into two or more separate commands.
@@ -6,7 +7,12 @@ Including `;` in a command will break the command into two or more separate comm
 ## Type of Operators
 `logicalparse` takes four types operators. Generators, standard operators, superoperators, and metaoperators.
 
-*Generators*: `∈` and `in` are parse first adding to the `LogicalCombo` set.
+*Generators*: `∈` and `in` are used to create or add to a `LogicalCombo`.
+```julia
+abstractlogic> a, b, c, d ∈ 0:2 [clear]
+Clear Workspace
+a, b, c, d ∈ 0:2         Feasible Outcomes: 81   Perceived Outcomes: 81 ✓        :1 0 0 2
+```
 
 *Standard Operators*: Take the form of one or two symbol operators and are often easily identified: `>, <, =, ==, !=` though there are many non-standard operators worth taking a look at.
 

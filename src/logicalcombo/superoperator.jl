@@ -1,18 +1,18 @@
 function superoperator(command, logicset::LogicalCombo; verbose=true)
     counter!()
-    
+
     logicsetcopy = deepcopy(logicset)
 
     superset = "xor|iff|if|or|and|notthen|then"
 
     #println("operatoreval($command)")
     (sum(logicset[:]) == 0) && return logicset
-    !occursin(Regex("([><=|!+\\-^&]{3}|$superset)"), command) &&
+    !occursin(Regex("(\b| )([><=|!+\\-^&]{3}|$superset)(\b| )"), command) &&
       return operatoreval(command, logicset, verbose=verbose)
     occursin(r"\{\{.*\}\}", command) &&
       return operatorspawn(command, logicset, verbose=verbose)
 
-    m = match(Regex("(^.*)[ ]*([><=|!+\\-\\^&]{3}|$superset)[ ]*(.*?\$)"), command)
+    m = match(Regex("(^.*)(?:\b| )([><=|!+\\-\\^&]{3}|$superset)(?:\b| )(.*?\$)"), command)
     left, operator, right = m.captures
 
     ℧left  = superoperator(left ,logicset, verbose=verbose)[:]

@@ -31,15 +31,16 @@ Clear Workspace
 a, b, c, d, e ∈ 1:5 || {{i}} != {{!i}}           Feasible Outcomes: 120          Perceived Outcomes: 3125 ✓      :1 2 5 3 4
 ```
 
-Number of outcomes A,B = (5*5) = 25
-Number of outcomes A,B,C | A != B = 5*(5*4) = 100
-Number of outcomes A,B,C,D | A != B, A != C, B != C = 5*(5*4*3) = 300
-Number of outcomes A,B,C,D,E | A != B, A != C, D != D, etc. 5*(5*4*3*2) = 600
-Total Number of outcomes to evaluate: 25 + 100 + 300 + 600 = 1025
+Number of outcomes A, B = (5*5) = 25.
+Number of outcomes A, B, C | A != B = 5*(5*4) = 100.
+Number of outcomes A, B, C, D | A != B, A != C, B != C = 5*(5*4*3) = 300.
+Number of outcomes A, B, C, D, E | A != B, A != C, D != D, etc. 5*(5*4*3*2) = 600.
+Total Number of outcomes to evaluate: 25 + 100 + 300 + 600 = 1025.
 
 Equivalent to:
 ```julia
-a, b, c, d, e ∈ 1:5      Feasible Outcomes: 3125         Perceived Outcomes: 3125 ✓      :2 5 4 5 4
+abstractlogic> a, b, c, d, e ∈ 1:5; {{i}} != {{!i}}
+ a, b, c, d, e ∈ 1:5      Feasible Outcomes: 3125         Perceived Outcomes: 3125 ✓      :2 5 4 5 4
 {{i}} != {{!i}}
 >>> a != b ✔
 ...
@@ -70,4 +71,4 @@ Clear Workspace
 a, b, c, d, e ∈ A, B, C, D, E unique     Feasible Outcomes: 120          Perceived Outcomes: 3125 ✓      :C D B A E
 ```
 
-**Note** Efficiency wise using `unique` is much more efficient if your data takes the form of unique values which are all used in every row. However, if your data has additional values which do not fit this 
+**Note** Efficiency wise using `unique` is much more efficient if your data takes the form of unique values which are all used in every row. However, if your data has additional values which do not fit this

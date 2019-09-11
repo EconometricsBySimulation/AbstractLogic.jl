@@ -6,16 +6,16 @@ Top level operator.
 """
 function metaoperator(command, logicset::LogicalCombo; verbose = true)
     counter!()
-    
+
     logicsetcopy = deepcopy(logicset)
 
     metaset = "XOR|IFF|IF|THEN|AND|OR"
 
     (sum(logicset[:]) == 0) && return logicset
-    !occursin(Regex("([><=|!+\\-^&]{4}|$metaset)"), command) &&
+    !occursin(Regex("(?:\b| )([><=|!+\\-^&]{4}|$metaset)(?:\b| )"), command) &&
       return superoperator(command, logicset, verbose=verbose)
 
-    m = match(Regex("(^.*)[ ]*([><=|!+\\-^&]{4}|$metaset)[ ]*(.*?\$)"), command)
+    m = match(Regex("(^.*)(?:\b| )([><=|!+\\-^&]{4}|$metaset)(?:\b| )(.*?\$)"), command)
     left, operator, right = m.captures
 
     ℧left  = metaoperator(left , logicset, verbose=verbose)[:]

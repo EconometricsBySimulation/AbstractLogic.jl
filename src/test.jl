@@ -1,13 +1,14 @@
 # using Pkg
 # Pkg.activate(".")
 #
-# include("AbstractLogic.jl")
+#
 #
 #
 using Pkg
 Pkg.activate(".")
 Pkg.test()
 
+include("AbstractLogic.jl")
 import AbstractLogic: abstractlogic,
        checkfeasible,
        LogicalCombo,
@@ -31,8 +32,10 @@ import AbstractLogic: abstractlogic,
 import AbstractLogic
 
 
-include("MyPackage.jl")
 using MyPackage: myfunction1, myfunction2, myfunction3
+
+# Make the documents
+include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\docs\\make.jl")
 
 
 using SparseArrays, Serialization

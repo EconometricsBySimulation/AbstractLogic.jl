@@ -1,5 +1,6 @@
 
-using Documenter, AbstractLogic
+using Documenter
+#using AbstractLogic
 
 # Installation
 # ] dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
@@ -20,19 +21,20 @@ makedocs(
         "Introduction" => "index.md",
         "User Guide" => Any[
             "Getting Started" => "man/getting_started.md",
-            "Command Snytax" => "man/commandsyntax.md",
+            "Command Snytax" => "man/command_syntax.md",
             "RELP" => "man/repl.md",
             "Generators" => "man/generators.md",
             "Operators" => "man/operators.md",
             "Super Operators" => "man/superoperators.md",
             "Meta Operators" => "man/metaoperators.md",
             "Wildcards" => "man/wildcards.md"
-        ],
-        "API" => Any[
-            "Types" => "lib/types.md",
-            "Functions" => "lib/functions.md",
-            "Indexing" => "lib/indexing.md"
         ]
+        ,
+        # "API" => Any[
+        #     "Types" => "lib/types.md",
+        #     "Functions" => "lib/functions.md",
+        #     "Indexing" => "lib/indexing.md"
+        # ]
     ]
 )
 

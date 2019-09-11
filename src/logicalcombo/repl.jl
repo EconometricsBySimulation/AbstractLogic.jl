@@ -305,19 +305,16 @@ abstractlogic = abstractlogic
 
 function ALcheck(userinput)
     try
+      cleaninput = string(replace(userinput, r"^(prove|force|check|✓)[\\:\\-\\ ]*"=>""))
+
       occursin(r"^check[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")),
-        replset, verbose = replcmdverbose & replverboseall)
+        checkfeasible(cleaninput, replset, verbose = replcmdverbose & replverboseall)
       occursin(r"^(prove|force)[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")),
-        replset, force=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(cleaninput, replset, force=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^any[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
-        replset, countany=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(cleaninput, replset, countany=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^✓[\\:\\-\\ ]*", userinput) &&
-        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
-        replset, countany=true, verbose=false)
-      # push!(logicset, replset)
+        checkfeasible(cleaninput, replset, countany=true, verbose=false)
     catch
       println("Warning! Check Fail")
       (length(userinput) == 5) && println("Nothing to check")

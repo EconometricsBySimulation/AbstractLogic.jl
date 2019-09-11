@@ -19,21 +19,26 @@ function operatorspawn(command,
     if occursin(r"^[0-9]+,[0-9]+$", matches[end])
         countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        constraintprint = "{{" * matches[end]  * "}}"
         matches = matches[1:(end-1)]
     elseif occursin(r"^[0-9]+,$", matches[end])
         countrange = integer(matches[end][1:(end-1)]):size(logicset,2)^2
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        constraintprint = "{{" * replace(matches[end], r",$"=>",∞") * "}}"
         matches = matches[1:(end-1)]
     elseif occursin(r"^,[0-9]+$", matches[end])
         countrange = 0:integer(matches[end][2:end])
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        constraintprint = "{{" *  replace(matches[end], r"^,"=>"0,")  * "}}"
         matches = matches[1:(end-1)]
     elseif occursin(r"^[0-9]+$", matches[end])
         countrange = (x -> x[1]:x[1])(integer(matches[end]))
         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        constraintprint = "{{" *  matches[end]  * "}}"
         matches = matches[1:(end-1)]
     else
         countrange = missing
+        constraintprint = ""
     end
 
     ijJ = map(x -> x[1], eachmatch(r"(?:\b)(j|J|i)(?:\b)", join(matches, " "))) |>
@@ -116,9 +121,9 @@ function operatorspawn(command,
         try
            verbose && push!(txtoutarray, "`$prefix` $txtcmd")
            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
-           verbose && (txtoutarray[end] *= " ✔")
+           # verbose && (txtoutarray[end] *= " ✔")
         catch
-           verbose && (txtoutarray[end] *= " 𝚇")
+           verbose && (txtoutarray[end] *= " X")
         end
 
        push!(collection, ℧∇)
@@ -127,8 +132,11 @@ function operatorspawn(command,
     end
 
     !printall && (length(txtoutarray)>4) &&
-      (txtoutarray = [txtoutarray[1:2]..., "⋮", txtoutarray[end .- (0:1)]...])
-    verbose && printmarkdown("\n\n" * join(txtoutarray, "\n\n"))
+      (txtoutarray = [txtoutarray[1:2]..., " ... ", txtoutarray[end .- (1:-1:0)]...])
+
+    verbose && push!(txtoutarray, constraintprint)
+
+    verbose && (printmarkdown(join(txtoutarray, " ")); println())
 
     collector = hcat(collection...)
 

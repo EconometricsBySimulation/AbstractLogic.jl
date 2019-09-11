@@ -40,7 +40,9 @@ function checkfeasible(command::String,
       return missing
   end
 
-  verbose && print("Check: $command ... ")
+  verbose && !force && !countany && print("check: $command ... ")
+  verbose && force && print("force: $command ... ")
+  verbose && countany && print("any: $command ... ")
 
   logicsetout = logicalparse(command, logicset=logicset, verbose=verbose)
 
