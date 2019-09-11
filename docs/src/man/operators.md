@@ -1,6 +1,6 @@
-# Standard Operators
+# Standard Relational Operators
 
-Standard operators are the core functionality of the `AbstractLogic` package. They allow for comparison between variables and comparison between variables and constants.
+Standard relational operators are the core functionality of the `AbstractLogic` package. They allow for comparison between variables and comparison between variables and constants.
 
 ## Basic Operators
 
