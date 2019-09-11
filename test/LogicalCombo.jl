@@ -1,4 +1,5 @@
-using Test, AbstractLogic
+using Test
+using AbstractLogic
 
 @test LogicalCombo().logical == Bool[]
 @test LogicalCombo().domain == []

@@ -3,7 +3,12 @@ Pkg.activate(".")
 
 include("AbstractLogic.jl")
 
-using AbstractLogic: abstractlogic,
+
+using Pkg
+Pkg.activate(".")
+Pkg.test()
+
+import AbstractLogic: abstractlogic,
        checkfeasible,
        LogicalCombo,
        logicalparse,
@@ -12,6 +17,7 @@ using AbstractLogic: abstractlogic,
        discover,
        dashboard!,
        dashboard,
+       expand,
        nfeasible,
        returnreplset,
        showlogichistory,
@@ -20,6 +26,12 @@ using AbstractLogic: abstractlogic,
        showsetlocation,
        showcmdlocation,
        showcommandlist
+
+import AbstractLogic
+
+
+include("MyPackage.jl")
+using MyPackage: myfunction1, myfunction2, myfunction3
 
 
 using SparseArrays, Serialization

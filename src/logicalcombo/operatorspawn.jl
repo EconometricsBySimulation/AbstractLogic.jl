@@ -2,7 +2,8 @@ function operatorspawn(command,
     logicset::LogicalCombo;
     returnlogical=false,
     prefix=">>> ",
-    verbose=true)
+    verbose=true,
+    printall=false)
 
     logicsetcopy = deepcopy(logicset)
 
@@ -73,7 +74,7 @@ function operatorspawn(command,
 
     collection = []
 
-    verbose && println()
+    txtoutarray = String[]
 
     iset = Symbol[]
 
@@ -113,17 +114,21 @@ function operatorspawn(command,
         ℧∇ = logicset[:]
 
         try
-           verbose && print(prefix * "$txtcmd")
+           verbose && push!(txtoutarray, "`$prefix` $txtcmd")
            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
-           verbose && println(" ✔")
+           verbose && (txtoutarray[end] *= " ✔")
         catch
-          verbose && println(" 𝚇")
+           verbose && (txtoutarray[end] *= " 𝚇")
         end
 
        push!(collection, ℧∇)
        (length(matches_dot)==0) && push!(iset, mykeys[i])
        (length(matches_dot)>0)  && push!(iset, Symbol(string(mykeys[i]) * matches_dot[1]))
     end
+
+    !printall && (length(txtoutarray)>4) &&
+      (txtoutarray = [txtoutarray[1:2]..., "⋮", txtoutarray[end .- (0:1)]...])
+    verbose && printmarkdown("\n\n" * join(txtoutarray, "\n\n"))
 
     collector = hcat(collection...)
 
