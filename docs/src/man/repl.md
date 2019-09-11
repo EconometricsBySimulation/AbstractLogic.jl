@@ -40,7 +40,7 @@ Most commands should be entered directly in the REPL mode after the prompt and a
 Returns documentation related to a function or command to the user.
 **NOTE** `julia> help(...)` returns identical information.
 ```julia
-`abstractlogic>` ? >
+abstractlogic> ? >
   Operator: >
 
   a > b : a is greater than b
@@ -56,15 +56,15 @@ Go back one command
 check feasibility of subsequent command
 ```julia
 ### Example
-`abstractlogic>` a,b,c ∈ 1:3
+abstractlogic> a,b,c ∈ 1:3
 a,b,c ∈ 1:3              feasible outcomes 27 ✓          :2 3 3
 
-`abstractlogic>` a > b ; b > c
+abstractlogic> a > b ; b > c
 
 a > b                    feasible outcomes 9 ✓           :3 2 3
 b > c                    feasible outcomes 1 ✓✓          :3 2 1
 
-`abstractlogic>` check a == 3
+abstractlogic> check a == 3
 Check: a == 3 ... a == 3                         feasible outcomes 1 ✓✓          :3 2 1
 true, 1 out of 1 possible combinations 'true'.
 ```
@@ -136,15 +136,15 @@ Restore the last saved variable space.
 Search for the feasibility of {{i}} match
 ##### Example
 ```julia
-`abstractlogic>` a,b,c ∈ 1:3
+abstractlogic> a,b,c ∈ 1:3
 a,b,c ∈ 1:3              feasible outcomes 27 ✓          :2 3 3
 
-`abstractlogic>` a > b ; b > c
+abstractlogic> a > b ; b > c
 
 a > b                    feasible outcomes 9 ✓           :3 2 3
 b > c                    feasible outcomes 1 ✓✓          :3 2 1
 
-`abstractlogic>` search == 3
+abstractlogic> search == 3
 
 Checking: a == 3
 Checking: b == 3
