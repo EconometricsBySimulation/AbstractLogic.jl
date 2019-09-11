@@ -5,7 +5,7 @@ Standard relational operators are the core functionality of the `AbstractLogic` 
 ## Basic Operators
 
 * `=` or `==` checks that the left equals the right.
-* `!=` checks that the left does not equal the right.
+* `!=` (or `≠` not yet implemented) checks that the left does not equal the right.
 * `>` checks that the left is greater than the right.
 * `>=` checks that the left is greater than or equal to the right.
 * `<` checks that the right is greater than the left.
@@ -36,3 +36,6 @@ julia> logicalparse("a, b, c, d, e ∈ 1:6; a|b|c|d = 1 {3}")
 a, b, c, d, e ∈ 1:6      feasible outcomes 7776 ✓        :2 5 6 6 1
 a|b|c|d = 1 {3}                  feasible outcomes 120 ✓         :1 1 4 1 5
 ```
+
+## Math Operators
+`AbstractLogic` can take a number of standard math operators `+`, `-`, `*`, and `/` (or the rounding operator `÷`). 
