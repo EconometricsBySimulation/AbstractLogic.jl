@@ -10,6 +10,8 @@ weeks 1 through 7. Each voyage will be to exactly one of four destinations:
 Guadeloupe, Jamaica, Martinique, or Trinidad. Each destination will be scheduled
 for at least one of the weeks. The following conditions apply to Freedom’s schedule:
 """
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
 
 # exactly one of four destinations: Guadeloupe, Jamaica, Martinique, or Trinidad
 w1, w2, w3, w4, w5, w6, w7  ∈ Guadeloupe, Jamaica, Martinique, Trinidad [clear]

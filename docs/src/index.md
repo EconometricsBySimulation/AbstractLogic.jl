@@ -38,9 +38,12 @@ a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell
 
 The package AbstractLogic provides a tool for easily evaluating such problems. First lets load in the feasible matches. Because there are 5 people in the problem we can assign them 5 age categories which represent cardinal ordered ages.
 
-Let's input this problem into Abstract Logic syntax. Start the repl in command prompt by typing `=`.
+Let's input this problem into Abstract Logic syntax.
 
 ```julia
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
 abstractlogic> Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5 [clear]
 Clear Workspace
 Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       Feasible Outcomes: 3125         Perceived Outcomes: 3125 ✓      :1 3 4 1 1
@@ -141,9 +144,12 @@ d) If you call home on Fri then your Tues and Sun activity must be the same.
 e) If you call home on Sat then your Mon and Wed activity must be the same.
 ```
 
-Let's input this problem into Abstract Logic syntax. Start the repl in command prompt by typing `=`.
+Let's input this problem into Abstract Logic syntax.
 
 ```julia
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
 abstractlogic> mo, tu, we, th, fr, sa, su ∈ call, gym, hmwk, eat [clear]
 Clear Workspace
 mo, tu, we, th, fr, sa, su ∈ call, gym, hmwk, eat        Feasible Outcomes: 16384        Perceived Outcomes: 16384 ✓     :eat hmwk eat eat call hmwk eat

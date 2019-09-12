@@ -2,6 +2,7 @@
 # http://www.graduatewings.co.uk/word-problems-logical-tests
 
 # Questions 11-17
+using AbstractLogic
 
 """
 A cruise line is scheduling seven week-long voyages for the ship Freedom. Each

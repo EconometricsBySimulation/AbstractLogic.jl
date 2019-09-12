@@ -7,6 +7,9 @@
 #codes in accordance with the following rules:
 #The codes use the digits 0, 1, 2, 3, and 4, and no others.
 
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
 # unique forces each value to be different
 a, b, c, d, e  ∈  0:4 || unique [clear]
 

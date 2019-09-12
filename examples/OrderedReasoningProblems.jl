@@ -1,5 +1,6 @@
 # Word Problems Logical Reasoning Tests
 # http://www.graduatewings.co.uk/word-problems-logical-tests
+using AbstractLogic
 
 # Question 1
 # Sam is shorter than Hannah. William is shorter than Michael who is shorter than

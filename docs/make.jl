@@ -1,6 +1,31 @@
 
 using Documenter
-#using AbstractLogic
+using AbstractLogic
+
+# include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\src\\AbstractLogic.jl")
+#
+# import AbstractLogic: abstractlogic,
+#        checkfeasible,
+#        help,
+#        LogicalCombo,
+#        logicalparse,
+#        search,
+#        showfeasible,
+#        discover,
+#        dashboard!,
+#        dashboard,
+#        expand,
+#        nfeasible,
+#        returnreplset,
+#        showlogichistory,
+#        showcommandhistory,
+#        showuserinput,
+#        showsetlocation,
+#        showcmdlocation,
+#        showcommandlist,
+#        abrepl
+
+# print(@doc checkfeasible)
 
 # Installation
 # ] dev https://github.com/EconometricsBySimulation/AbstractLogic.jl

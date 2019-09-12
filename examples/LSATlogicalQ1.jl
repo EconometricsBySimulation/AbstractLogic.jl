@@ -2,6 +2,7 @@
 # https://www.lsac.org/sites/default/files/legacy/docs/default-source/jd-docs/sampleptjune.pdf
 
 # Questions 1-5
+using AbstractLogic
 
 #A company employee generates a series of five-digit product
 #codes in accordance with the following rules:

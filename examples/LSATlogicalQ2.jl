@@ -2,6 +2,7 @@
 # https://www.lsac.org/sites/default/files/legacy/docs/default-source/jd-docs/sampleptjune.pdf
 
 # Questions 6-10
+using AbstractLogic
 
 """
 Exactly three films—Greed, Harvest, and Limelight—are

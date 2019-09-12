@@ -9,7 +9,10 @@ a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
 a) Peter b) Susan c) Sam d) Li e) Ali f) Cannot Tell
 
 3. Who could be the same age as Li?
-a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell</code></pre><p>The package AbstractLogic provides a tool for easily evaluating such problems. First lets load in the feasible matches. Because there are 5 people in the problem we can assign them 5 age categories which represent cardinal ordered ages.</p><p>Let&#39;s input this problem into Abstract Logic syntax. Start the repl in command prompt by typing <code>=</code>.</p><pre><code class="language-julia">abstractlogic&gt; Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5 [clear]
+a) Peter b) Susan c) Sam d) Ali e) Nobody f) Cannot Tell</code></pre><p>The package AbstractLogic provides a tool for easily evaluating such problems. First lets load in the feasible matches. Because there are 5 people in the problem we can assign them 5 age categories which represent cardinal ordered ages.</p><p>Let&#39;s input this problem into Abstract Logic syntax.</p><pre><code class="language-julia">julia&gt; using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
+abstractlogic&gt; Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5 [clear]
 Clear Workspace
 Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       Feasible Outcomes: 3125         Perceived Outcomes: 3125 ✓      :1 3 4 1 1
 
@@ -73,7 +76,10 @@ a) If you call home on Mon then your Tue and Fri activity must be the same.
 b) If you call home on Tues then your Mon and Fri activity must be the same.
 c) If you call home on Wed then your Mon and Sat activity must be the same.
 d) If you call home on Fri then your Tues and Sun activity must be the same.
-e) If you call home on Sat then your Mon and Wed activity must be the same.</code></pre><p>Let&#39;s input this problem into Abstract Logic syntax. Start the repl in command prompt by typing <code>=</code>.</p><pre><code class="language-julia">abstractlogic&gt; mo, tu, we, th, fr, sa, su ∈ call, gym, hmwk, eat [clear]
+e) If you call home on Sat then your Mon and Wed activity must be the same.</code></pre><p>Let&#39;s input this problem into Abstract Logic syntax.</p><pre><code class="language-julia">julia&gt; using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
+abstractlogic&gt; mo, tu, we, th, fr, sa, su ∈ call, gym, hmwk, eat [clear]
 Clear Workspace
 mo, tu, we, th, fr, sa, su ∈ call, gym, hmwk, eat        Feasible Outcomes: 16384        Perceived Outcomes: 16384 ✓     :eat hmwk eat eat call hmwk eat</code></pre><p>You do homework at least twice a week</p><pre><code class="language-julia">abstractlogic&gt; {{i}} = &#39;hmwk&#39; {{2,}}
 {{i}} = &#39;hmwk&#39; {{2,}}  &gt;&gt;&gt; mo = &#39;hmwk&#39; &gt;&gt;&gt; tu = &#39;hmwk&#39; ... &gt;&gt;&gt; sa = &#39;hmwk&#39; &gt;&gt;&gt; su = &#39;hmwk&#39; {{2,∞}}

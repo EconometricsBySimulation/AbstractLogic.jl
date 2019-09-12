@@ -4,7 +4,7 @@
 
 The `AbstractLogic` package is available through gitbub and can be installed using the following commands after entering the package REPL by typeing `]` in the console.
 ```julia
-pkg> dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
+pkg> add https://github.com/EconometricsBySimulation/AbstractLogic.jl
 ```
 
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
@@ -12,10 +12,26 @@ Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLo
 ## Interacting with AbstractLogic
 There are two basic methods of interacting with the solver: `logicalparse` and the `REPL`. `logicalparse` is generally preferred when programmatically interacting with the solver while `REPL` is convenient when interacting with the solver less formally.
 
-### Julia AbstractLogic Functions: `logicalparse`, `checkfeasible`, `search`
+## Julia AbstractLogic Functions:
 One method is using `Julia` functions mainly `logicalparse`, `checkfeasible`, and `search`. This method relies primarily on `LogicalCombo` objects which are generated from and can be passed into `logicalparse`.
 
-#### Setting up a logical set
+### `logicalparse()`
+This which evaluates `abstractlogic` commands to either generate data or constrain the data. The `REPL` will attempt to match any special `REPL` commands input into the `REPL`, if no matches are found the command is passed to `logicalparse` for evaluation.
+
+```@docs
+AbstractLogic.logicalparse
+AbstractLogic.checkfeasible
+AbstractLogic.search
+AbstractLogic.help
+```
+
+### `checkfeasible()`
+
+### `search`
+
+### `help`
+
+### Setting up a logical set
 To set up an initial logical set. Pass a text command to logicalparse with the variable names on the left and range of possible values on the left with the ∈ or `in` operator in between.
 
 ```julia
@@ -39,7 +55,7 @@ julia> logicalset = logicalparse("bob, ali ∈ old, young", logicalset)
 bob, ali ∈ old, young    feasible outcomes 216 ✓         :3 2 3 5 young old
 ```
 
-#### Constraining the logical set
+### Constraining the logical set
 `logicalparse` is also the command used to set constraints on the logical set. These constraints are defined through use of operators expressing relationships between variables or constants.
 
 Forcing variable a to take on the same value as variable c we could write.
@@ -70,7 +86,7 @@ julia> logicalset = logicalparse("ali != bob", logicalset)
 ali != bob               feasible outcomes 6 ✓           :2 2 2 4 young old
 ```
 
-#### Checking the Feasibility of a Statement
+### Checking the Feasibility of a Statement
 We might often like to check the feasiblility of a claim. Perhaps we would like to ask if Bob is young.
 
 ```julia
@@ -83,7 +99,7 @@ true, 6 out of 6 possible combinations 'true'.
   LogicalCombo(Symbol[:a, :b, :c, :d, :bob, :ali], Array{T,1} where T[[1, 2, 3], [1, 2, 3], [1, 2, 3], [4, 5], ["old", "young"], ["old", "young"]], Bool[false, false, false, false, false, false, false, false, false, false  …  false, false, false, false, false, false, false, false, false, false])
 ```
 
-#### Search for a Possible Match
+### Search for a Possible Match
 We might instead want to ask the question, which variables could take on a value equal to 3.
 
 ```julia
@@ -112,14 +128,14 @@ Checking: ali == 3
 
 From this we can see that variables a and c are possible matches.
 
-### Julia REPL
+## Julia REPL
 Alternatively you can interact with the logical problem solver through the `repl` interface. It is initiated by in julia by typing `=` in `julia>` repl.
 
 ```julia
 abstractlogic>
 ```
 
-#### Setting up a logical set
+### Setting up a logical set
 The interface is much cleaner to work with.
 
 ```julia
@@ -133,7 +149,7 @@ abstractlogic> e,f in red, green, blue
 e,f ∈ red, green, blue   feasible outcomes 729 ✓         :2 3 3 4 red red
 ```
 
-#### Constraining the logical set
+### Constraining the logical set
 Writing contraints within the `repl` is equivalent to that of `logicalparse`.
 
 ```julia
@@ -151,7 +167,7 @@ abstractlogic> f = 'blue'
 f = 'blue'               feasible outcomes 54 ✓          :2 3 2 4 red blue
 ```
 
-#### Checking the Feasibility of a Statement
+### Checking the Feasibility of a Statement
 We might often like to check the feasiblility of a claim. This is done with the check command
 
 ```julia
@@ -160,7 +176,7 @@ Check: a=2 ... a=2                       feasible outcomes 18 ✓          :2 1 
 possible,  18 out of 54 possible combinations 'true'.
 ```
 
-#### Search for a Possible Match
+### Search for a Possible Match
 We might instead want to ask the question, which variables could take on a value equal to 3.
 
 ```julia

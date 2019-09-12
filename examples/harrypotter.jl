@@ -17,6 +17,7 @@ Neither dwarf nor giant holds death in their insides;
 Fourth, the second left and the second on the right
 Are twins once you taste them, though different at first sight.
 """
+using AbstractLogic
 
 # Codes:
 # 1 is netted wine - NW

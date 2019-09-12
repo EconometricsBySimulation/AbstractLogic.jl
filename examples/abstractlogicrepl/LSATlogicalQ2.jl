@@ -11,6 +11,8 @@ festival but never more than once on a given day. On each day
 at least one film is shown. Films are shown one at a time. The
 following conditions apply:
 """
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
 
 # Three films Greed, Harvest, and Limelight as well as 0 no film
 # t1 is the first film, t2 the second, and t3 are the last film on Thursday

@@ -4,7 +4,7 @@
 
 Abstract Logic's primary generator is the generic set declaration generator `∈`. This generator takes variable names to the left separated with commas and assigns them possible values taken from the right separated with commas or specified as a range.
 
-**Hint** Iniate the repl with `=`.
+**Hint** Initiate the repl with `=`.
 ```julia
 abstractlogic> a, b, c ∈ 1, 2, 3 [clear]
 Clear Workspace

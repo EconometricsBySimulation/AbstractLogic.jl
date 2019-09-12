@@ -5,7 +5,7 @@ An Abstract Reasoning Logic Interface for Julia.
 
 The AbstractLogic package is available through gitbub and can be installed using the following commands after entering the package REPL by typing `]` in the console.
 ```julia
-pkg> dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
+pkg> add https://github.com/EconometricsBySimulation/AbstractLogic.jl
 ```
 
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
@@ -37,8 +37,10 @@ First lets load in the feasible matches. Because there are 5 people in the
 problem we can assign them 5 age categories which represent cardinal ordered
 ages.
 
-Enter the REPL by hitting `=` at command prompt.
 ```julia
+julia> using AbstractLogic
+Start the repl in command prompt by typing `=`.
+
 abstractlogic> Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5
 Peter, Susan, Sam, Li, Ali ∈ 1, 2, 3, 4, 5       feasible outcomes 3125 ✓        :4 2 4 3 4
 
