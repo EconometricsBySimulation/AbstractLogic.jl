@@ -18,18 +18,30 @@ One method is using `Julia` functions mainly `logicalparse`, `checkfeasible`, an
 ### `logicalparse()`
 This which evaluates `abstractlogic` commands to either generate data or constrain the data. The `REPL` will attempt to match any special `REPL` commands input into the `REPL`, if no matches are found the command is passed to `logicalparse` for evaluation.
 
-```@docs
-AbstractLogic.logicalparse
-AbstractLogic.checkfeasible
-AbstractLogic.search
-AbstractLogic.help
-```
-
 ### `checkfeasible()`
+Is called when the user would like to check if a command produces a valid result, possible result, or invalid result. The result is returned as a decimal from 0.0 to 1.0. With 0.0 being no matches and 1.0 being all matches.
 
-### `search`
+### `search()`
+Searches for a possible match among a `LogicalCombo` in which the wildcard term is true. Search requires the use of a wildcard. In the event that a wildcard is missing, search will insert a `{{i}}` to the left of the command. `{{i+1}}` can be used to search for relationships between the ith column and another column.
 
-### `help`
+### `help()`
+Searches the `AbstractLogic` package for matches.
+```julia
+help()
+`` not found. Search any of the following:
+
+  REPL Commands: ?, b, back, check, clear, clearall, dash, dashboard, f, h, help, history, k, keys, logicset, ls, n, next, preserve, restore, s, search, show, showall
+
+  Generators: in, ||, ∈
+
+  Operators: !, &, ,, <, <<, <=, =, ==, >, >=, >>, ^, {, |
+
+  Superoperators: !==, &&&, <==, <=>, ===, ==>, ^^^, and, if, if...then, iff, or, then, xor, |||
+
+  Metaoperators: !===, &&&&, <===, <==>, ====, ===>, AND, IF, IF...THEN, IFF, OR, THEN, XOR, ^^^^, ||||
+
+  Wildcards: !i, ,n2, <<i, <i, >>i, >i, N, i, i+n, i+n!, i-n, i-n!, j, n1,, n1,n2, {{!i}}, {{<<i}}, {{<i}}, {{>>i}}, {{>i}}, {{N}}, {{i+n!}}, {{i+n}}, {{i-n!}}, {{i-n}}, {{i}}, {{j}}, {{n1,n2}}
+```
 
 ### Setting up a logical set
 To set up an initial logical set. Pass a text command to logicalparse with the variable names on the left and range of possible values on the left with the ∈ or `in` operator in between.

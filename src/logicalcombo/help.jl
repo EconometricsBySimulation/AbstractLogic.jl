@@ -467,3 +467,5 @@ end
 # help("in")
 # help("&&&")
 # help("&&&")
+
+help() = help("")

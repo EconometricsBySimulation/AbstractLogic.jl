@@ -1,3 +1,4 @@
+using ReplMaker, Markdown
 
 function parse_to_expr(s)
    abstractlogic(s)
@@ -25,11 +26,17 @@ end
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
 markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
 
+initrepl(
+    parse_to_expr,
+    prompt_text="abstractlogic> ",
+    prompt_color = :blue,
+    start_key='=',
+    mode_name="Abstract Logic")
 
 let
+
     global showcommandlist()  = commandlist
     global returnlogicset() = logicset
-    global returnreplset() = replset
     global showcmdlocation() = cmdlocation
     global showsetlocation() = setlocation
     global showuserinput() = userinput
@@ -78,8 +85,6 @@ let
         occursin("[clear]", userinput) && clear()
         userinput = replace(userinput, "[clear]"=>"")
 
-        verbose = replcmdverbose & replverboseall
-
         if strip(userinput) == ""                         nothing()
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
         elseif occursin(r"^show$", userinput)             ALshow()
@@ -104,7 +109,7 @@ let
 
         elseif occursin(r"^(prove|force|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
-        else                                              ALparse(userinput, verbose)
+        else                                              ALparse(userinput)
         end
         returnactive && return replset
         nothing
@@ -193,7 +198,7 @@ let
         println(lastcommand() * " - " * reportfeasible())
     end
 
-    function ALparse(userinput, verbose)
+    function ALparse(userinput, )
         if (sum(replset[:])==0) && !occursin(r"∈", userinput)
             print("error: userinput  - ")
             println("You are working with an empty set! Try inputing: a,b,c in 1:3")
@@ -201,7 +206,8 @@ let
         end
 
         try
-          templogicset = logicalparse(userinput, logicset = replset, verbose = verbose)
+          templogicset = logicalparse(userinput, logicset = replset,
+                                      verbose = replcmdverbose & replverboseall)
           replset = templogicset
           push!(commandlist[setlocation], userinput)
           commandhistory      = commandhistory[1:cmdlocation]
@@ -305,16 +311,19 @@ abstractlogic = abstractlogic
 
 function ALcheck(userinput)
     try
-      cleaninput = string(replace(userinput, r"^(prove|force|check|✓)[\\:\\-\\ ]*"=>""))
-
       occursin(r"^check[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(cleaninput, replset, verbose = replcmdverbose & replverboseall)
+        checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")),
+        replset, verbose = replcmdverbose & replverboseall)
       occursin(r"^(prove|force)[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(cleaninput, replset, force=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")),
+        replset, force=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^any[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(cleaninput, replset, countany=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
+        replset, countany=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^✓[\\:\\-\\ ]*", userinput) &&
-        checkfeasible(cleaninput, replset, countany=true, verbose=false)
+        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
+        replset, countany=true, verbose=false)
+      # push!(logicset, replset)
     catch
       println("Warning! Check Fail")
       (length(userinput) == 5) && println("Nothing to check")
