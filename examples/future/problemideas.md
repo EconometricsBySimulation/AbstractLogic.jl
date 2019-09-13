@@ -43,7 +43,7 @@ Problems:
 3. If the company changes its rules and instead is allowed to perform in the same city multiple times in a row. There is one schedule in which it performs in a single city three weeks in a row, which city is that?
 4. If the company performs in New York on Week 5 and 7 what must be true?
 
-### School Trip
+### Vacation
 Six friends are deciding what vacations to go on. Each friend (1, 2, 3, 4, 5, and 6) will go on exactly one of three vacations A,B, or C. The decision to go on each vacation will depend upon if that person got a raise that year as well as who else is going or not going on that vacation.
 
 The rules are as follows
