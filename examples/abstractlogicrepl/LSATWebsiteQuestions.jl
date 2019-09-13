@@ -145,5 +145,85 @@ abstractlogic> U = 3
 U = 3                    Feasible Outcomes: 7    Perceived Outcomes: 160 ✓       :1 3 2 6 4 5 7
 
 # The fast answer is:
-abstractlogic> range
-Dict{Any,Any}(:T => [1, 2, 4, 5],:U => [3],:Z => [7],:W => [5, 6],:V => [2, 4],:X => [4, 5],:Y => [1, 2, 4, 5, 6])
+abstractlogic> range Y
+range Y
+[1, 2, 4, 5, 6]
+
+# first
+# second
+# fifth
+# sixth
+true
+# seventh
+
+# Passage for Question 4
+# A charitable foundation awards grants in exactly four areas—medical services, theater arts, wildlife preservation, and youth services—each grant being in one of these areas. One or more grants are awarded in each of the four quarters of a calendar year. Additionally, over the course of a calendar year, the following must obtain:
+#
+# Grants are awarded in all four areas.
+# No more than six grants are awarded.
+# No grants in the same area are awarded in the same quarter or in consecutive quarters.
+# Exactly two medical services grants are awarded.
+# A wildlife preservation grant is awarded in the second quarter.
+# Question 4
+# If a wildlife preservation grant and a youth services grant are awarded in the same quarter of a particular calendar year, then any of the following could be true that year EXCEPT:
+#
+# A medical services grant is awarded in the second quarter.
+# A theater arts grant is awarded in the first quarter.
+# A theater arts grant is awarded in the second quarter.
+# A wildlife preservation grant is awarded in the fourth quarter.
+# A youth services grant is awarded in the third quarter.
+# Explanation for Question 4
+#
+# Passage for Questions 5 and 6
+# From a group of seven people—J, K, L, M, N, P, and Q—exactly four will be selected to attend a diplomat’s retirement dinner. Selection conforms to the following conditions:
+#
+# Either J or K must be selected, but J and K cannot both be selected.
+# Either N or P must be selected, but N and P cannot both be selected.
+# N cannot be selected unless L is selected.
+# Q cannot be selected unless K is selected.
+# Question 5
+# If P is not selected to attend the retirement dinner, then exactly how many different groups of four are there each of which would be an acceptable selection?
+#
+# one
+# two
+# three
+# four
+# five
+# Explanation for Question 5
+#
+# Question 6
+# There is only one acceptable group of four that can be selected to attend the retirement dinner if which one of the following pairs of people is selected?
+#
+# J and L
+# K and M
+# L and N
+# L and Q
+# M and Q
+# Explanation for Question 6
+#
+# Passage for Questions 7 and 8
+# On a particular Saturday, a student will perform six activities—grocery shopping, hedge trimming, jogging, kitchen cleaning, laundry, and motorbike servicing. Each activity will be performed once, one at a time. The order in which the activities are performed is subject to the following conditions:
+#
+# Grocery shopping has to be immediately after hedge trimming.
+# Kitchen cleaning has to be earlier than grocery shopping.
+# Motorbike servicing has to be earlier than laundry.
+# Motorbike servicing has to be either immediately before or immediately after jogging.
+# Question 7
+# If laundry is earlier than kitchen cleaning, then hedge trimming must be
+#
+# fifth
+# fourth
+# third
+# second
+# first
+# Explanation for Question 7
+#
+#
+# Question 8
+# Which one of the following, if substituted for the condition that motorbike servicing has to be earlier than laundry, would have the same effect in determining the order of the student’s activities?
+#
+# Laundry has to be one of the last three activities.
+# Laundry has to be either immediately before or immediately after jogging.
+# Jogging has to be earlier than laundry.
+# Laundry has to be earlier than hedge trimming.
+# Laundry has to be earlier than jogging.

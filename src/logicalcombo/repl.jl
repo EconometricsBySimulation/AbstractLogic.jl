@@ -100,7 +100,7 @@ let
         elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
         elseif userinput == "clear"                       clear()
-        elseif occursin(r"^range ", userinput)            ALrange(replset)
+        elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
@@ -370,15 +370,17 @@ function ALsearch(userinput)
       checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
       search(checker, replset, verbose = replcmdverbose & replverboseall)
       # push!(logicset, replset)
-    catch
-      println("Warning! Search Failed")
+  catch er
+      println("Warning! Search Failed: $er")
     end
 end
 
 function ALrange(userinput)
   replcmdverbose && replverboseall && println(userinput)
   inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
-  (inputpass == "") && return range(replset)
+  (inputpass == "") && return println(range(replset))
   occursin(" ", inputpass) && return println("\n range only takes up to one variable currently!")
-  return range(replset, inputpass)
+  return println(range(replset)[Symbol(inputpass)])
+  return println(range(replset, inputpass))
+  nothing
 end

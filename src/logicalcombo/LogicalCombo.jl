@@ -189,6 +189,9 @@ function Base.range(x::LogicalCombo; feasible=true)
   p
 end
 
+Base.range(x::LogicalCombo, y::String; feasible=true) =
+  Dict(Symbol(y) => x[:, Symbol(y), feasible] |> unique |> sort)
+
 variablerange(x::LogicalCombo; feasible=true) = [unique(x[:,i,feasible]) for i in 1:size(x,2)]
 
 nfeasible(x::LogicalCombo; feasible::Bool=true) =
