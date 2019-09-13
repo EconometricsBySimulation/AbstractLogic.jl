@@ -50,6 +50,7 @@ let
     userinput = ""
 
     global replset = LogicalCombo()
+    global returnreplset() = replset
     commandlist  = [String[]]
 
     commandlistprint = false
@@ -99,7 +100,7 @@ let
         elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
         elseif userinput == "clear"                       clear()
-        elseif userinput == "range"                       println(range(replset))
+        elseif occursin(r"^range ", userinput)            ALrange(replset)
         elseif userinput == "clearall"                    clearall()
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
@@ -107,7 +108,7 @@ let
         elseif userinput == "silence"                     replverboseall = false
         elseif userinput == "noisy"                       replverboseall = true
 
-        elseif occursin(r"^(prove|force|check|any|✓)", userinput) ALcheck(userinput)
+        elseif occursin(r"^(prove|all|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
         else                                              ALparse(userinput)
         end
@@ -311,25 +312,19 @@ abstractlogic = abstractlogic
 
 function ALcheck(userinput)
     try
+      inputpass = string(replace(userinput, r"^(prove|all|any|✓)[\\:\\-\\ ]*"=>""))
       occursin(r"^check[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^check[\\:\\-\\ ]*"=>"")),
-        replset, verbose = replcmdverbose & replverboseall)
-      occursin(r"^(prove|force)[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^prove[\\:\\-\\ ]*"=>"")),
-        replset, force=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(inputpass, replset, verbose = replcmdverbose & replverboseall)
+      occursin(r"^(prove|all)[\\:\\-\\ ]+", userinput) &&
+        checkfeasible(inputpass, replset, countall=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^any[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
-        replset, countany=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(inputpass, replset, countany=true, verbose = replcmdverbose & replverboseall)
       occursin(r"^✓[\\:\\-\\ ]*", userinput) &&
-        checkfeasible(string(replace(userinput, r"^any[\\:\\-\\ ]*"=>"")),
-        replset, countany=true, verbose=false)
+        checkfeasible(inputpass, replset, countany=true, verbose=false)
       # push!(logicset, replset)
-    catch
-      println("Warning! Check Fail")
+  catch er
+      println("\nWarning! Check Fail: $er")
       (length(userinput) == 5) && println("Nothing to check")
-      println("Typical check has same syntax as a command:")
-      println("check: a = 2|3 or prove: a = 2|3")
-      println("check: {{i}} != {{i+1}} or prove: {{i}} != {{i+1}}")
     end
 end
 
@@ -378,4 +373,12 @@ function ALsearch(userinput)
     catch
       println("Warning! Search Failed")
     end
+end
+
+function ALrange(userinput)
+  replcmdverbose && replverboseall && println(userinput)
+  inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
+  (inputpass == "") && return range(replset)
+  occursin(" ", inputpass) && return println("\n range only takes up to one variable currently!")
+  return range(replset, inputpass)
 end

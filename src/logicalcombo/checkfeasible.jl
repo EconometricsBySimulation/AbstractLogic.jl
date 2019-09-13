@@ -1,6 +1,6 @@
 
 """
-    checkfeasible(command::String, logicset::LogicalCombo; verbose=true, force=false, countany=false)
+    checkfeasible(command::String, logicset::LogicalCombo; verbose=true, all=false, countany=false)
 
 Is called when the user would like to check if a command produces a valid result,
 possible result, or invalid result. The result is returned as a decimal from 0.0
@@ -8,7 +8,7 @@ to 1.0. With 0.0 being no matches and 1.0 being all matches.
 
 ### Arguments
 * `verbose` : controls print
-* `force` : all sets have to be feasible or return 0
+* `all` : all sets have to be feasible or return 0
 * `countany` : any set can be non-zero to return 1
 
 ### Examples
@@ -27,11 +27,11 @@ possible,  17 out of 21 possible combinations 'true'.
 """
 function checkfeasible(command::String,
     logicset::LogicalCombo = LogicalCombo();
-    verbose=true, force=false, countany=false)
+    verbose=true, countall=false, countany=false)
 
   clearcounter()
 
-  countany && force && throw("Both any and force can't be set to true")
+  countany && countall && throw("Both any and all can't be set to true")
 
   rowsin = sum(logicset.logical)
 
@@ -40,8 +40,8 @@ function checkfeasible(command::String,
       return missing
   end
 
-  verbose && !force && !countany && print("check: $command ... ")
-  verbose && force && print("force: $command ... ")
+  verbose && !countall && !countany && print("check: $command ... ")
+  verbose && countall && print("all: $command ... ")
   verbose && countany && print("any: $command ... ")
 
   logicsetout = logicalparse(command, logicset=logicset, verbose=verbose)
@@ -49,7 +49,7 @@ function checkfeasible(command::String,
   rowsout = sum(logicsetout.logical)
   outcomeratio = rowsout/rowsin
 
-  if force
+  if countall
         outcomeratio != 1 && print("false")
         outcomeratio == 1 && print("true")
   elseif countany
