@@ -419,7 +419,7 @@ bstractlogic> l >=4
 l >=4            Feasible Outcomes: 12   Perceived Outcomes: 1296 ✓      :6 5 2 3 4 1
 
 abstractlogic> compare refset
-active set and refset have the same # of feasible values.
+active set and refset have the same number of feasible values. nfeasible(replset[:]) == nfeasible(refset[:])
 
 # Laundry has to be either immediately before or immediately after jogging.
 abstractlogic> restore
@@ -429,14 +429,17 @@ abstractlogic> l = j + 1 ||| l = j - 1
 l = j + 1 ||| l = j - 1      Feasible Outcomes: 6    Perceived Outcomes: 600 ✓       :6 5 2 4 3 1
 
 abstractlogic> compare refset
-active set has less feasible values than refset.
+active set has less feasible values than refset. nfeasible(replset[:]) < nfeasible(refset[:])
+
+abstractlogic> restore
+Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
 
 # Jogging has to be earlier than laundry.
 abstractlogic> j < l
 j < l            Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :5 4 1 3 6 2
 
 abstractlogic> compare refset
-active set and refset have the same feasible values.
+active set and refset have the same feasible values. replset[:] == refset[:]
 
 abstractlogic> restore
 Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
@@ -446,7 +449,7 @@ abstractlogic> l < h
 l < h            Feasible Outcomes: 16   Perceived Outcomes: 2304 ✓      :6 5 2 3 4 1
 
 abstractlogic> compare refset
-active set has more feasible values than refset.
+replset set has more feasible values than refset. nfeasible(replset[:]) > nfeasible(refset[:])
 
 abstractlogic> restore
 Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
@@ -456,4 +459,4 @@ abstractlogic> l < j
 l < j            Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :4 3 6 2 1 5
 
 abstractlogic> compare refset
-active set and refset have the same # of feasible values.
+replset set and refset have the same number of feasible values. nfeasible(replset[:]) == nfeasible(refset[:])
