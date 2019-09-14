@@ -346,26 +346,63 @@ possible, 1 out of 7 possible combinations 'true'.
 # Explanation for Question 6
 #
 # Passage for Questions 7 and 8
-# On a particular Saturday, a student will perform six activities—grocery shopping, hedge trimming, jogging, kitchen cleaning, laundry, and motorbike servicing. Each activity will be performed once, one at a time. The order in which the activities are performed is subject to the following conditions:
-#
+# On a particular Saturday, a student will perform six activities—grocery
+# shopping, hedge trimming, jogging, kitchen cleaning, laundry, and motorbike servicing.
+# Each activity will be performed once, one at a time.
+abstractlogic> s, h, j, k, l, m ∈ unique [clear]
+Clear Workspace
+s, h, j, k, l, m ∈ unique    Feasible Outcomes: 720      Perceived Outcomes: 46656 ✓     :1 5 2 3 6 4
+# The order in which the activities are performed is subject to the following conditions:
+
 # Grocery shopping has to be immediately after hedge trimming.
+abstractlogic> s = h + 1
+s = h + 1        Feasible Outcomes: 120      Perceived Outcomes: 32400 ✓     :2 1 6 4 5 3
+
 # Kitchen cleaning has to be earlier than grocery shopping.
+abstractlogic> k < s
+k < s            Feasible Outcomes: 60   Perceived Outcomes: 13824 ✓     :3 2 5 1 6 4
+
 # Motorbike servicing has to be earlier than laundry.
+abstractlogic> m < l
+m < l            Feasible Outcomes: 30   Perceived Outcomes: 9600 ✓      :5 4 6 1 3 2
+
 # Motorbike servicing has to be either immediately before or immediately after jogging.
+abstractlogic> m = j + 1 ||| m = j - 1
+m = j + 1 ||| m = j - 1      Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :5 4 3 1 6 2
+
 # Question 7
 # If laundry is earlier than kitchen cleaning, then hedge trimming must be
-#
+
+abstractlogic> l < k
+l < k            Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :6 5 1 4 3 2
+
+abstractlogic> range h
+range h
+[5]
 # fifth
 # fourth
 # third
 # second
 # first
-# Explanation for Question 7
-#
-#
+
 # Question 8
-# Which one of the following, if substituted for the condition that motorbike servicing has to be earlier than laundry, would have the same effect in determining the order of the student’s activities?
-#
+# Which one of the following, if substituted for the condition that motorbike
+# servicing has to be earlier than laundry,
+
+# remove `m < l`
+abstractlogic> s, h, j, k, l, m ∈ unique [clear]
+Clear Workspace
+s, h, j, k, l, m ∈ unique    Feasible Outcomes: 720      Perceived Outcomes: 46656 ✓     :4 6 3 1 2 5
+
+abstractlogic> s = h + 1; k < s; m = j + 1 ||| m = j - 1
+s = h + 1        Feasible Outcomes: 120      Perceived Outcomes: 32400 ✓     :6 5 4 3 1 2
+k < s            Feasible Outcomes: 60   Perceived Outcomes: 13824 ✓     :4 3 6 2 1 5
+m = j + 1 ||| m = j - 1      Feasible Outcomes: 24   Perceived Outcomes: 11520 ✓     :5 4 2 1 6 3
+
+# would have the same effect in
+# determining the order of the student’s activities?
+
+
 # Laundry has to be one of the last three activities.
 # Laundry has to be either immediately before or immediately after jogging.
 # Jogging has to be earlier than laundry.

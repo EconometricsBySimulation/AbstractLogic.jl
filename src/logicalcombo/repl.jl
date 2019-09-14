@@ -91,6 +91,7 @@ let
         elseif occursin(r"^show$", userinput)             ALshow()
         elseif occursin(r"^showall$", userinput)          showall()
         elseif userinput ∈ ["back", "b"]                  back()
+        elseif occursin(r"compare ")                      compare(userinput)
         elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())
         elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
         elseif userinput ∈ ["next", "n", "f"]             next()
@@ -333,6 +334,25 @@ function ALexport(x)
    Core.eval(Main, Meta.parse("$y = returnreplset()"))
    printmarkdown("`julia>` $y = `returnreplset()`")
    println()
+end
+
+function compare(x)
+
+    y = Symbol(strip(replace(x, r"^compare "=>"")))
+
+    !(y ∈ names(Main)) && (println("$y not found!"); return)
+
+    z = getfield(Main, y)
+
+    (replset[:] == z[:]) &&
+      (println("active set and $y have the same feasible values."); return)
+    (nfeasible(replset) == nfeasible(z)) &&
+      (println("active set and $y have the same # of feasible values."); return)
+    (nfeasible(replset) > nfeasible(z)) &&
+      (println("active set has more feasible values than $y."); return)
+    (nfeasible(replset) < nfeasible(z)) &&
+      (println("active set has less feasible values than $y."); return)
+
 end
 
 function itemprint(x)
