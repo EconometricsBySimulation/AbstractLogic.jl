@@ -402,9 +402,58 @@ m = j + 1 ||| m = j - 1      Feasible Outcomes: 24   Perceived Outcomes: 11520 �
 # would have the same effect in
 # determining the order of the student’s activities?
 
+abstractlogic> preserve
+Preserving State
+
+abstractlogic> m < l
+m < l            Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :5 4 1 3 6 2
+
+abstractlogic> export refset
+  julia> refset = returnreplset()
+
+abstractlogic> restore
+  Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
 
 # Laundry has to be one of the last three activities.
+bstractlogic> l >=4
+l >=4            Feasible Outcomes: 12   Perceived Outcomes: 1296 ✓      :6 5 2 3 4 1
+
+abstractlogic> compare refset
+active set and refset have the same # of feasible values.
+
 # Laundry has to be either immediately before or immediately after jogging.
+abstractlogic> restore
+Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
+
+abstractlogic> l = j + 1 ||| l = j - 1
+l = j + 1 ||| l = j - 1      Feasible Outcomes: 6    Perceived Outcomes: 600 ✓       :6 5 2 4 3 1
+
+abstractlogic> compare refset
+active set has less feasible values than refset.
+
 # Jogging has to be earlier than laundry.
+abstractlogic> j < l
+j < l            Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :5 4 1 3 6 2
+
+abstractlogic> compare refset
+active set and refset have the same feasible values.
+
+abstractlogic> restore
+Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
+
 # Laundry has to be earlier than hedge trimming.
+abstractlogic> l < h
+l < h            Feasible Outcomes: 16   Perceived Outcomes: 2304 ✓      :6 5 2 3 4 1
+
+abstractlogic> compare refset
+active set has more feasible values than refset.
+
+abstractlogic> restore
+Restoring State - Feasible Outcomes: 24      Perceived Outcomes: 11520  :1 2 3 4 5 6
+
 # Laundry has to be earlier than jogging.
+abstractlogic> l < j
+l < j            Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :4 3 6 2 1 5
+
+abstractlogic> compare refset
+active set and refset have the same # of feasible values.
