@@ -312,7 +312,7 @@ abstractlogic = abstractlogic
 
 function ALcheck(userinput)
     try
-      inputpass = string(replace(userinput, r"^(prove|all|any|✓)[\\:\\-\\ ]*"=>""))
+      inputpass = string(replace(userinput, r"^(check|prove|all|any|✓)[\\:\\-\\ ]*"=>""))
       occursin(r"^check[\\:\\-\\ ]+", userinput) &&
         checkfeasible(inputpass, replset, verbose = replcmdverbose & replverboseall)
       occursin(r"^(prove|all)[\\:\\-\\ ]+", userinput) &&

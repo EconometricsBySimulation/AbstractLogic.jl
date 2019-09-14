@@ -157,48 +157,192 @@ true
 # seventh
 
 # Passage for Question 4
-# A charitable foundation awards grants in exactly four areas—medical services, theater arts, wildlife preservation, and youth services—each grant being in one of these areas. One or more grants are awarded in each of the four quarters of a calendar year. Additionally, over the course of a calendar year, the following must obtain:
-#
+# A charitable foundation awards grants in exactly four areas—medical services,
+# theater arts, wildlife preservation, and youth services—each grant being in
+# one of these areas.
+abstractlogic> q1.m, q1.t, q1.w, q1.y ∈ 0:1 [clear]
+Clear Workspace
+q1.m, q1.t, q1.w, q1.y ∈ 0:1     Feasible Outcomes: 16   Perceived Outcomes: 16 ✓    :1 0 1 1
+
+abstractlogic> q2.m, q2.t, q2.w, q2.y ∈ 0:1
+q2.m, q2.t, q2.w, q2.y ∈ 0:1     Feasible Outcomes: 256      Perceived Outcomes: 256 ✓       :0 0 0 0 0 1 1 1
+
+abstractlogic> q3.m, q3.t, q3.w, q3.y ∈ 0:1
+q3.m, q3.t, q3.w, q3.y ∈ 0:1     Feasible Outcomes: 4096     Perceived Outcomes: 4096 ✓      :0 1 0 1 0 1 0 0 0 0 1 1
+
+abstractlogic> q4.m, q4.t, q4.w, q4.y ∈ 0:1
+q4.m, q4.t, q4.w, q4.y ∈ 0:1     Feasible Outcomes: 65536    Perceived Outcomes: 65536 ✓     :0 1 1 0 0 0 0 0 1 0 1 0 0 0 1 0
+# One or more grants are awarded in each of the four quarters of a calendar year.
+
+abstractlogic> {{>=:q1.m,<=:q1.y}} == 1 {{1,}}
+{{>=:q1.m,<=:q1.y}} == 1 {{1,}}  >>> q1.m == 1 >>> q1.t == 1 >>> q1.w == 1 >>> q1.y == 1 {{1,∞}}
+     Feasible Outcomes: 61440    Perceived Outcomes: 65536 ✓     :0 1 0 1 1 1 0 1 0 0 0 0 1 1 1 0
+abstractlogic> {{>=:q2.m,<=:q2.y}} == 1 {{1,}}
+{{>=:q2.m,<=:q2.y}} == 1 {{1,}}  >>> q2.m == 1 >>> q2.t == 1 >>> q2.w == 1 >>> q2.y == 1 {{1,∞}}
+     Feasible Outcomes: 57600    Perceived Outcomes: 65536 ✓     :1 0 0 0 0 0 1 0 1 0 1 1 0 0 1 0
+abstractlogic> {{>=:q3.m,<=:q3.y}} == 1 {{1,}}
+{{>=:q3.m,<=:q3.y}} == 1 {{1,}}  >>> q3.m == 1 >>> q3.t == 1 >>> q3.w == 1 >>> q3.y == 1 {{1,∞}}
+     Feasible Outcomes: 54000    Perceived Outcomes: 65536 ✓     :0 1 0 1 1 1 1 0 1 0 1 0 0 1 0 1
+abstractlogic> {{>=:q4.m,<=:q4.y}} == 1 {{1,}}
+{{>=:q4.m,<=:q4.y}} == 1 {{1,}}  >>> q4.m == 1 >>> q4.t == 1 >>> q4.w == 1 >>> q4.y == 1 {{1,∞}}
+     Feasible Outcomes: 50625    Perceived Outcomes: 65536 ✓     :0 1 0 1 1 0 1 1 1 1 0 0 1 0 0 1
+
+# Additionally, over the course of a calendar year, the following must obtain:
+
 # Grants are awarded in all four areas.
+abstractlogic> {{j}}.m = 1 {{1,}}; {{j}}.t = 1 {{1,}}; {{j}}.w = 1 {{1,}}; {{j}}.y = 1 {{1,}}
+{{j}}.m = 1 {{1,}}  >>> q1.m = 1 >>> q2.m = 1 >>> q3.m = 1 >>> q4.m = 1 {{1,∞}}
+     Feasible Outcomes: 48224    Perceived Outcomes: 65536 ✓     :1 0 1 0 0 0 0 1 0 1 1 0 1 0 0 1
+{{j}}.t = 1 {{1,}}  >>> q1.t = 1 >>> q2.t = 1 >>> q3.t = 1 >>> q4.t = 1 {{1,∞}}
+     Feasible Outcomes: 45904    Perceived Outcomes: 65536 ✓     :1 0 1 0 1 0 0 1 1 1 0 1 1 1 1 1
+{{j}}.w = 1 {{1,}}  >>> q1.w = 1 >>> q2.w = 1 >>> q3.w = 1 >>> q4.w = 1 {{1,∞}}
+     Feasible Outcomes: 43664    Perceived Outcomes: 65536 ✓     :1 0 0 0 0 1 0 1 1 0 1 0 0 0 0 1
+{{j}}.y = 1 {{1,}}  >>> q1.y = 1 >>> q2.y = 1 >>> q3.y = 1 >>> q4.y = 1 {{1,∞}}
+     Feasible Outcomes: 41503    Perceived Outcomes: 65536 ✓     :1 0 0 0 1 1 1 1 0 1 0 1 0 1 0 1
+
 # No more than six grants are awarded.
+abstractlogic> {{i}} = 1 {{,6}}
+{{i}} = 1 {{,6}}  >>> q1.m = 1 >>> q1.t = 1 ... >>> q4.w = 1 >>> q4.y = 1 {{0,6}}
+     Feasible Outcomes: 2704     Perceived Outcomes: 65536 ✓     :1 0 0 0 1 0 0 0 0 1 1 0 1 0 0 1
+
 # No grants in the same area are awarded in the same quarter or in consecutive quarters.
+# Medical and theater arts
+abstractlogic> {{j}}.m = 1 ==> {{j+1}}.m != 1; {{j}}.t = 1 ==> {{j+1}}.t != 1
+{{j}}.m = 1 ==> {{j+1}}.m != 1  >>> q1.m = 1 ==> q2.m != 1 >>> q2.m = 1 ==> q3.m != 1 >>> q3.m = 1 ==> q4.m != 1
+     Feasible Outcomes: 2088     Perceived Outcomes: 65536 ✓     :1 0 0 1 0 1 0 0 0 0 1 0 0 1 0 1
+{{j}}.t = 1 ==> {{j+1}}.t != 1  >>> q1.t = 1 ==> q2.t != 1 >>> q2.t = 1 ==> q3.t != 1 >>> q3.t = 1 ==> q4.t != 1
+     Feasible Outcomes: 1538     Perceived Outcomes: 65536 ✓     :0 0 1 1 1 0 0 1 0 1 0 0 1 0 0 0
+
+# wildlife and youthservice
+abstractlogic> {{j}}.w = 1 ==> {{j+1}}.w != 1; {{j}}.y = 1 ==> {{j+1}}.y != 1
+{{j}}.w = 1 ==> {{j+1}}.w != 1  >>> q1.w = 1 ==> q2.w != 1 >>> q2.w = 1 ==> q3.w != 1 >>> q3.w = 1 ==> q4.w != 1
+     Feasible Outcomes: 1054     Perceived Outcomes: 65536 ✓     :1 1 0 0 0 0 0 1 1 0 0 0 0 0 1 1
+{{j}}.y = 1 ==> {{j+1}}.y != 1  >>> q1.y = 1 ==> q2.y != 1 >>> q2.y = 1 ==> q3.y != 1 >>> q3.y = 1 ==> q4.y != 1
+     Feasible Outcomes: 636      Perceived Outcomes: 65536 ✓     :1 0 0 0 0 0 1 0 1 1 0 0 0 0 0 1
+
 # Exactly two medical services grants are awarded.
+abstractlogic> {{j}}.m = 1 {{2}}
+{{j}}.m = 1 {{2}}  >>> q1.m = 1 >>> q2.m = 1 >>> q3.m = 1 >>> q4.m = 1 {{2}}
+     Feasible Outcomes: 252      Perceived Outcomes: 65536 ✓     :1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0
+
 # A wildlife preservation grant is awarded in the second quarter.
+abstractlogic> q2.w = 1
+q2.w = 1         Feasible Outcomes: 81   Perceived Outcomes: 8192 ✓      :1 0 0 0 0 0 1 1 1 0 0 0 0 1 0 1
+
 # Question 4
-# If a wildlife preservation grant and a youth services grant are awarded in the same quarter of a particular calendar year, then any of the following could be true that year EXCEPT:
-#
-# A medical services grant is awarded in the second quarter.
-# A theater arts grant is awarded in the first quarter.
-# A theater arts grant is awarded in the second quarter.
-# A wildlife preservation grant is awarded in the fourth quarter.
-# A youth services grant is awarded in the third quarter.
-# Explanation for Question 4
-#
+# If a wildlife preservation grant and a youth services grant are awarded in the
+# same quarter of a particular calendar year, then any of the following could be
+# true that year EXCEPT:
+abstractlogic> preserve
+Preserving State
+
+abstractlogic> {{j}}.w = 1 &&& {{j}}.y = 1 {{1,}}
+{{j}}.w = 1 &&& {{j}}.y = 1 {{1,}}  >>> q1.w = 1 &&& q1.y = 1 >>> q2.w = 1 &&& q2.y = 1 >>> q3.w = 1 &&& q3.y = 1 >>> q4.w = 1 &&& q4.y = 1 {{1,∞}}
+     Feasible Outcomes: 21   Perceived Outcomes: 2048 ✓      :1 0 0 0 0 1 1 0 1 0 0 0 0 0 1 1
+
+# A. A medical services grant is awarded in the second quarter.
+abstractlogic> any: q2.m = 1
+any: q2.m = 1 ... q2.m = 1       Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓    :0 1 0 0 1 0 1 1 0 1 0 0 1 0 0 0
+true, 1 out of 21 possible combinations 'true'.
+
+# B. A theater arts grant is awarded in the first quarter.
+abstractlogic> any: q1.t = 1
+any: q1.t = 1 ... q1.t = 1       Feasible Outcomes: 6    Perceived Outcomes: 512 ✓       :1 1 0 0 0 0 1 1 1 0 0 0 0 0 1 0
+true, 6 out of 21 possible combinations 'true'.
+
+# C. A theater arts grant is awarded in the second quarter.
+abstractlogic> any: q2.t = 1
+any: q2.t = 1 ... q2.t = 1       Feasible Outcomes: 4    Perceived Outcomes: 16 ✓    :1 0 0 0 0 1 1 1 1 0 0 0 0 0 1 0
+true, 4 out of 21 possible combinations 'true'.
+
+# D. A wildlife preservation grant is awarded in the fourth quarter.
+abstractlogic> any: q4.w = 1
+any: q4.w = 1 ... q4.w = 1       Feasible Outcomes: 10   Perceived Outcomes: 256 ✓       :1 0 0 0 0 0 1 0 1 0 0 0 0 1 1 1
+true, 10 out of 21 possible combinations 'true'.
+
+# E. A youth services grant is awarded in the third quarter.
+abstractlogic> any: q3.y = 1
+any: q3.y = 1 ... q3.y = 1       Feasible Outcomes: 0    Perceived Outcomes: 0 X      [empty set]
+false, 0 out of 21 possible combinations 'true'.
+
 # Passage for Questions 5 and 6
-# From a group of seven people—J, K, L, M, N, P, and Q—exactly four will be selected to attend a diplomat’s retirement dinner. Selection conforms to the following conditions:
-#
+# From a group of seven people—J, K, L, M, N, P, and Q—exactly four will be selected
+# to attend a diplomat’s retirement dinner. Selection conforms to the following conditions:
+abstractlogic> J, K, L, M, N, P, Q ∈ 0:1 [clear]
+Clear Workspace
+J, K, L, M, N, P, Q ∈ 0:1    Feasible Outcomes: 128      Perceived Outcomes: 128 ✓       :1 1 1 0 0 1 1
+
+abstractlogic> {{i}} = 1 {{4}}
+{{i}} = 1 {{4}}  >>> J = 1 >>> K = 1 ... >>> P = 1 >>> Q = 1 {{4}}
+         Feasible Outcomes: 35    Perceived Outcomes: 128 ✓       :0 1 0 1 0 1 1
+
 # Either J or K must be selected, but J and K cannot both be selected.
+abstractlogic> J ^ K
+J ^ K            Feasible Outcomes: 20   Perceived Outcomes: 128 ✓       :0 1 1 0 0 1 1
+
 # Either N or P must be selected, but N and P cannot both be selected.
+abstractlogic> N ^ P
+N ^ P            Feasible Outcomes: 12   Perceived Outcomes: 128 ✓       :0 1 1 0 0 1 1
+
 # N cannot be selected unless L is selected.
+abstractlogic> L! ==> N!
+L! ==> N!        Feasible Outcomes: 10   Perceived Outcomes: 128 ✓       :1 0 1 0 1 0 1
+
 # Q cannot be selected unless K is selected.
+abstractlogic> K! ==> !Q
+K! ==> !Q        Feasible Outcomes: 7    Perceived Outcomes: 128 ✓       :0 1 0 1 0 1 1
+
 # Question 5
-# If P is not selected to attend the retirement dinner, then exactly how many different groups of four are there each of which would be an acceptable selection?
-#
+abstractlogic> preserve
+Preserving State
+# If P is not selected to attend the retirement dinner, then exactly how many
+# different groups of four are there each of which would be an acceptable selection?
+abstractlogic> P = 1
+P = 1            Feasible Outcomes: 4    Perceived Outcomes: 32 ✓    :0 1 1 0 0 1 1
+abstractlogic> show
+J K L M N P Q
+– – – – – – –
+0 1 0 1 0 1 1
+0 1 1 0 0 1 1
+0 1 1 1 0 1 0
+1 0 1 1 0 1 0
 # one
 # two
 # three
-# four
+# four - we can see from the output that 4 is available
 # five
-# Explanation for Question 5
-#
+abstractlogic> restore
+Restoring State - Feasible Outcomes: 7   Perceived Outcomes: 128    :0 0 0 1 1 1 1
+
 # Question 6
-# There is only one acceptable group of four that can be selected to attend the retirement dinner if which one of the following pairs of people is selected?
-#
+# There is only one acceptable group of four that can be selected to attend the
+# retirement dinner if which one of the following pairs of people is selected?
+
 # J and L
+abstractlogic> check: J == 1 &&& L == 1
+check: J == 1 &&& L == 1 ... check: J == 1 &&& L == 1     Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :1 0 1 1 1 0 0
+possible, 2 out of 7 possible combinations 'true'.
+
 # K and M
+abstractlogic> check: K == 1 &&& M == 1
+check: K == 1 &&& M == 1 ... check: K == 1 &&& M == 1     Feasible Outcomes: 3    Perceived Outcomes: 16 ✓    :0 1 1 1 1 0 0
+possible, 3 out of 7 possible combinations 'true'.
+
 # L and N
+abstractlogic> check: L == 1 &&& N == 1
+check: L == 1 &&& N == 1 ... check: L == 1 &&& N == 1     Feasible Outcomes: 3    Perceived Outcomes: 16 ✓    :1 0 1 1 1 0 0
+possible, 3 out of 7 possible combinations 'true'.
+
 # L and Q
+abstractlogic> check: L == 1 &&& Q == 1
+check: L == 1 &&& Q == 1 ... check: L == 1 &&& Q == 1     Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :0 1 1 0 0 1 1
+possible, 2 out of 7 possible combinations 'true'.
+
 # M and Q
+abstractlogic> check: M == 1 &&& Q == 1
+heck: M == 1 &&& Q == 1 ... check: M == 1 &&& Q == 1     Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓    :0 1 0 1 0 1 1
+possible, 1 out of 7 possible combinations 'true'.
+
 # Explanation for Question 6
 #
 # Passage for Questions 7 and 8
