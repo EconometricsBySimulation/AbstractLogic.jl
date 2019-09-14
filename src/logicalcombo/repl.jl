@@ -91,7 +91,7 @@ let
         elseif occursin(r"^show$", userinput)             ALshow()
         elseif occursin(r"^showall$", userinput)          showall()
         elseif userinput ∈ ["back", "b"]                  back()
-        elseif occursin(r"compare ")                      compare(userinput)
+        elseif occursin(r"compare ", userinput)           compare(userinput)
         elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())
         elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
         elseif userinput ∈ ["next", "n", "f"]             next()
