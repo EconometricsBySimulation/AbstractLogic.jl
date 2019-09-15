@@ -9,7 +9,8 @@ anyerrors = false
 using AbstractLogic
 
 my_tests = ["LogicalCombo.jl",
-            "logicalparse.jl"]
+            "logicalparse.jl",
+            "repl.jl"]
 
 println("Running tests:")
 

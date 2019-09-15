@@ -26,12 +26,12 @@ end
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
 markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
 
-initrepl(
-    parse_to_expr,
-    prompt_text="abstractlogic> ",
-    prompt_color = :blue,
-    start_key='=',
-    mode_name="Abstract Logic")
+# initrepl(
+#     parse_to_expr,
+#     prompt_text="abstractlogic> ",
+#     prompt_color = :blue,
+#     start_key='=',
+#     mode_name="Abstract Logic")
 
 let
 
@@ -73,18 +73,28 @@ let
     global replcmdverbose = true
     global replverboseall = true
 
-    global function abstractlogic(replinput; returnactive = false)
+    global replerror = false
+    global replthrow(x) = (println(x) ; replerror = true)
 
+    global function abstractlogic(replinput; returnactive = false)
+        replerror = false
         userinput = replinput |> strip |> tounicode
 
-        # println("User input {$userinput}")
-        (occursin("t(", userinput)) && (userinput = testcall(userinput))
+        occursin("[clear]", userinput) && clear()
+        userinput = replace(userinput, "[clear]"=>"")
 
         replcmdverbose = !occursin("[silent]", userinput)
         userinput = replace(userinput, "[silent]"=>"")
 
-        occursin("[clear]", userinput) && clear()
-        userinput = replace(userinput, "[clear]"=>"")
+        if occursin(";", userinput)
+          for v in split(userinput, ";");
+              abstractlogic(v)
+          end
+          userinput = ""
+        end
+
+        # println("User input {$userinput}")
+        (occursin("t(", userinput)) && (userinput = testcall(userinput))
 
         if strip(userinput) == ""                         nothing()
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
@@ -193,7 +203,7 @@ let
     end
 
     function next()
-        (cmdlocation == length(commandhistory)) && (println("Nothing to go forward to"); return)
+        (cmdlocation == length(commandhistory)) && (replthrow("Nothing to go forward to"); return)
         cmdlocation += 1
         replset = logichistory[cmdlocation]
         push!(commandlist[setlocation], commandhistory[cmdlocation])
@@ -202,8 +212,7 @@ let
 
     function ALparse(userinput, )
         if (sum(replset[:])==0) && !occursin(r"∈", userinput)
-            print("error: userinput  - ")
-            println("You are working with an empty set! Try inputing: a,b,c in 1:3")
+            replthrow("You are working with an empty set! Try inputing: a,b,c in 1:3")
             return
         end
 
@@ -224,7 +233,7 @@ let
           logicset[setlocation] = replset
 
         catch ex
-          println("\tcommand Failed - $ex")
+          replthrow("\tcommand Failed - $ex")
         end
     end
 
@@ -258,7 +267,7 @@ let
     function ALshow(;n =10)
         nrow = nfeasible(replset)
 
-        (nrow == 0) && return println("Nothing to Show - [Empty Set]")
+        (nrow == 0) && return replthrow("Nothing to Show - [Empty Set]")
 
         printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
         (nrow<=n) && (printset = 1:nrow)
@@ -285,7 +294,7 @@ let
     global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
     global lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
     joins(x) = length(x) > 0 ? join(x, " ") : x
-    global joinsample = (joins ∘ sample)
+    joinsample = (joins ∘ sample)
 
 end
 """
@@ -324,7 +333,7 @@ function ALcheck(userinput)
         checkfeasible(inputpass, replset, countany=true, verbose=false)
       # push!(logicset, replset)
   catch er
-      println("\nWarning! Check Fail: $er")
+      replthrow("\nWarning! Check Fail: $er")
       (length(userinput) == 5) && println("Nothing to check")
     end
 end
@@ -340,7 +349,7 @@ function compare(x)
 
     y = Symbol(strip(replace(x, r"^compare "=>"")))
 
-    !(y ∈ names(Main)) && (println("$y not found!"); return)
+    !(y ∈ names(Main)) && (replthrow("$y not found!"); return)
 
     z = getfield(Main, y)
 
@@ -391,7 +400,7 @@ function ALsearch(userinput)
       search(checker, replset, verbose = replcmdverbose & replverboseall)
       # push!(logicset, replset)
   catch er
-      println("Warning! Search Failed: $er")
+      replthrow("Warning! Search Failed: $er")
     end
 end
 
@@ -399,7 +408,10 @@ function ALrange(userinput)
   replcmdverbose && replverboseall && println(userinput)
   inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
   (inputpass == "") && return println(range(replset))
-  occursin(" ", inputpass) && return println("\n range only takes up to one variable currently!")
+  occursin(" ", inputpass) &&
+    return replthrow("\n range only takes up to one variable currently!")
+  !(inputpass ∈ replset.keys) &&
+    return replthrow("\n $inputpass not found in replset!")
   return println(range(replset)[Symbol(inputpass)])
   return println(range(replset, inputpass))
   nothing

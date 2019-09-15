@@ -30,8 +30,7 @@ import AbstractLogic: abstractlogic,
        showuserinput,
        showsetlocation,
        showcmdlocation,
-       showcommandlist,
-       abrepl
+       showcommandlist
 
 import AbstractLogic
 
