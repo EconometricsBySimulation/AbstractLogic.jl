@@ -17,7 +17,7 @@ using Suppressor
 @suppress abstractlogic("next [clear]"); @test returnreplerror()
 @suppress abstractlogic("a,b,c ∈ 0:1; back"); @test !returnreplerror()
 @suppress abstractlogic("next"); @test !returnreplerror()
-@test abstractlogic("", returnactive = true) |> nfeasible == 8
+@test @suppress abstractlogic("", returnactive = true) |> nfeasible == 8
 
 # Show
 @suppress abstractlogic("show"); @test !returnreplerror()
@@ -45,7 +45,7 @@ using Suppressor
 
 printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>"")
 
-abstractlogic("clear; a,b,c in 1")
+@suppress abstractlogic("clear; a,b,c in 1")
 output = (@capture_out abstractlogic("history")) |> printcleaner
 @test  output == "Command#feasible#SessionCleared0a,b,c∈11<<present>>..."
 @test (@capture_out abstractlogic("keys")) == "a, b, c\n"
@@ -53,12 +53,12 @@ output = (@capture_out abstractlogic("history")) |> printcleaner
 output = (@capture_out abstractlogic("b")) |> printcleaner
 @test output == "Lastcommand:#SessionCleared-:0:1:Any[]"
 
-abstractlogic("n")
+@suppress abstractlogic("n")
 output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @test output == "a=b:1:1✓✓:111"
 
-abstractlogic("silence")
+@suppress abstractlogic("silence")
 @test (@capture_out abstractlogic("a ∈ 1,2 [clear]")) == ""
 
-abstractlogic("noisy")
+@suppress abstractlogic("noisy")
 @test (@capture_out abstractlogic("a ∈ 1,2 [clear]")) != ""
