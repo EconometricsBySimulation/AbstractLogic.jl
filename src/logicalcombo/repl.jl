@@ -47,8 +47,6 @@ let
     global dashboard() = dashboardshow
     global dashboard!() = dashboardshow = !dashboardshow
 
-    userinput = ""
-
     global replset = LogicalCombo()
     global returnreplset() = replset
     commandlist  = [String[]]
@@ -75,6 +73,7 @@ let
 
     global replerror = false
     global replthrow(x) = (println(x) ; replerror = true)
+    global returnreplerror() = replerror
 
     global function abstractlogic(replinput; returnactive = false)
         replerror = false
@@ -110,9 +109,9 @@ let
         elseif userinput ∈ ["history", "h"]               history()
         elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
-        elseif userinput == "clear"                       clear()
-        elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput == "clearall"                    clearall()
+        elseif occursin(r"^clear[ ]*$", userinput)         clear()
+        elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
         elseif userinput == "restore"                     restore()
@@ -134,7 +133,7 @@ let
     keys() = println(join(replset.keys, ", "))
 
     function back()
-        (cmdlocation == 1) && (println("Nothing to go back to"); return)
+        (cmdlocation == 1) && (replthrow("Nothing to go back to"); return)
         cmdlocation -= 1
         replset = logichistory[cmdlocation]
         println(lastcommand() * " - " * reportfeasible())
@@ -152,7 +151,7 @@ let
         push!(commandlist, String[])
         push!(logicset, replset)
 
-        println("Clear Workspace")
+        replcmdverbose && replverboseall && println("Clear Workspace")
     end
 
     function clearall()
@@ -210,7 +209,7 @@ let
         println(lastcommand() * " - " * reportfeasible())
     end
 
-    function ALparse(userinput, )
+    function ALparse(userinput)
         if (sum(replset[:])==0) && !occursin(r"∈", userinput)
             replthrow("You are working with an empty set! Try inputing: a,b,c in 1:3")
             return

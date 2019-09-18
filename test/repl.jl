@@ -2,44 +2,46 @@ using AbstractLogic
 using Test
 using Suppressor
 
+@test (@capture_out abstractlogic("clearall")) == "Clearing Everything!\n"
+
 # Basic logicparser features
-abstractlogic("a = 1 [clear]"); @test returnreplerror()
-abstractlogic("range abc"); @test returnreplerror()
-abstractlogic("range a b"); @test returnreplerror()
-abstractlogic("clear; a,b,c in 0:1; clear"); @test nfeasible(returnreplset()) != 1
-abstractlogic("clearall"); @test length(returnlogicset()) == 1
-abstractlogic("a,b,c ∈ 0:1; a=b [clear]"); @test length(showlogichistory()) == 1
+@suppress abstractlogic("a = 1 [clear]"); @test returnreplerror()
+@suppress abstractlogic("range abc"); @test returnreplerror()
+@suppress abstractlogic("range a b"); @test returnreplerror()
+@suppress abstractlogic("clear; a,b,c in 0:1; clear"); @test nfeasible(returnreplset()) != 1
+@suppress abstractlogic("clearall"); @test length(returnlogicset()) == 1
+@suppress abstractlogic("a,b,c ∈ 0:1; a=b [clear]"); @test length(showlogichistory()) == 3
 
 # Navigation
-abstractlogic("back [clear]"); @test returnreplerror()
-abstractlogic("next [clear]"); @test returnreplerror()
-abstractlogic("a,b,c ∈ 0:1; back"); @test !returnreplerror()
-abstractlogic("next"); @test !returnreplerror()
+@suppress abstractlogic("back [clear]"); @test returnreplerror()
+@suppress abstractlogic("next [clear]"); @test returnreplerror()
+@suppress abstractlogic("a,b,c ∈ 0:1; back"); @test !returnreplerror()
+@suppress abstractlogic("next"); @test !returnreplerror()
 @test abstractlogic("", returnactive = true) |> nfeasible == 8
 
 # Show
-abstractlogic("show"); @test !returnreplerror()
-abstractlogic("clear; show"); @test returnreplerror()
+@suppress abstractlogic("show"); @test !returnreplerror()
+@suppress abstractlogic("clear; show"); @test returnreplerror()
 
 # Import/Export
-abstractlogic("a,b in 1:2; export testset"); @test testset |> nfeasible == 4
-@test abstractlogic("clear; import testset", returnactive = true) |> nfeasible == 4
+@suppress abstractlogic("a,b in 1:2; export testset"); @test testset |> nfeasible == 4
+@test @suppress abstractlogic("clear; import testset", returnactive = true) |> nfeasible == 4
 
 # REPL Commands
-abstractlogic("compare noname"); @test returnreplerror()
-abstractlogic("keys"); @test !returnreplerror()
-abstractlogic("d"); @test !returnreplerror()
-abstractlogic("discover"); @test !returnreplerror()
-abstractlogic("h"); @test !returnreplerror()
-abstractlogic("history"); @test !returnreplerror()
-abstractlogic("ls"); @test !returnreplerror()
-abstractlogic("logicset"); @test !returnreplerror()
+@suppress abstractlogic("compare noname"); @test returnreplerror()
+@suppress abstractlogic("keys"); @test !returnreplerror()
+@suppress abstractlogic("d"); @test !returnreplerror()
+@suppress abstractlogic("discover"); @test !returnreplerror()
+@suppress abstractlogic("h"); @test !returnreplerror()
+@suppress abstractlogic("history"); @test !returnreplerror()
+@suppress abstractlogic("ls"); @test !returnreplerror()
+@suppress abstractlogic("logicset"); @test !returnreplerror()
 
 # Silence and noisy
-@test abstractlogic("clear; a,b in 1:2; preserve; clear; restore", returnactive = true) |> nfeasible == 4
-abstractlogic("silence"); @test !returnreplerror()
-abstractlogic("noisy"); @test !returnreplerror()
-abstractlogic("dash; dashboard"); @test !returnreplerror()
+@test @suppress abstractlogic("clear; a,b in 1:2; preserve; clear; restore", returnactive = true) |> nfeasible == 4
+@suppress abstractlogic("silence"); @test !returnreplerror()
+@suppress abstractlogic("noisy"); @test !returnreplerror()
+@suppress abstractlogic("dash; dashboard"); @test !returnreplerror()
 
 printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>"")
 
@@ -55,4 +57,8 @@ abstractlogic("n")
 output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @test output == "a=b:1:1✓✓:111"
 
-@test (@capture_out abstractlogic("clear [silent]")) == ""
+abstractlogic("silence")
+@test (@capture_out abstractlogic("a ∈ 1,2 [clear]")) == ""
+
+abstractlogic("noisy")
+@test (@capture_out abstractlogic("a ∈ 1,2 [clear]")) != ""

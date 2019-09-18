@@ -8,9 +8,9 @@ anyerrors = false
 
 using AbstractLogic
 
-my_tests = ["LogicalCombo.jl",
-            "logicalparse.jl",
-            "repl.jl"]
+my_tests = ["repl.jl",
+            "LogicalCombo.jl",
+            "logicalparse.jl"]
 
 println("Running tests:")
 

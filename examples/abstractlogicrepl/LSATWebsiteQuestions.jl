@@ -11,7 +11,7 @@
 julia> using AbstractLogic
 Start the repl in command prompt by typing `=`.
 
-abstractlogic> G, L, M, N, P, R, S, W ∈ red, not [clear]
+abstractlogic> =G, L, M, N, P, R, S, W ∈ red, not [clear]
 Clear Workspace
 G, L, M, N, P, R, S, W ∈ red, not        Feasible Outcomes: 256          Perceived Outcomes: 256 ✓       :not not red not red red red not
 
