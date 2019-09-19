@@ -1,37 +1,60 @@
 using ReplMaker, Markdown
 
-function parse_to_expr(s)
-   abstractlogic(s)
-
-   if dashboard()
-     println("\nCommand Lists:" * string(showsetlocation()))
-     for v in showcommandlist()
-         println(v)
-     end
-
-     println("\nCommand Location:" * string(showcmdlocation()))
-     for v in showcommandhistory()
-         println(v)
-     end
-
-     println("\nLogicSet Lists:" * string(showsetlocation()))
-     for v in returnlogicset()
-         println(join(collect(string(v))[1:(min(200,end))]))
-     end
-
-   end
-   nothing
+mutable struct History
+    logicsets::Array
+    current::Integer
 end
+
+function Base.push!(x::History, logicset::LogicalCombo)
+  x.logicsets = [x.logicsets[1:x.current]..., logicset]
+  x.current = x.current+1
+  x
+end
+
+activelogicset(x::History) = x.logicsets[x.current]
+priorlogicsets(x::History) = x.logicsets[1:x.current]
+futurelogicsets(x::History) = x.logicsets[(x.current+1):end]
+
+back!(x::History) = x.current = (x.current > 0 ? x.current - 1 : 0)
+next!(x::History) = x.current = (x.current < length(x.logicsets) ? x.current + 1 : x.current)
+
+activecommand(x::History)  = activelogicset(x).commands[end]
+priorcommands(x::History)  = priorlogicsets(x) .|> z -> z.commands[end]
+
+function futurecommands(x::History)
+  y = futurelogicsets(x)
+  (length(y) == 0) && return String[]
+  y .|> z -> z.commands[end]
+end
+
+History() = History([logicalparse("#Session Started")], 1)
+
+# active = History()
+# priorcommands(active)
+# futurecommands(active)
+#
+# push!(active, logicalparse("x in 1:4", activelogicset(active) ) )
+# push!(active, logicalparse("y in 1:4", activelogicset(active) ) )
+# push!(active, logicalparse("z in 1:4", activelogicset(active) ) )
+#
+# activelogicset(active)
+# priorlogicsets(active)
+#
+# activecommand(active)
+# priorcommands(active)
+#
+# back!(active)
+# back!(active)
+# futurecommands(active)
+# priorcommands(active)
+#
+# next!(active)
+# push!(active, logicalparse("q in 1:4", activelogicset(active) ) )
+# priorcommands(active)
+
 
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
 markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
-
-# initrepl(
-#     parse_to_expr,
-#     prompt_text="abstractlogic> ",
-#     prompt_color = :blue,
-#     start_key='=',
-#     mode_name="Abstract Logic")
 
 let
 
@@ -61,6 +84,9 @@ let
     preserverfeasiblehistory = missing
 
     commandhistory = String["#Session Initiated"]
+
+    global activehistory = History()
+
     feasiblehistory = [0]
     logichistory = [replset]
     logicset     = [replset]
@@ -132,21 +158,14 @@ let
 
     keys() = println(join(replset.keys, ", "))
 
-    function back()
-        (cmdlocation == 1) && (replthrow("Nothing to go back to"); return)
-        cmdlocation -= 1
-        replset = logichistory[cmdlocation]
-        println(lastcommand() * " - " * reportfeasible())
-        pop!(commandlist[setlocation])
-    end
+
 
     function clear()
         push!(commandlist[setlocation], "#clear")
         replset = LogicalCombo()
-        logichistory = [replset]
-        commandhistory = ["#Session Cleared"]
-        feasiblehistory = [0]
-        cmdlocation = 1
+
+        activehistory = History()
+
         setlocation += 1
         push!(commandlist, String[])
         push!(logicset, replset)
@@ -159,6 +178,9 @@ let
       replset = LogicalCombo()
       commandhistory = String["#Session Initiated"]
       feasiblehistory = [0]
+
+      activehistory = History()
+
       logichistory = [replset]
       logicset     = [replset]
       cmdlocation  = 1
@@ -166,15 +188,6 @@ let
       println("Clearing Everything!")
     end
 
-    function history()
-       currentfeasible = [feasiblehistory[1:cmdlocation]..., "...", feasiblehistory[(cmdlocation+1):end]...]
-       currentcommand = [commandhistory[1:cmdlocation]..., "<< present >>", commandhistory[(cmdlocation+1):end]...]
-       txtout = "| Command | # feasible |\n| --- | --- |\n"
-       for i in 1:length(currentcommand)
-           txtout *= ("| $(markdownescape(currentcommand[i])) | $(currentfeasible[i]) |\n")
-       end
-       printmarkdown(txtout)
-    end
 
     function ALimport(x)
 
@@ -194,6 +207,7 @@ let
 
         println("Importing $y - " * reportfeasible())
         cmdlocation = 1
+        activehistory.current = 1
 
         commandhistory  = [x]
         logichistory    = [replset]
@@ -201,13 +215,6 @@ let
         push!(commandlist, [x])
     end
 
-    function next()
-        (cmdlocation == length(commandhistory)) && (replthrow("Nothing to go forward to"); return)
-        cmdlocation += 1
-        replset = logichistory[cmdlocation]
-        push!(commandlist[setlocation], commandhistory[cmdlocation])
-        println(lastcommand() * " - " * reportfeasible())
-    end
 
     function ALparse(userinput)
         if (sum(replset[:])==0) && !occursin(r"∈", userinput)
@@ -219,15 +226,8 @@ let
           templogicset = logicalparse(userinput, logicset = replset,
                                       verbose = replcmdverbose & replverboseall)
           replset = templogicset
-          push!(commandlist[setlocation], userinput)
-          commandhistory      = commandhistory[1:cmdlocation]
-          logichistory        = logichistory[1:cmdlocation]
-          feasiblehistory     = feasiblehistory[1:cmdlocation]
 
-          cmdlocation += 1
-          push!(commandhistory, userinput)
-          push!(logichistory, replset)
-          push!(feasiblehistory, nfeasible(replset))
+          push!(activehistory, replset)
 
           logicset[setlocation] = replset
 
@@ -344,6 +344,15 @@ function ALexport(x)
    println()
 end
 
+function back()
+    (activehistory.current == 1) && (replthrow("Nothing to go back to"); return)
+
+    back!(activehistory)
+    replset = activelogicset(activehistory)
+    println(activecommand(activehistory) * " - " * reportfeasible())
+
+end
+
 function compare(x)
 
     y = Symbol(strip(replace(x, r"^compare "=>"")))
@@ -363,11 +372,37 @@ function compare(x)
 
 end
 
+function history()
+   currentcommand =
+     [priorcommands(activehistory)..., "<< present >>",
+     futurecommands(activehistory)...]
+   currentfeasible =
+     [nfeasible.(priorlogicsets(activehistory))..., "...",
+     nfeasible.(futurelogicsets(activehistory))...]
+
+
+   txtout = "| Command | # feasible |\n| --- | --- |\n"
+   for i in 1:length(currentcommand)
+       txtout *= ("| $(markdownescape(currentcommand[i])) | $(currentfeasible[i]) |\n")
+   end
+   printmarkdown(txtout)
+end
+
 function itemprint(x)
    for v in x
       vstring = string(v)
       println(vstring[1:min(90,end)] * (length(vstring) > 90 ? "..." : ""))
    end
+end
+
+
+function next()
+    (activehistory.current == length(activehistory.logicsets)) && (replthrow("Nothing to go forward to"); return)
+
+    next!(activehistory)
+    replset = activelogicset(activehistory)
+    println(activecommand(activehistory) * " - " * reportfeasible())
+
 end
 
 function testcall(userinput)

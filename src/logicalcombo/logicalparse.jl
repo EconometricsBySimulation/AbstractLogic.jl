@@ -77,8 +77,10 @@ function logicalparse(
         logicset=logicset, verbose=verbose)
 
     verbose && print(command)
+    # verbose && println("\n" * join(logicset.commands), "\n")
 
-    (strip(command) == "" || command[1] == '#') && return logicset
+    (strip(command) == "" || command[1] == '#') && return logicset |>
+      (x -> (((strip(command) != "") && push!(x.commands, command)); return x))
 
     occursin(r"∈|\bin\b", command) &&
       return definelogicalset(logicset, command) |>

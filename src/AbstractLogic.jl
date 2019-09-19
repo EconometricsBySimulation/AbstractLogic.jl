@@ -43,38 +43,38 @@ export abstractlogic,
 ##
 ##############################################################################
 
-include("logicalcombo/counter.jl")
+Main.include("logicalcombo/counter.jl")
 
-include("logicalcombo/LogicalCombo.jl")
+Main.include("logicalcombo/LogicalCombo.jl")
 
-include("logicalcombo/logicalparse.jl")
+Main.include("logicalcombo/logicalparse.jl")
 
-include("logicalcombo/expand.jl")
+Main.include("logicalcombo/expand.jl")
 
-include("logicalcombo/usefulfunctions.jl")
+Main.include("logicalcombo/usefulfunctions.jl")
 
-include("logicalcombo/definelogicalset.jl")
+Main.include("logicalcombo/definelogicalset.jl")
 
-include("logicalcombo/operatoreval.jl")
+Main.include("logicalcombo/operatoreval.jl")
 
-include("logicalcombo/superoperator.jl")
+Main.include("logicalcombo/superoperator.jl")
 
-include("logicalcombo/metaoperator.jl")
+Main.include("logicalcombo/metaoperator.jl")
 
-include("logicalcombo/operatorspawn.jl")
+Main.include("logicalcombo/operatorspawn.jl")
 
-include("logicalcombo/search.jl")
+Main.include("logicalcombo/search.jl")
 
-include("logicalcombo/checkfeasible.jl")
+Main.include("logicalcombo/checkfeasible.jl")
 
-include("logicalcombo/showfeasible.jl")
+Main.include("logicalcombo/showfeasible.jl")
 
-include("logicalcombo/repl.jl")
+Main.include("logicalcombo/repl.jl")
 
-include("logicalcombo/help.jl")
+Main.include("logicalcombo/help.jl")
 
-include("logicalcombo/discover.jl")
+Main.include("logicalcombo/discover.jl")
 
-isdefined(Base, :active_repl) && include("logicalcombo/replmaker.jl")
+isdefined(Base, :active_repl) && Main.include("logicalcombo/replmaker.jl")
 
 end # module AbstractLogic

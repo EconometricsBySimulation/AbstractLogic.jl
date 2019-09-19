@@ -9,7 +9,7 @@ Pkg.activate(".")
 
 # Pkg.test()
 
-include("AbstractLogic.jl")
+Main.include("AbstractLogic.jl")
 
 import AbstractLogic: abstractlogic,
        checkfeasible,
@@ -24,6 +24,7 @@ import AbstractLogic: abstractlogic,
        expand,
        help,
        nfeasible,
+       replset,
        returnreplset,
        showlogichistory,
        showcommandhistory,
