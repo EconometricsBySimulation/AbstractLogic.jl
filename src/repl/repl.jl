@@ -16,29 +16,24 @@ let
     global dashboard!() = dashboardshow = !dashboardshow
 
     global replset = LogicalCombo()
-    global returnreplset() = replset
-    commandlist  = [String[]]
 
+    global setreplset!(x) = replset = x
+    global returnreplset() = replset
+
+    commandlist  = [String[]]
     commandlistprint = false
 
     preserver = missing
-    preservercommandlist = missing
-    preservercmdlocation = missing
-    preservercommandhistory = missing
-    preserverlogichistory = missing
-    preserverfeasiblehistory = missing
-
-    commandhistory = String["#Session Initiated"]
 
     global activehistory = History()
+    global setactivehistory!(x) = activehistory = x
+    global pushactivehistory!(x) = push!(activehistory, x)
+    global returnactivehistory() = activehistory
+
     global sessionhistory = History()
-
-    feasiblehistory = [0]
-    logichistory = [replset]
-    logicset     = [replset]
-
-    cmdlocation = 1
-    setlocation = 1
+    global setsessionhistory!(x) = sessionhistory = x
+    global pushsessionhistory!(x) = push!(sessionhistory, x)
+    global returnsessionhistory() = sessionhistory
 
     global replcmdverbose = true
     global replverboseall = true
@@ -92,21 +87,11 @@ let
 
         elseif occursin(r"^(prove|all|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
-        else                                              replset = ALparse(userinput)
+        else                                              ALparse(userinput, replset)
         end
         returnactive && return replset
         nothing
     end
-
-    function ALclear(; verbose = true)
-        activehistory = History()
-
-        replset = activelogicset(activehistory)
-        push!(sessionhistory, activelogicset(activehistory))
-
-        verbose && replcmdverbose && replverboseall && println("Clearing Activeset")
-    end
-
 
     function ALclearall()
         ALclear(verbose = false)
@@ -135,63 +120,27 @@ let
     end
 
 
-    function ALparse(userinput, logicset)
-        (sum(logicset[:])==0) && !occursin(r"∈", userinput) &&
-          return replthrow("You are working with an empty set! Try inputing: a,b,c in 1:3")
-
-        try
-          logicset = logicalparse(userinput, logicset = replset,
-                                      verbose = replcmdverbose & replverboseall)
-        catch ex
-          replthrow("\ncommand Failed! $ex")
-          return logicset
-        end
-
-        push!(activehistory, logicset)
-        update!(sessionhistory, logicset)
-
-        return logicset
-
-    end
-
-    function ALpreserve()
-        # preservercommandlist = copy(commandlist[setlocation])
-        # push!(commandlist[setlocation], "#preserve")
-        # preserver = replset
-        # preservercmdlocation = cmdlocation
-        # preservercommandhistory = copy(commandhistory)
-        # preserverlogichistory = copy(logichistory)
-        # preserverfeasiblehistory = copy(feasiblehistory)
+    function ALpreserve(; verbose = true)
         preserver = activehistory
-        println("Preserving State")
+        verbose && println("Preserving State")
     end
 
-    function restore()
+    function restore(; verbose = true)
         (preserver === missing) && (println("Nothing to restore"); return)
-        # push!(commandlist[setlocation], "#restore")
-        # push!(commandlist, copy(preservercommandlist))
-        # push!(logicset, replset)
-        # setlocation += 1
-        # replset = preserver
+
         replset = activelogicset(preserver)
 
         activehistory = preserver
 
         push!(sessionhistory, replset)
 
-        println("Restoring State - " * reportfeasible())
-        #
-        # cmdlocation = preservercmdlocation
-        #
-        # commandhistory  = copy(preservercommandhistory)
-        # logichistory    = copy(preserverlogichistory)
-        # feasiblehistory = copy(feasiblehistory)
+        verbose && println("Restoring State - " * reportfeasible())
     end
 
 
 
     global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
-    global lastcommand() = "Last command: \"$(commandhistory[cmdlocation])\""
+    global lastcommand() = "Last command: \"$(replset.commands[end])\""
     joins(x) = length(x) > 0 ? join(x, " ") : x
     joinsample = (joins ∘ sample)
 

@@ -27,9 +27,12 @@ export abstractlogic,
        expand,
        help,
        nfeasible,
-       returnreplerror,
-       returnlogicset,
-       returnreplset,
+
+       replerror,
+       activehistory,
+       replset,
+       sessionhistory,
+
        showlogichistory,
        showcommandhistory,
        showuserinput,
@@ -83,7 +86,7 @@ include("logicalcombo/discover.jl")
 
 include("repl/History.jl")
 
-include("repl/ALback.jl")
+include("repl/ALback_next.jl")
 
 include("repl/ALcheck.jl")
 
@@ -91,13 +94,13 @@ include("repl/ALclear.jl")
 
 include("repl/ALcompare.jl")
 
-include("repl/ALexport.jl")
-
 include("repl/ALhistory.jl")
 
-include("repl/ALimport.jl")
+include("repl/ALimport_export.jl")
 
-include("repl/ALnext.jl")
+include("repl/ALparse.jl")
+
+include("repl/ALpreserve_restore.jl")
 
 include("repl/ALrange.jl")
 

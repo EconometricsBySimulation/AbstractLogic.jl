@@ -1,4 +1,4 @@
-function ALshow(;n =10)
+function ALshow(; n =10)
     nrow = nfeasible(replset)
 
     (nrow == 0) && return replthrow("Nothing to Show - [Empty Set]")

@@ -1,4 +1,4 @@
-function ALcompare(x)
+function ALcompare(x; verbose=true)
 
     y = Symbol(strip(replace(x, r"^compare "=>"")))
 

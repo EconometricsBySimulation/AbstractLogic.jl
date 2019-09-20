@@ -90,17 +90,10 @@ function logicalparse(
     # Check for the existance of any symbols in logicset
     varcheck = eachmatch(r"[a-zA-Z][0-9a-zA-Z_.]*", command)
 
-    # Checks if any of the variables does not exist in logicset
-    for S in [Symbol(s.match) for s in varcheck if !(s.match ∈ split(exclusions, "|"))]
-      if (occursin("{{", string(S))) && (!logicaloccursin(logicset, S))
-        println("\t Warning! In {$command} variable {:$S} not found in logicset")
-      end
-    end
-
     # Replace command
     commandout = command |>
-     x -> replace(x, r"(\b|\s)true(\b|\s)" =>" 1=1 ") |>
-     x -> replace(x, r"(\b|\s)false(\b|\s)"=>" 1=0 ") |>
+     x -> replace(x, r"(\b|\s)true(\b|\s)" =>" 1 = 1 ") |>
+     x -> replace(x, r"(\b|\s)false(\b|\s)"=>" 1 = 0 ") |>
      x -> replace(x, r"^(IF|if|If)"=>"")
 
     if occursin(Regex("([><=|!+\\-^&]{1,4})"), commandout)

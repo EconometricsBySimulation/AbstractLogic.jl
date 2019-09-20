@@ -1,4 +1,4 @@
-function ALcheck(userinput)
+function ALcheck(userinput; verbose=true)
     try
       inputpass = string(replace(userinput, r"^(check|prove|all|any|✓)[\\:\\-\\ ]*"=>""))
       occursin(r"^check[\\:\\-\\ ]+", userinput) &&

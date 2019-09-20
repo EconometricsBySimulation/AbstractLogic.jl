@@ -1,5 +1,6 @@
-function ALrange(userinput)
-  replcmdverbose && replverboseall && println(userinput)
+
+function ALrange(userinput; verbose=true)
+  verbose && println(userinput)
   inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
   (inputpass == "") && return println(range(replset))
   occursin(" ", inputpass) &&

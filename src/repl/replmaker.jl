@@ -3,7 +3,7 @@ using ReplMaker, Markdown
 function parse_to_expr(s)
    abstractlogic(s)
 
-   if dashboard()
+   if dashboard
      println("\nCommand Lists:" * string(showsetlocation()))
      for v in showcommandlist()
          println(v)

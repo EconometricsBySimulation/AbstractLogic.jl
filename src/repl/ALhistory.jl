@@ -1,10 +1,13 @@
-function Alhistory()
+function Alhistory(; sessionprint = false)
+   !sessionprint && (myhistory = activehistory)
+   sessionprint  && (myhistory = sessionhistory)
+
    currentcommand =
-     [priorcommands(activehistory)..., "<< present >>",
-     futurecommands(activehistory)...]
+     [priorcommands(myhistory)..., "<< present >>",
+     futurecommands(myhistory)...]
    currentfeasible =
-     [nfeasible.(priorlogicsets(activehistory))..., "...",
-     nfeasible.(futurelogicsets(activehistory))...]
+     [nfeasible.(priorlogicsets(myhistory))..., "...",
+     nfeasible.(futurelogicsets(myhistory))...]
 
 
    txtout = "| Command | # feasible |\n| --- | --- |\n"

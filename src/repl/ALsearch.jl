@@ -1,4 +1,4 @@
-function ALsearch(userinput)
+function ALsearch(userinput; verbose=true)
     try
       checker = replace(userinput[7:end], r"^[\\:\\-\\ ]+"=>"")
       search(checker, replset, verbose = replcmdverbose & replverboseall)
