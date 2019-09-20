@@ -12,7 +12,6 @@ let
     global showlogichistory() = logichistory
 
     dashboardshow = false
-    global dashboard() = dashboardshow
     global dashboard!() = dashboardshow = !dashboardshow
 
     global replset = LogicalCombo()
@@ -28,33 +27,31 @@ let
     global activehistory = History()
     global setactivehistory!(x) = activehistory = x
     global pushactivehistory!(x) = push!(activehistory, x)
-    global returnactivehistory() = activehistory
 
     global sessionhistory = History()
     global setsessionhistory!(x) = sessionhistory = x
     global pushsessionhistory!(x) = push!(sessionhistory, x)
-    global returnsessionhistory() = sessionhistory
 
-    global replcmdverbose = true
-    global replverboseall = true
+    verboseall = true
 
     global replerror = false
     global replthrow(x) = (println(x) ; replerror = true)
     global returnreplerror() = replerror
 
-    global function abstractlogic(replinput; returnactive = false)
+    global function abstractlogic(replinput; returnactive = false, verbose = true)
         replerror = false
         userinput = replinput |> strip |> tounicode
 
-        occursin("[clear]", userinput) && ALclear()
-        userinput = replace(userinput, "[clear]"=>"")
-
-        replcmdverbose = !occursin("[silent]", userinput)
+        verbose &= verboseall
+        verbose &= !occursin("[silent]", userinput)
         userinput = replace(userinput, "[silent]"=>"")
+
+        occursin("[clear]", userinput) && ALclear(verbose = verbose)
+        userinput = replace(userinput, "[clear]"=>"")
 
         if occursin(";", userinput)
           for v in split(userinput, ";");
-              abstractlogic(v)
+              abstractlogic(v, verbose=verbose)
           end
           userinput = ""
         end
@@ -62,7 +59,7 @@ let
         # println("User input {$userinput}")
         (occursin("t(", userinput)) && (userinput = testcall(userinput))
 
-        if strip(userinput) == ""                         nothing()
+        if strip(userinput) == ""                         nothing(verbose = verbose)
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
         elseif occursin(r"^show$", userinput)             ALshow()
         elseif occursin(r"^showall$", userinput)          showall()
@@ -70,20 +67,20 @@ let
         elseif occursin(r"compare ", userinput)           ALcompare(userinput)
         elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())
         elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
-        elseif userinput ∈ ["next", "n", "f"]             ALnext()
+        elseif userinput ∈ ["next", "n", "f"]             ALnext(verbose = verbose)
         elseif occursin(r"^import ", userinput)           ALimport(userinput)
         elseif occursin(r"^dash(board)?$", userinput)     dashboard!()
         elseif userinput ∈ ["history", "h"]               Alhistory()
         elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
-        elseif userinput == "clearall"                    ALclearall()
+        elseif userinput ∈ ["clearall", "Clear"]          ALClear()
         elseif occursin(r"^clear[ ]*$", userinput)        ALclear()
         elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
         elseif userinput == "restore"                     restore()
-        elseif userinput == "silence"                     replverboseall = false
-        elseif userinput == "noisy"                       replverboseall = true
+        elseif userinput == "silence"                     verboseall = false
+        elseif userinput == "noisy"                       verboseall = true
 
         elseif occursin(r"^(prove|all|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
@@ -92,57 +89,6 @@ let
         returnactive && return replset
         nothing
     end
-
-    function ALclearall()
-        ALclear(verbose = false)
-        sessionhistory = History()
-
-        println("Clearing Everything!")
-    end
-
-    function ALimport(userinput)
-
-        imports = Symbol(strip(replace(userinput, r"^import "=>"")))
-
-        !(imports ∈ names(Main)) && (println("$imports not found!"); return)
-
-        imported = getfield(Main, imports)
-        !isa(imported, LogicalCombo) && (println("$imports not a LogicalCombo!"); return)
-
-        replset = imported
-
-        activehistory = History()
-
-        push!(activehistory, replset)
-        push!(sessionhistory, imported)
-
-        println("Importing $imported - " * reportfeasible())
-    end
-
-
-    function ALpreserve(; verbose = true)
-        preserver = activehistory
-        verbose && println("Preserving State")
-    end
-
-    function restore(; verbose = true)
-        (preserver === missing) && (println("Nothing to restore"); return)
-
-        replset = activelogicset(preserver)
-
-        activehistory = preserver
-
-        push!(sessionhistory, replset)
-
-        verbose && println("Restoring State - " * reportfeasible())
-    end
-
-
-
-    global reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
-    global lastcommand() = "Last command: \"$(replset.commands[end])\""
-    joins(x) = length(x) > 0 ? join(x, " ") : x
-    joinsample = (joins ∘ sample)
 
 end
 """

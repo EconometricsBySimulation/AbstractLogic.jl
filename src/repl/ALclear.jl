@@ -10,7 +10,7 @@ function ALclear(; verbose = true)
     verbose && println("Clearing Activeset")
 end
 
-function ALclearall(; verbose = true)
+function ALClear(; verbose = true)
     ALclear(verbose = false)
     setsessionhistory!(History())
 
