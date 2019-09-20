@@ -10,7 +10,7 @@ using Suppressor
 @suppress abstractlogic("range a b"); @test returnreplerror()
 @suppress abstractlogic("clear; a,b,c in 0:1; clear"); @test nfeasible(returnreplset()) != 1
 @suppress abstractlogic("clearall"); @test length(returnlogicset()) == 1
-@suppress abstractlogic("a,b,c ∈ 0:1; a=b [clear]"); @test length(showlogichistory()) == 3
+@suppress abstractlogic("a,b,c ∈ 0:1; a=b [clear]"); @test activehistory.current == 3
 
 # Navigation
 @suppress abstractlogic("back [clear]"); @test returnreplerror()
@@ -47,11 +47,11 @@ printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>""
 
 @suppress abstractlogic("clear; a,b,c in 1")
 output = (@capture_out abstractlogic("history")) |> printcleaner
-@test  output == "Command#feasible#SessionCleared0a,b,c∈11<<present>>..."
+@test  output == "Command#feasible#SessionStarted0a,b,c∈11<<present>>..."
 @test (@capture_out abstractlogic("keys")) == "a, b, c\n"
 
 output = (@capture_out abstractlogic("b")) |> printcleaner
-@test output == "Lastcommand:#SessionCleared-:0:1:Any[]"
+@test output == "#SessionStarted-:1:1:111"
 
 @suppress abstractlogic("n")
 output = (@capture_out abstractlogic("a=b")) |> printcleaner
