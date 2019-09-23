@@ -37,6 +37,9 @@ let
     global replthrow(x) = (println(x) ; replerror = true)
     global returnreplerror() = replerror
 
+    global preserver = nothing
+    global setpreserver!(x) = preserver = x
+
     global function abstractlogic(replinput; returnactive = false, verbose = true)
         replerror = false
         userinput = replinput |> strip |> tounicode
@@ -52,7 +55,7 @@ let
           for v in split(userinput, ";");
               abstractlogic(v, verbose=verbose)
           end
-          userinput = ""
+          userinput = "" # replace with return?
         end
 
         # println("User input {$userinput}")
@@ -77,7 +80,7 @@ let
         elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
-        elseif userinput == "restore"                     restore()
+        elseif userinput == "restore"                     ALrestore()
         elseif userinput == "silence"                     verboseall = false
         elseif userinput == "noisy"                       verboseall = true
 

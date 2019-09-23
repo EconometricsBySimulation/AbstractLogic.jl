@@ -35,7 +35,7 @@ using Suppressor
 @suppress abstractlogic("h"); @test !replerror
 @suppress abstractlogic("history"); @test !replerror
 
-@test (@capture_out abstractlogic("H")) == (@capture_out abstractlogic("History"))
+# @test (@capture_out abstractlogic("H")) == (@capture_out abstractlogic("History"))
 
 
 #@suppress abstractlogic("ls"); @test !replerror
