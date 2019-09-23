@@ -47,9 +47,9 @@ export abstractlogic,
 ##
 ##############################################################################
 
-include("logicalcombo/counter.jl")
-
 include("logicalcombo/LogicalCombo.jl")
+
+include("logicalcombo/counter.jl")
 
 include("logicalcombo/logicalparse.jl")
 

@@ -3,24 +3,23 @@ using ReplMaker, Markdown
 let
     keys() = println(join(replset.keys, ", "))
 
-    global showcommandlist()  = commandlist
-    global returnlogicset() = logicset
-    global showcmdlocation() = cmdlocation
-    global showsetlocation() = setlocation
-    global showuserinput() = userinput
-    global showcommandhistory() = commandhistory
-    global showlogichistory() = logichistory
+    # global showcommandlist()  = commandlist
+    # global returnlogicset() = logicset
+    # global showcmdlocation() = cmdlocation
+    # global showsetlocation() = setlocation
+    # global showuserinput() = userinput
+    # global showcommandhistory() = commandhistory
+    # global showlogichistory() = logichistory
 
-    dashboardshow = false
-    global dashboard!() = dashboardshow = !dashboardshow
+    dashboard = false
 
     global replset = LogicalCombo()
 
     global setreplset!(x) = replset = x
     global returnreplset() = replset
 
-    commandlist  = [String[]]
-    commandlistprint = false
+    # commandlist  = [String[]]
+    # commandlistprint = false
 
     preserver = missing
 
@@ -69,9 +68,9 @@ let
         elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
         elseif userinput ∈ ["next", "n", "f"]             ALnext(verbose = verbose)
         elseif occursin(r"^import ", userinput)           ALimport(userinput)
-        elseif occursin(r"^dash(board)?$", userinput)     dashboard!()
+        elseif occursin(r"^dash(board)?$", userinput)     dashboard = !dashboard
         elseif userinput ∈ ["history", "h"]               Alhistory()
-        elseif occursin(r"^command[ ]*list", userinput)   itemprint(commandlist)
+        elseif userinput ∈ ["History", "H"]               Alhistory(sessionhistory=true)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
         elseif userinput ∈ ["clearall", "Clear"]          ALClear()
         elseif occursin(r"^clear[ ]*$", userinput)        ALclear()

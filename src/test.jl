@@ -9,38 +9,38 @@ Pkg.activate(".")
 
 # Pkg.test()
 
-Main.include("AbstractLogic.jl")
-
-import AbstractLogic: abstractlogic,
-       checkfeasible,
-       help,
-       LogicalCombo,
-       logicalparse,
-       search,
-       showfeasible,
-       discover,
-       dashboard!,
-       dashboard,
-       expand,
-       help,
-       nfeasible,
-       replset,
-       returnreplset,
-       showlogichistory,
-       showcommandhistory,
-       showuserinput,
-       showsetlocation,
-       showcmdlocation,
-       showcommandlist
-
-import AbstractLogic
-
-using MyPackage: myfunction1, myfunction2, myfunction3
-
-# Make the documents
-include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\docs\\make.jl")
-
-using SparseArrays, Serialization
+# Main.include("AbstractLogic.jl")
+#
+# import AbstractLogic: abstractlogic,
+#        checkfeasible,
+#        help,
+#        LogicalCombo,
+#        logicalparse,
+#        search,
+#        showfeasible,
+#        discover,
+#        dashboard!,
+#        dashboard,
+#        expand,
+#        help,
+#        nfeasible,
+#        replset,
+#        returnreplset,
+#        showlogichistory,
+#        showcommandhistory,
+#        showuserinput,
+#        showsetlocation,
+#        showcmdlocation,
+#        showcommandlist
+#
+# import AbstractLogic
+#
+# using MyPackage: myfunction1, myfunction2, myfunction3
+#
+# # Make the documents
+# include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\docs\\make.jl")
+#
+# using SparseArrays, Serialization
 
 # v7 = logicalparse("a,b,c,d,e,f,g ∈ 1:7 || {{i}} != {{>i}}")
 # sv7 = sparsevec(v7[:])

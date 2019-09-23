@@ -5,6 +5,7 @@ function testcall(userinput; verbose=true)
         abstractlogic("a|c = 1")
         abstractlogic("a > b")
         abstractlogic("b > c")
+        return
     elseif userinput == "t(hp)"
         abstractlogic("clear")
         abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
@@ -17,6 +18,7 @@ function testcall(userinput; verbose=true)
         abstractlogic("a,g != 'MA'")
         abstractlogic("c,f != 'PO'")
         abstractlogic("b == f")
+        return
     end
     replthrow("$userinput - test not found!")
     return
