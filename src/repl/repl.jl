@@ -3,23 +3,11 @@ using ReplMaker, Markdown
 let
     keys() = println(join(replset.keys, ", "))
 
-    # global showcommandlist()  = commandlist
-    # global returnlogicset() = logicset
-    # global showcmdlocation() = cmdlocation
-    # global showsetlocation() = setlocation
-    # global showuserinput() = userinput
-    # global showcommandhistory() = commandhistory
-    # global showlogichistory() = logichistory
-
-    dashboard = false
+    global dashboard = false
 
     global replset = LogicalCombo()
 
     global setreplset!(x) = replset = x
-    global returnreplset() = replset
-
-    # commandlist  = [String[]]
-    # commandlistprint = false
 
     preserver = missing
 
@@ -44,8 +32,7 @@ let
         replerror = false
         userinput = replinput |> strip |> tounicode
 
-        verbose &= verboseall
-        verbose &= !occursin("[silent]", userinput)
+        verbose = verboseall & verbose & !occursin("[silent]", userinput)
         userinput = replace(userinput, "[silent]"=>"")
 
         occursin("[clear]", userinput) && ALclear(verbose = verbose)
@@ -55,13 +42,15 @@ let
           for v in split(userinput, ";");
               abstractlogic(v, verbose=verbose)
           end
-          userinput = "" # replace with return?
+          # userinput = "" # replace with return?
+          returnactive && return replset
+          return
         end
 
         # println("User input {$userinput}")
-        (occursin("t(", userinput)) && (userinput = testcall(userinput))
 
         if strip(userinput) == ""                         nothing(verbose = verbose)
+        elseif occursin("t(", userinput)                  testcall(userinput, verbose = verbose)
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
         elseif occursin(r"^show$", userinput)             ALshow()
         elseif occursin(r"^showall$", userinput)          showall()
@@ -73,10 +62,10 @@ let
         elseif occursin(r"^import ", userinput)           ALimport(userinput)
         elseif occursin(r"^dash(board)?$", userinput)     dashboard = !dashboard
         elseif userinput ∈ ["history", "h"]               Alhistory()
-        elseif userinput ∈ ["History", "H"]               Alhistory(sessionhistory=true)
+        elseif userinput ∈ ["History", "H"]               Alhistory(sessionprint=true)
         elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
-        elseif userinput ∈ ["clearall", "Clear"]          ALClear()
-        elseif occursin(r"^clear[ ]*$", userinput)        ALclear()
+        elseif userinput ∈ ["clearall", "Clear"]          ALClear(verbose = verbose)
+        elseif occursin(r"^clear[ ]*$", userinput)        ALclear(verbose = verbose)
         elseif occursin(r"^range", userinput)             ALrange(userinput)
         elseif userinput ∈ ["keys", "k"]                  keys()
         elseif userinput == "preserve"                    ALpreserve()
@@ -86,7 +75,7 @@ let
 
         elseif occursin(r"^(prove|all|check|any|✓)", userinput) ALcheck(userinput)
         elseif occursin(r"^search", userinput)            ALsearch(userinput)
-        else                                              ALparse(userinput, replset)
+        else                                              ALparse(userinput, replset, verbose = verbose)
         end
         returnactive && return replset
         nothing

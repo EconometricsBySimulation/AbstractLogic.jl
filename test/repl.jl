@@ -35,11 +35,11 @@ using Suppressor
 @suppress abstractlogic("h"); @test !replerror
 @suppress abstractlogic("history"); @test !replerror
 
-# @test (@capture_out abstractlogic("H")) == (@capture_out abstractlogic("History"))
+printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>"")
 
-
-#@suppress abstractlogic("ls"); @test !replerror
-#@suppress abstractlogic("logicset"); @test !replerror
+@test (@capture_out abstractlogic("H")) == (@capture_out abstractlogic("History"))
+@test (@capture_out abstractlogic("clearall; H")) |> printcleaner ==
+  "ClearingEverything!Command#feasible#SessionStarted0<<present>>..."
 
 # Silence and noisy
 @test @suppress abstractlogic("clear; a,b in 1:2; preserve; clear; restore", returnactive = true) |> nfeasible == 4
@@ -47,7 +47,6 @@ using Suppressor
 @suppress abstractlogic("noisy"); @test !replerror
 @suppress abstractlogic("dash; dashboard"); @test !replerror
 
-printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>"")
 
 @suppress abstractlogic("clear; a,b,c in 1")
 output = (@capture_out abstractlogic("history")) |> printcleaner
@@ -67,4 +66,4 @@ output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @suppress abstractlogic("noisy")
 @test (@capture_out abstractlogic("a ∈ 1,2 [clear]")) != ""
 
-@test (@capture_out abstractlogic("clear; a,b ∈ 1,2; a=b [silence]")) != ""
+@test (@capture_out abstractlogic("clear; a,b ∈ 1,2; a=b [silent]")) == ""

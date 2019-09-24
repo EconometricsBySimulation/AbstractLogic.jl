@@ -12,7 +12,7 @@ joins(x) = length(x) > 0 ? join(x, " ") : x
 
 joinsample = (joins ∘ sample)
 
-lastcommand() = "Last command: \"$(activelogicset(activehistory))\" "
+lastcommand() = "Last command: \"$(replset.commands[end])\" "
 
 Base.nothing(; verbose = true) = verbose && println(lastcommand() * " - " * reportfeasible())
 
