@@ -15,6 +15,7 @@ using Markdown, StatsBase, Crayons, ReplMaker
 ##############################################################################
 
 export abstractlogic,
+       activehistory,
        checkfeasible,
        LogicalCombo,
        logicalparse,
@@ -26,9 +27,12 @@ export abstractlogic,
        expand,
        help,
        nfeasible,
-       returnreplerror,
-       returnlogicset,
-       returnreplset,
+
+       replerror,
+       activehistory,
+       replset,
+       sessionhistory,
+
        showlogichistory,
        showcommandhistory,
        showuserinput,
@@ -39,13 +43,13 @@ export abstractlogic,
 
 ##############################################################################
 ##
-## Load files
+## Load main files
 ##
 ##############################################################################
 
-include("logicalcombo/counter.jl")
-
 include("logicalcombo/LogicalCombo.jl")
+
+include("logicalcombo/counter.jl")
 
 include("logicalcombo/logicalparse.jl")
 
@@ -69,12 +73,47 @@ include("logicalcombo/checkfeasible.jl")
 
 include("logicalcombo/showfeasible.jl")
 
-include("logicalcombo/repl.jl")
-
 include("logicalcombo/help.jl")
 
 include("logicalcombo/discover.jl")
 
-isdefined(Base, :active_repl) && include("logicalcombo/replmaker.jl")
+
+##############################################################################
+##
+## Load REPL
+##
+##############################################################################
+
+include("repl/History.jl")
+
+include("repl/ALback_next.jl")
+
+include("repl/ALcheck.jl")
+
+include("repl/ALclear.jl")
+
+include("repl/ALcompare.jl")
+
+include("repl/ALhistory.jl")
+
+include("repl/ALimport_export.jl")
+
+include("repl/ALparse.jl")
+
+include("repl/ALpreserve_restore.jl")
+
+include("repl/ALrange.jl")
+
+include("repl/ALsearch.jl")
+
+include("repl/ALshow.jl")
+
+include("repl/replcalls.jl")
+
+include("repl/testcall.jl")
+
+include("repl/repl.jl")
+
+isdefined(Base, :active_repl) && include("repl/replmaker.jl")
 
 end # module AbstractLogic
