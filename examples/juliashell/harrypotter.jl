@@ -58,7 +58,6 @@ hpset = logicalparse("a != g", logicset=hpset)
 hpset = logicalparse("a,g != 'MA'", logicset=hpset); showfeasible(hpset)
 # 30 possible outcomes
 
-# But if you would move onwards, neither is your friend;
 # Third, as you see clearly, all are different size,
 # Neither dwarf nor giant holds death in their insides;
 # c dwarf, f are giant
