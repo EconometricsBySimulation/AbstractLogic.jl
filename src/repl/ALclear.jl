@@ -1,7 +1,7 @@
 
 function ALclear(; verbose = true)
-    (length(replset.commands) || (replset.commands[end]=="#Session Started")) &&
-      (verbose && println("Activeset already clear"); return)
+    ((length(replset.commands)==0) || (replset.commands[end]=="#Session Started")) &&
+      ((verbose && println("Activeset Already Empty")); return)
 
     newhistory = History()
     newreplset = activelogicset(newhistory)
