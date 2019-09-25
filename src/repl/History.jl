@@ -5,7 +5,14 @@ end
 
 function Base.push!(x::History, logicset::LogicalCombo)
   x.logicsets = [x.logicsets[1:x.current]..., logicset]
-  x.current = x.current+1
+  x.current += 1
+  x
+end
+
+
+function Base.pop!(x::History)
+  pop!(x.logicsets)
+  x.current -= 1
   x
 end
 

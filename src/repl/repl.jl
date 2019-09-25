@@ -18,6 +18,7 @@ let
     global sessionhistory = History()
     global setsessionhistory!(x) = sessionhistory = x
     global pushsessionhistory!(x) = push!(sessionhistory, x)
+    global popsessionhistory!() = pop!(sessionhistory)
 
     verboseall = true
 
@@ -25,7 +26,7 @@ let
     global replthrow(x) = (println(x) ; replerror = true)
     global returnreplerror() = replerror
 
-    global preserver = nothing
+    global preserver = missing
     global setpreserver!(x) = preserver = x
 
     global function abstractlogic(replinput; returnactive = false, verbose = true)
@@ -63,7 +64,6 @@ let
         elseif occursin(r"^dash(board)?$", userinput)     dashboard = !dashboard
         elseif userinput ∈ ["history", "h"]               Alhistory()
         elseif userinput ∈ ["History", "H"]               Alhistory(sessionprint=true)
-        elseif userinput ∈ ["logicset","ls"]              itemprint(logicset)
         elseif userinput ∈ ["clearall", "Clear"]          ALClear(verbose = verbose)
         elseif occursin(r"^clear[ ]*$", userinput)        ALclear(verbose = verbose)
         elseif occursin(r"^range", userinput)             ALrange(userinput)
