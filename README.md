@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl.svg?branch=master)](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl)
+
 # AbstractLogic.jl
 An Abstract Reasoning Logic Interface for Julia.
 
