@@ -46,7 +46,6 @@ abstractlogic> any x = y
 ```
 Is equivalent to `julia> checkfeasible("x = y", replset, countany=true)`.
 
-
 ## Search
 
 ## Dependence/Independence
