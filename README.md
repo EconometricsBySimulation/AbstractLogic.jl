@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl.svg?branch=master)](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl)
+[![Coverage Status](https://coveralls.io/repos/github/EconometricsBySimulation/AbstractLogic.jl/badge.svg?branch=master)](https://coveralls.io/github/EconometricsBySimulation/AbstractLogic.jl?branch=master)
 
 # AbstractLogic.jl
 An Abstract Reasoning Logic Interface for Julia.
