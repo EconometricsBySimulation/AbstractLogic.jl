@@ -52,7 +52,8 @@ makedocs(
             "Operators" => "man/operators.md",
             "Super Operators" => "man/superoperators.md",
             "Meta Operators" => "man/metaoperators.md",
-            "Wildcards" => "man/wildcards.md"
+            "Wildcards" => "man/wildcards.md",
+            "Queries" => "man/queries.md"
         ]
         ,
         # "API" => Any[

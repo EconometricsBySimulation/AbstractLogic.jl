@@ -17,6 +17,7 @@ using Markdown, StatsBase, Crayons, ReplMaker
 export abstractlogic,
        activehistory,
        checkfeasible,
+       dependentof,
        LogicalCombo,
        logicalparse,
        search,
@@ -32,7 +33,7 @@ export abstractlogic,
        activehistory,
        replset,
        sessionhistory,
-
+       setcompare,
        showlogichistory,
        showcommandhistory,
        showuserinput,
@@ -59,6 +60,8 @@ include("main/usefulfunctions.jl")
 
 include("main/definelogicalset.jl")
 
+include("main/dependenton.jl")
+
 include("main/operatoreval.jl")
 
 include("main/superoperator.jl")
@@ -72,6 +75,8 @@ include("main/search.jl")
 include("main/checkfeasible.jl")
 
 include("main/showfeasible.jl")
+
+include("main/setcompare.jl")
 
 include("main/help.jl")
 

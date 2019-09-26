@@ -72,7 +72,7 @@ function search(command::String, logicset::LogicalCombo; verbose=true)
 
     for i in 1:size(logicset, 2)
       select = colcheck[1][:, colcheck[2] .== logicset.keys[i]]
-      (size(select,2) == 0) && push!(colcount,missing)
+      (size(select,2) == 0) && push!(colcount, missing)
       (size(select,2) > 0 ) && push!(colcount, [all(select[j,:]) for j in 1:size(select,1)] |> sum)
     end
 
