@@ -1,0 +1,27 @@
+        - 
+        - function ALexport(x; verbose = true)
+        3    y = replace(x, r"^export( as){0,1} " => "")
+        1    Core.eval(Main, Meta.parse("$y = replset"))
+        1    verbose && printmarkdown("`julia>` $y = `replset`")
+        1    verbose && println()
+        - end
+        - 
+        - function ALimport(userinput; verbose = true)
+        - 
+        3     imports = Symbol(strip(replace(userinput, r"^import "=>"")))
+        - 
+        9     !(imports ∈ names(Main)) && (println("$imports not found!"); return)
+        - 
+        1     imported = getfield(Main, imports)
+        1     !isa(imported, LogicalCombo) && (println("$imports not a LogicalCombo!"); return)
+        - 
+        1     setreplset!(imported)
+        - 
+        1     setactivehistory!(History())
+        1     pushactivehistory!(replset)
+        - 
+        1     pushsessionhistory!(imported)
+        - 
+        1     verbose && println("Importing $imported - " * reportfeasible())
+        - end
+        - 

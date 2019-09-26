@@ -1,0 +1,21 @@
+        - 
+        - 
+        - function ALparse(userinput, logicset; verbose = true)
+       30     if (nfeasible(logicset)==0) && !occursin(r"∈", userinput)
+        3       replthrow("You are working with an empty set! Try inputing: a,b,c in 1:3")
+        3       return
+        -     end
+        - 
+       12     try
+       12       logicset = logicalparse(userinput, logicset = logicset, verbose = verbose)
+        -     catch ex
+        0       replthrow("\ncommand Failed! $ex")
+        0       return
+        -     end
+        - 
+       12     push!(activehistory, logicset)
+       12     update!(sessionhistory, logicset)
+       12     setreplset!(logicset)
+        - 
+        - end
+        - 

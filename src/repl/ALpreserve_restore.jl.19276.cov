@@ -1,0 +1,21 @@
+        - 
+        - function ALpreserve(; verbose = true)
+        2     setpreserver!(activehistory)
+        1     verbose && println("Preserving State")
+        - end
+        - 
+        - function ALrestore(; verbose = true)
+        3     (preserver === missing) && (println("Nothing to restore"); return)
+        - 
+        2     ((length(replset.commands)==0) || (replset.commands[end]=="#Session Started"))
+        1         popsessionhistory!()
+        - 
+        1     setreplset!(activelogicset(preserver))
+        - 
+        1     setactivehistory!(preserver)
+        - 
+        1     pushsessionhistory!(replset)
+        - 
+        1     verbose && println("Restoring State - " * reportfeasible())
+        - end
+        - 

@@ -1,0 +1,39 @@
+        - 
+        - """
+        - Prints a list of logical combos, variables defined, number of feasible outcomes,
+        - number of commands, as well as the last command.
+        - """
+        - function discover(x::LogicalCombo)
+        4    nameset = names(Main)
+        - 
+        2    logicalcombonames = String[]
+        2    variables         = String[]
+        2    nfeasiblelist     = Int16[]
+        2    ncommands         = Int16[]
+        2    lastcommand       = String[]
+        - 
+        2    for v in nameset
+        -      # global logicalcombonames, variables, nfeasible, ncommands
+       18      x = getfield(Main, v)
+       18      if isa(x, LogicalCombo)
+        2        push!(logicalcombonames, string(v))
+        2        push!(variables, join(keys(x),", "))
+        2        push!(nfeasiblelist, nfeasible(x))
+        2        push!(ncommands, length(x.commands))
+        4        (length(x.commands) > 0 ? push!(lastcommand, last(x.commands)) : push!(lastcommand, ""))
+        -      end
+        -    end
+        - 
+        2    (length(logicalcombonames)==0) && (println("No LogicalCombos found in Main"); return)
+        - 
+        -    txtout = "| Name | Variables | #feasible | #commands | Last Command | \n"
+        2    txtout *= "| :---: | :---: | :---: | :---: | :---: | \n"
+        - 
+        4    for i in 1:length(logicalcombonames)
+        2        txtout *= "| $(logicalcombonames[i]) | $(variables[i]) | " *
+        -              "$(nfeasiblelist[i]) | $(ncommands[i]) | $(lastcommand[i]) | \n"
+        -    end
+        - 
+        2    printmarkdown(txtout)
+        - end
+        - 

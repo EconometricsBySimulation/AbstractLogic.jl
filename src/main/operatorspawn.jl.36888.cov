@@ -1,0 +1,154 @@
+        - function operatorspawn(command,
+        -     logicset::LogicalCombo;
+        -     returnlogical=false,
+        -     prefix=">>> ",
+        -     verbose=true,
+        -     printall=false)
+        - 
+       18     logicsetcopy = deepcopy(logicset)
+        - 
+        -     tempcommand = command
+        9     m = eachmatch(r"(\{\{.*?\}\})", tempcommand)
+        9     matches = [replace(x[1], r"\{|\}"=>"") for x in collect(m)] |> unique
+        - 
+        -     # Check if a {{j}}. structure or {{J}}. structure exists
+        9     m_dot = eachmatch(r"(\{\{[jJ]\}\})(\.[a-zA-Z0-9_.])", tempcommand)
+        9     matches_dot = string.([x.captures[2] for x in collect(m_dot)]) |> unique
+        - 
+        - 
+        9     if occursin(r"^[0-9]+,[0-9]+$", matches[end])
+        0         countrange = (x -> x[1]:x[2])(integer.(split(matches[end], ",")))
+        0         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        0         constraintprint = "{{" * matches[end]  * "}}"
+        0         matches = matches[1:(end-1)]
+        9     elseif occursin(r"^[0-9]+,$", matches[end])
+        0         countrange = integer(matches[end][1:(end-1)]):size(logicset,2)^2
+        0         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        0         constraintprint = "{{" * replace(matches[end], r",$"=>",∞") * "}}"
+        0         matches = matches[1:(end-1)]
+        9     elseif occursin(r"^,[0-9]+$", matches[end])
+        0         countrange = 0:integer(matches[end][2:end])
+        0         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        0         constraintprint = "{{" *  replace(matches[end], r"^,"=>"0,")  * "}}"
+        0         matches = matches[1:(end-1)]
+        9     elseif occursin(r"^[0-9]+$", matches[end])
+        0         countrange = (x -> x[1]:x[1])(integer(matches[end]))
+        0         tempcommand = replace(tempcommand, "{{$(matches[end])}}"=>"") |> strip
+        0         constraintprint = "{{" *  matches[end]  * "}}"
+        0         matches = matches[1:(end-1)]
+        -     else
+        9         countrange = missing
+        -         constraintprint = ""
+        -     end
+        - 
+        9     ijJ = map(x -> x[1], eachmatch(r"(?:\b)(j|J|i)(?:\b)", join(matches, " "))) |>
+        -               unique .|> string
+        - 
+        9     mykeys   = keys(logicset)
+        -     # Reduce the keyset if `j` or `J` are used
+        -     # Remove variables that have attributes
+        9     (length(ijJ)>0) && (ijJ[1] == "J") && (mykeys = [v for v in mykeys if !occursin(".", string(v))])
+        -     # Remove attributes but keep variable names
+        9     (length(ijJ)>0) && (ijJ[1] == "j") && (mykeys = unique([Symbol(replace(v, r"\..*$"=>"")) for v in string.(mykeys)]))
+        - 
+        9     rangematches = matches[occursin.(r">|<|!.+$" , matches)]
+        9     imatches = matches[.!occursin.(r">|<|!.+$" , matches)]
+        9     imatches = [replace(v , "!"=>"") for v in imatches]
+        - 
+        9    function firstmatch(x::String, y::Array{String})
+        -      for i in 1:length(y)
+        -          (x == y[i]) && return i
+        -      end
+        -    end
+        - 
+        9    rangematches0 = copy(rangematches)
+        - 
+       12     for v in 1:length(rangematches)
+        3       m = eachmatch(r"(:[a-zA-Z][a-zA-Z0-9._]*)", rangematches[v])
+        6       for vv in collect(m)
+        0         rangematches[v] =
+        -         replace(rangematches[v], string(vv[1]) => firstmatch(string(vv[1])[2:end], string.(mykeys)))
+        -       end
+        -     end
+        - 
+        9     (length(rangematches)>3) && throw("Only three !i, >i, >=i, <=i, <i wildcard allowed with i (or j/J)")
+        9     (length(ijJ)>1)     && throw("Only one type i or j or J wildcard allowed")
+        9     (length(matches)>6) && throw("No more than 6 wildcard values allowed")
+        - 
+        9     mydomain = 1:length(mykeys)
+        - 
+        9     collection = []
+        - 
+        9     txtoutarray = String[]
+        - 
+        9     iset = Symbol[]
+        - 
+        9     for i in mydomain, j in mydomain, k in mydomain, l in mydomain
+      149       (length(imatches) == 0) && (i>1) && continue
+      149       (length(rangematches) < 1 ) && (j>1) && continue
+      125       (length(rangematches) < 2 ) && (k>1) && continue
+       51       (length(rangematches) < 3 ) && (l>1) && continue
+        - 
+       46       txtcmd = tempcommand |> x -> replace(x, "!}}"=>"}}")
+        - 
+       23         for v in imatches
+       46           txtcmd = subout(txtcmd, i, v, mykeys)
+        -         end
+        - 
+       23         if length(rangematches)  >= 1
+       14             splitthenskipcheck(rangematches[1], i, j) && continue
+        4             txtcmd = replace(txtcmd, "{{" * rangematches0[1] * "}}" => String(mykeys[j]))
+        -         end
+       13         if length(rangematches)  >= 2
+        0             splitthenskipcheck(rangematches[2], i, k) && continue
+        0             txtcmd = replace(txtcmd, "{{" * rangematches0[2] * "}}" => String(mykeys[k]))
+        -         end
+       13         if length(rangematches)  >= 3
+        0             splitthenskipcheck(rangematches[3], i, l) && continue
+        0             txtcmd = replace(txtcmd, "{{" * rangematches0[3] * "}}" => String(mykeys[l]))
+        -         end
+        - 
+       13         occursin("~~OUTOFBOUNDS~~", txtcmd) & !occursin("!}}", tempcommand) && continue
+        - 
+       13         if occursin("~~OUTOFBOUNDS~~", txtcmd) && occursin("!}}", tempcommand)
+        0            txtcmd = replace(txtcmd, "~~OUTOFBOUNDS~~"=> "999" )
+        -            # push!(collection, fill(false, length(logicset[:])))
+        -         end
+        -         # verbose &&  println(prefix * "$txtcmd")
+        - 
+       13         ℧∇ = logicset[:]
+        - 
+       13         try
+       13            verbose && push!(txtoutarray, "`$prefix` $txtcmd")
+       13            ℧∇ = superoperator(txtcmd, logicset, verbose=verbose)[:]
+        -            # verbose && (txtoutarray[end] *= " ✔")
+        -         catch
+        4            verbose && (txtoutarray[end] *= " X")
+        -         end
+        - 
+       13        push!(collection, ℧∇)
+       13        (length(matches_dot)==0) && push!(iset, mykeys[i])
+      162        (length(matches_dot)>0)  && push!(iset, Symbol(string(mykeys[i]) * matches_dot[1]))
+        -     end
+        - 
+        9     !printall && (length(txtoutarray)>4) &&
+        -       (txtoutarray = [txtoutarray[1:2]..., " ... ", txtoutarray[end .- (1:-1:0)]...])
+        - 
+        9     verbose && push!(txtoutarray, constraintprint)
+        - 
+        9     verbose && (printmarkdown(join(txtoutarray, " ")); println())
+        - 
+        9     collector = hcat(collection...)
+        - 
+        9     returnlogical && return [collector, iset]
+        - 
+        9     if (countrange === missing)
+        9       ℧Δ = logicset[:] .& [all(collector[i,:]) for i in 1:size(collector)[1]]
+        -     else
+        0       ℧Δ = logicset[:] .& [sum(collector[i,:]) ∈ countrange for i in 1:size(collector)[1]]
+        -     end
+        - 
+        8     logicsetcopy[:] = ℧Δ
+        8     logicsetcopy
+        - end
+        - 

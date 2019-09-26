@@ -1,0 +1,26 @@
+        - 
+        - 
+        - 
+        - function itemprint(x)
+        -    for v in x
+        -       vstring = string(v)
+        -       println(vstring[1:min(90,end)] * (length(vstring) > 90 ? "..." : ""))
+        -    end
+        - end
+        - 
+       14 joins(x) = length(x) > 0 ? join(x, " ") : x
+        - 
+        - joinsample = (joins ∘ sample)
+        - 
+        2 lastcommand() = "Last command: \"$(replset.commands[end])\" "
+        - 
+        1 Base.nothing(; verbose = true) = verbose && println(lastcommand() * " - " * reportfeasible())
+        - 
+       69 markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
+        - 
+       20 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
+        - 
+       14 reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
+        - 
+       68 tounicode(x) = replace(x, r"\bin\b"=>"∈")
+        - 

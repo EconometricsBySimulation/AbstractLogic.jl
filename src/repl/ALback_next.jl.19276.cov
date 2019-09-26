@@ -1,0 +1,19 @@
+        - 
+        - function ALback(; verbose=true)
+        6     (activehistory.current == 1) && (replthrow("Nothing to go back to"); return)
+        - 
+        2     back!(activehistory)
+        2     replset = activelogicset(activehistory)
+        2     verbose && println(activecommand(activehistory) * " - " * reportfeasible())
+        - 
+        - end
+        - 
+        - function ALnext(; verbose=true)
+        4     (activehistory.current == length(activehistory.logicsets)) && (replthrow("Nothing to go forward to"); return)
+        - 
+        2     next!(activehistory)
+        2     replset = activelogicset(activehistory)
+        2     verbose &&  println(activecommand(activehistory) * " - " * reportfeasible())
+        - 
+        - end
+        - 

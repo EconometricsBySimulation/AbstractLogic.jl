@@ -1,0 +1,111 @@
+        - using ReplMaker, Markdown
+        - 
+        - let
+        4     keys() = println(join(replset.keys, ", "))
+        - 
+        -     global dashboard = false
+        - 
+        -     global replset = LogicalCombo()
+        - 
+       24     global setreplset!(x) = replset = x
+        - 
+        -     preserver = missing
+        - 
+        -     global activehistory = History()
+       12     global setactivehistory!(x) = activehistory = x
+        2     global pushactivehistory!(x) = push!(activehistory, x)
+        - 
+        -     global sessionhistory = History()
+        3     global setsessionhistory!(x) = sessionhistory = x
+       24     global pushsessionhistory!(x) = push!(sessionhistory, x)
+        2     global popsessionhistory!() = pop!(sessionhistory)
+        - 
+        -     verboseall = true
+        - 
+        -     global replerror = false
+       14     global replthrow(x) = (println(x) ; replerror = true)
+        -     global returnreplerror() = replerror
+        - 
+        -     global preserver = missing
+        1     global setpreserver!(x) = preserver = x
+        - 
+        -     global function abstractlogic(replinput; returnactive = false, verbose = true)
+      210         replerror = false
+       68         userinput = replinput |> strip |> tounicode
+        - 
+       68         verbose = verboseall & verbose & !occursin("[silent]", userinput)
+       68         userinput = replace(userinput, "[silent]"=>"")
+        - 
+       68         occursin("[clear]", userinput) && ALclear(verbose = verbose)
+       68         userinput = replace(userinput, "[clear]"=>"")
+        - 
+       68         if occursin(";", userinput)
+       50           for v in split(userinput, ";");
+        -               abstractlogic(v, verbose=verbose)
+        -           end
+        -           # userinput = "" # replace with return?
+       11           returnactive && return replset
+        9           return
+        -         end
+        - 
+        -         # println("User input {$userinput}")
+        - 
+       58         if strip(userinput) == ""                         nothing(verbose = verbose)
+       56         elseif occursin(r"⊥|dependenton|independentof", userinput)
+        0             dependenton(userinput, replset, verbose = verbose)
+       56         elseif occursin(r"[⊂⊃⊅⊄⋂⋔]|subset|superset|intersect", userinput)
+        0             setcompare(userinput, replset, verbose = verbose)
+       56         elseif occursin("t(", userinput)                  testcall(userinput, verbose = verbose)
+       56         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
+       58         elseif occursin(r"^show$", userinput)             ALshow(verbose = verbose)
+       54         elseif occursin(r"^showall$", userinput)          showall(verbose = verbose)
+      161         elseif userinput ∈ ["back", "b"]                  ALback()
+       53         elseif occursin(r"compare ", userinput)           ALcompare(userinput)
+      152         elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())
+       50         elseif occursin(r"^export( as){0,1} ", userinput) ALexport(userinput)
+      189         elseif userinput ∈ ["next", "n", "f"]             ALnext(verbose = verbose)
+       47         elseif occursin(r"^import ", userinput)           ALimport(userinput)
+       47         elseif occursin(r"^dash(board)?$", userinput)     dashboard = !dashboard
+      127         elseif userinput ∈ ["history", "h"]               Alhistory()
+      119         elseif userinput ∈ ["History", "H"]               Alhistory(sessionprint=true)
+      108         elseif userinput ∈ ["clearall", "Clear"]          ALClear(verbose = verbose)
+       43         elseif occursin(r"^clear[ ]*$", userinput)        ALclear(verbose = verbose)
+       27         elseif occursin(r"^range", userinput)             ALrange(userinput)
+       67         elseif userinput ∈ ["keys", "k"]                  keys()
+       22         elseif userinput == "preserve"                    ALpreserve()
+       21         elseif userinput == "restore"                     ALrestore()
+       21         elseif userinput == "silence"                     verboseall = false
+       19         elseif userinput == "noisy"                       verboseall = true
+        - 
+       15         elseif occursin(r"^(prove|all|check|any|✓)", userinput) ALcheck(userinput)
+       15         elseif occursin(r"^search", userinput)            ALsearch(userinput)
+       15         else                                              ALparse(userinput, replset, verbose = verbose)
+        -         end
+       57         returnactive && return replset
+       56         nothing
+        -     end
+        - 
+        - end
+        - """
+        -     abstractlogic(; returnactive = false)
+        - 
+        - Call the REPL from Julia. Setting returnactive to *true* returns the last active
+        - logicset.
+        - 
+        - ```julia
+        - julia> abstractlogic("a, b, c in 1:3")
+        - a, b, c ∈ 1:3            feasible outcomes 27 ✓          :1 1 3
+        - 
+        - julia> abstractlogic("a == b")
+        - a == b                   feasible outcomes 9 ✓           :3 3 3
+        - 
+        - julia> abstractlogic("a > c")
+        - a > c                    feasible outcomes 3 ✓           :3 3 1
+        - 
+        - julia> abstractlogic("c != 1")
+        - c != 1                   feasible outcomes 1 ✓✓          :3 3 2
+        - 
+        - ```
+        - """
+        - abstractlogic = abstractlogic
+        - 

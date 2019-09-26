@@ -1,0 +1,6 @@
+        - let
+        -     counter = 0
+       32     global clearcounter() = counter = 0
+      201     global counter!() = (counter += 1; (counter > 100) && throw("Excessive Recursion Error"))
+        - end
+        - 

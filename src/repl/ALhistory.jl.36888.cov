@@ -1,0 +1,19 @@
+        - function Alhistory(; sessionprint = false)
+       15    !sessionprint && (myhistory = activehistory)
+        6    sessionprint  && (myhistory = sessionhistory)
+        - 
+        6    currentcommand =
+        -      [priorcommands(myhistory)..., "<< present >>",
+        -      futurecommands(myhistory)...]
+        6    currentfeasible =
+        -      [nfeasible.(priorlogicsets(myhistory))..., "...",
+        -      nfeasible.(futurelogicsets(myhistory))...]
+        - 
+        - 
+        -    txtout = "| Command | # feasible |\n| --- | --- |\n"
+       12    for i in 1:length(currentcommand)
+       40        txtout *= ("| $(markdownescape(currentcommand[i])) | $(currentfeasible[i]) |\n")
+        -    end
+        6    printmarkdown(txtout)
+        - end
+        - 

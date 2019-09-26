@@ -1,0 +1,146 @@
+        - """
+        -     x,y,z ∈ 1,2,3
+        -     x,y,z ∈ 1:3
+        -     x,y,z ∈ apples, oranges, grapes
+        - """
+        - function operatoreval(command, logicset::LogicalCombo; verbose=true)
+       42     counter!()
+       21     logicsetcopy = deepcopy(logicset)
+        - 
+        -     #println("operatoreval($command)")
+       21     (sum(logicset[:]) == 0) && return logicset
+       21     occursin(r"\{\{.*\}\}", command) &&
+        -       return operatorspawn(command, logicset, verbose=verbose)
+        - 
+       21     n = 1:sum(logicset[:])
+        - 
+        -     # convert a = b|c to a |= b,c
+       21     if occursin("|", command) & occursin(r"(\b| )[!|]*=+[!|]*(\b| )", command)
+        0       command = replace(command, "|"=>",")
+        0       command = replace(command, r",*=+"=>"|=")
+        -     end
+        - 
+       35     command = replace(command, r"^(.*?)[ ]*([!&])[ ]*$"=>s"\1 \2 \1")
+       21     command = replace(command, r"^[ ]*([!&])[ ]*(.*?)$"=>s"\2 \1 \2")
+        - 
+       21     m = match(r"^(.*?)(([><=|!^&]{1,3}))(.*?)(\{([0-9]+),?([0-9]+)*\})?$",command)
+       21     left, right, operator, nmin, nmax  = m.captures[[1,4,3,6,7]]
+        - 
+       21     (nmin === nothing)  && (nmax === nothing)  && (nrange = 1:999)
+       21     !(nmin === nothing) && (nmax === nothing)  && (nrange = integer(nmin):integer(nmin))
+       21     !(nmin === nothing) && !(nmax === nothing) && (nrange = integer(nmin):integer(nmax))
+        - 
+       42     leftarg  = strip.(split(replace(left, " "=> ""),  r"[,&|!]"))
+       42     rightarg = strip.(split(replace(right, " "=> ""), r"[,&|!]"))
+        - 
+       42     (((length(collect(eachmatch(r"[+-]", left)))>0) &&
+        -       (length(collect(eachmatch(r"[*\\÷]", left)))>0)) ||
+        -     ((length(collect(eachmatch(r"[+-]", right)))>0) &&
+        -       (length(collect(eachmatch(r"[*\\÷]", right)))>0))) && verbose &&
+        -       println(
+        -       Crayons.Box.GREEN_FG("\nWarning: Math operators are evaluated from left to right. 3 + 1 * 2 = 8"))
+        - 
+       21     leftvals  = hcat([grab(L, logicset, command=command) for L in leftarg]...)
+       21     rightvals = hcat([grab(R, logicset, command=command) for R in rightarg]...)
+        - 
+       17     if operator == ""
+        0         throw("No operator found!")
+        - 
+       17     elseif operator == "|"
+        0         lcheck = [any(isodd.(leftvals[i,:])) for i in n]
+        0         rcheck = [any(isodd.(rightvals[i,:])) for i in n]
+        0         ℧Δ = [all(lcheck[i,:]) | all(rcheck[i,:]) for i in n]
+        - 
+       17     elseif operator == "&"
+        0         lcheck = [all(isodd.(leftvals[i,:])) for i in n]
+        0         rcheck = [all(isodd.(rightvals[i,:])) for i in n]
+        0         ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
+        - 
+       17     elseif operator == "^"
+        0         ℧Δ = (isodd.(leftvals[:,1]) .& iseven.(rightvals[:,1])) .|
+        -              (iseven.(leftvals[:,1]) .& isodd.(rightvals[:,1]))
+        - 
+       17     elseif operator == "!"
+        0         lcheck = [all(iseven.(leftvals[i,:])) for i in n]
+        0         rcheck = [all(iseven.(rightvals[i,:])) for i in n]
+        0         ℧Δ = [all(lcheck[i,:]) & all(rcheck[i,:]) for i in n]
+        - 
+       17     elseif operator == "^="
+        0          lcheck = [sum(leftvals[i,j]  .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0          rcheck = [sum(rightvals[i,j] .== leftvals[i,:])  for i in n, j in 1:size(rightvals)[2]]
+        0          ℧Δ = [sum(lcheck[i,:]) + sum(rcheck[i,:]) == 2 for i in n]
+        - 
+       17     elseif operator  ∈ ["==","="]
+        3         lcheck = [all(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        3         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+       14     elseif operator == "!="
+       14         lcheck = [all(leftvals[i,j] .!= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+       14         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator ∈ ["|=", "=|"]
+        0         lcheck = [any(leftvals[i,j] .== rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [sum(lcheck[i,:]) ∈ nrange for i in n]
+        - 
+        0     elseif operator ∈ ["|!=", "|!", "!|", "!|=", "=|!", "|=!"]
+        0         lcheck = [any(leftvals[i,j] .!= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [sum(lcheck[i,:]) ∈ nrange for i in n]
+        - 
+        0     elseif operator == "<="
+        0         lcheck = [all(leftvals[i,j] .<= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator == "<"
+        0         lcheck = [all(leftvals[i,j] .< rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator == "<<"
+        0         lcheck = [all(leftvals[i,j] .< rightvals[i,:].-1) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator == ">="
+        0         lcheck = [all(leftvals[i,j] .>= rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator == ">"
+        0         lcheck = [all(leftvals[i,j] .> rightvals[i,:]) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        - 
+        0     elseif operator == ">>"
+        0         lcheck = [all(leftvals[i,j] .> rightvals[i,:].+1) for i in n, j in 1:size(leftvals)[2]]
+        0         ℧Δ = [all(lcheck[i,:]) for i in n]
+        -     end
+        - 
+       17     logicsetcopy.logical[logicsetcopy[:]] = ℧Δ
+        - 
+       17     logicsetcopy
+        - end
+        - 
+        - function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
+        - 
+       98   (argument[1:1]=="'") && return fill(replace(argument, "'"=>""), length(logicset[:]))
+        - 
+        -   # matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
+        -   # matcher = r"^(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))\s*([+\-*/÷])*\s*(.*?)$"
+        -   matcher = r"^(.*?)\s*([+\-*/÷]*)\s*(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))$"
+        - 
+       49   m = match(matcher, argument)
+       98   (m==nothing) && throw("Argument $argument could not be parsed in $command")
+        - 
+       98   v1, o1, v2, n2 = m.captures
+        - 
+       49   !(v2 === nothing) && (right  = logicset[:,Symbol(v2),true])
+       45   !(n2 === nothing) && (right  = fill(integer(n2), nfeasible(logicset)))
+        - 
+       45   (length(o1)>1) && throw("Math Operators only accepts singletons (+-÷*\\) and no negative multiplication (a*-b)!")
+       45   (o1 == "")   && return right
+        - 
+        0   !(v1 === nothing) && (left = grab(v1, logicset))
+        - 
+        0   (o1 == "+") && return left .+ right
+        0   (o1 == "-") && return left .- right
+        0   (o1 == "/") && return left ./ right
+        0   (o1 == "÷") && return left .÷ right
+        0   (o1 == "*") && return left .* right
+        - end
+        - 

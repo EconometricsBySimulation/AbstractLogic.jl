@@ -1,0 +1,61 @@
+        - mutable struct History
+       16     logicsets::Array
+        -     current::Integer
+        - end
+        - 
+        - function Base.push!(x::History, logicset::LogicalCombo)
+       50   x.logicsets = [x.logicsets[1:x.current]..., logicset]
+       25   x.current += 1
+       25   x
+        - end
+        - 
+        - 
+        - function Base.pop!(x::History)
+        2   pop!(x.logicsets)
+        1   x.current -= 1
+        1   x
+        - end
+        - 
+       24 update!(x::History, logicset::LogicalCombo) = x.logicsets[x.current] = logicset
+        - 
+       38 activelogicset(x::History) = x.logicsets[x.current]
+       24 priorlogicsets(x::History) = x.logicsets[1:x.current]
+       24 futurelogicsets(x::History) = x.logicsets[(x.current+1):end]
+        - 
+        4 back!(x::History) = x.current = (x.current > 0 ? x.current - 1 : 0)
+        4 next!(x::History) = x.current = (x.current < length(x.logicsets) ? x.current + 1 : x.current)
+        - 
+        8 activecommand(x::History)  = activelogicset(x).commands[end]
+       46 priorcommands(x::History)  = priorlogicsets(x) .|> z -> z.commands[end]
+        - 
+        - function futurecommands(x::History)
+       12   y = futurelogicsets(x)
+        6   (length(y) == 0) && return String[]
+        0   y .|> z -> z.commands[end]
+        - end
+        - 
+       32 History() = History([logicalparse("#Session Started", verbose = false)], 1)
+        - 
+        - # active = History()
+        - # priorcommands(active)
+        - # futurecommands(active)
+        - #
+        - # push!(active, logicalparse("x in 1:4", activelogicset(active) ) )
+        - # push!(active, logicalparse("y in 1:4", activelogicset(active) ) )
+        - # push!(active, logicalparse("z in 1:4", activelogicset(active) ) )
+        - #
+        - # activelogicset(active)
+        - # priorlogicsets(active)
+        - #
+        - # activecommand(active)
+        - # priorcommands(active)
+        - #
+        - # back!(active)
+        - # back!(active)
+        - # futurecommands(active)
+        - # priorcommands(active)
+        - #
+        - # next!(active)
+        - # push!(active, logicalparse("q in 1:4", activelogicset(active) ) )
+        - # priorcommands(active)
+        - 

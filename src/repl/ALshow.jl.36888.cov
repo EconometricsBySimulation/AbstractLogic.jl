@@ -1,0 +1,26 @@
+        - function ALshow(; n =10, verbose=true)
+        4     nrow = nfeasible(replset)
+        - 
+        2     (nrow == 0) && return replthrow("Nothing to Show - [Empty Set]")
+        - 
+        2     printset = unique([(1:min(n÷2,nrow))..., 0, (max(nrow-(n÷2 -1), 1):nrow)...])
+        1     (nrow<=n) && (printset = 1:nrow)
+        - 
+        1     txtout = ""
+        1     (nrow > n) && (txtout *= "*Showing $n of $nrow rows*\n\n")
+        - 
+        1     txtout *= "| " * join(replset[0,:], " | ") * " | \n"
+        1     txtout *= "| " * join(fill(":---:", size(replset,2) ), " | ") * " | \n"
+        - 
+        2     for v in printset
+        8       (v != 0) &&
+        -         (txtout *= "| " * join(replset[v,:,:], " | ")*" |\n")
+       15       (v == 0) &&
+        -         (txtout *= "| " * (join(fill("⋮",  size(replset, 2)), " | "))*"|\n")
+        -     end
+        - 
+        1     verbose && printmarkdown(txtout)
+        - end
+        - 
+        - showall() = ALshow(n = nfeasible(replset))
+        - 

@@ -1,0 +1,38 @@
+        - """
+        -     metaoperator
+        - 
+        - Top level operator.
+        - **jula> help("Metaoperator")
+        - """
+        - function metaoperator(command, logicset::LogicalCombo; verbose = true)
+        6     counter!()
+        - 
+        3     logicsetcopy = deepcopy(logicset)
+        - 
+        -     metaset = "XOR|IFF|IF|THEN|AND|OR"
+        - 
+        3     (sum(logicset[:]) == 0) && return logicset
+        3     !occursin(Regex("(?:\b| )([><=|!+\\-^&]{4}|$metaset)(?:\b| )"), command) &&
+        -       return superoperator(command, logicset, verbose=verbose)
+        - 
+        0     m = match(Regex("(^.*)(?:\b| )([><=|!+\\-^&]{4}|$metaset)(?:\b| )(.*?\$)"), command)
+        0     left, operator, right = m.captures
+        - 
+        0     ℧left  = metaoperator(left , logicset, verbose=verbose)[:]
+        0     ℧right = metaoperator(right, logicset, verbose=verbose)[:]
+        0     ℧η = logicsetcopy[:]
+        - 
+        0     (operator ∈ ["&&&&", "AND"]) && (℧η = logicset[:] .& (℧left .& ℧right))
+        0     (operator ∈ ["====", "IFF"]) && (℧η = logicset[:] .& (℧left .== ℧right))
+        0     (operator ∈ ["===>", "THEN"]) && (℧η[℧left] = logicset[:][℧left]  .& ℧right[℧left])
+        0     (operator ∈ ["!==>"]) && (℧η[.!℧left] = logicset[:][.!℧left]  .& ℧right[.!℧left])
+        0     (operator ∈ ["<===", "IF"]) && (℧η[℧right] = logicset[:][℧right] .& ℧left[℧right])
+        0     (operator ∈ ["||||", "OR"]) && (℧η = logicset[:] .& (℧left .| ℧right))
+        - 
+        0     (operator ∈ ["^^^^", "XOR", "!==="]) &&
+        -       (℧η = logicset[:] .& ((℧left .& .!℧right) .| (.!℧left .& ℧right)))
+        - 
+        0     logicsetcopy[:] = ℧η
+        0     logicsetcopy
+        - end
+        - 

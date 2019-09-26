@@ -1,0 +1,19 @@
+        - function ALcompare(x; verbose=true)
+        - 
+        3     y = Symbol(strip(replace(x, r"^compare "=>"")))
+        - 
+       11     !(y ∈ names(Main)) && (replthrow("$y not found!"); return)
+        - 
+        0     z = getfield(Main, y)
+        - 
+        0     (replset[:] == z[:]) &&
+        0       (println("replset and $y have the same feasible values. replset[:] == $y[:]"); return)
+        0     (nfeasible(replset) == nfeasible(z)) &&
+        0       (println("replset set and $y have the same number of feasible values. nfeasible(replset) == nfeasible($y)"); return)
+        0     (nfeasible(replset) > nfeasible(z)) &&
+        0       (println("replset set has more feasible values than $y. nfeasible(replset) > nfeasible($y)"); return)
+        0     (nfeasible(replset) < nfeasible(z)) &&
+        0       (println("replset set has less feasible values than $y. nfeasible(replset) < nfeasible($y)"); return)
+        - 
+        - end
+        - 
