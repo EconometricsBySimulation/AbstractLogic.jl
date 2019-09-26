@@ -8,7 +8,7 @@ to 1.0. With 0.0 being no matches and 1.0 being all matches.
 
 ### Arguments
 * `verbose` : controls print
-* `all` : all sets have to be feasible or return 0
+* `countall` : all sets have to be feasible or return 0
 * `countany` : any set can be non-zero to return 1
 
 ### Examples

@@ -17,6 +17,7 @@ using Markdown, StatsBase, Crayons, ReplMaker
 export abstractlogic,
        activehistory,
        checkfeasible,
+       dependentof,
        LogicalCombo,
        logicalparse,
        search,
@@ -32,7 +33,7 @@ export abstractlogic,
        activehistory,
        replset,
        sessionhistory,
-
+       setcompare,
        showlogichistory,
        showcommandhistory,
        showuserinput,
@@ -47,35 +48,39 @@ export abstractlogic,
 ##
 ##############################################################################
 
-include("logicalcombo/LogicalCombo.jl")
+include("main/LogicalCombo.jl")
 
-include("logicalcombo/counter.jl")
+include("main/counter.jl")
 
-include("logicalcombo/logicalparse.jl")
+include("main/logicalparse.jl")
 
-include("logicalcombo/expand.jl")
+include("main/expand.jl")
 
-include("logicalcombo/usefulfunctions.jl")
+include("main/usefulfunctions.jl")
 
-include("logicalcombo/definelogicalset.jl")
+include("main/definelogicalset.jl")
 
-include("logicalcombo/operatoreval.jl")
+include("main/dependenton.jl")
 
-include("logicalcombo/superoperator.jl")
+include("main/operatoreval.jl")
 
-include("logicalcombo/metaoperator.jl")
+include("main/superoperator.jl")
 
-include("logicalcombo/operatorspawn.jl")
+include("main/metaoperator.jl")
 
-include("logicalcombo/search.jl")
+include("main/operatorspawn.jl")
 
-include("logicalcombo/checkfeasible.jl")
+include("main/search.jl")
 
-include("logicalcombo/showfeasible.jl")
+include("main/checkfeasible.jl")
 
-include("logicalcombo/help.jl")
+include("main/showfeasible.jl")
 
-include("logicalcombo/discover.jl")
+include("main/setcompare.jl")
+
+include("main/help.jl")
+
+include("main/discover.jl")
 
 
 ##############################################################################

@@ -1,4 +1,4 @@
-function ALshow(; n =10)
+function ALshow(; n =10, verbose=true)
     nrow = nfeasible(replset)
 
     (nrow == 0) && return replthrow("Nothing to Show - [Empty Set]")
@@ -19,7 +19,7 @@ function ALshow(; n =10)
         (txtout *= "| " * (join(fill("⋮",  size(replset, 2)), " | "))*"|\n")
     end
 
-    printmarkdown(txtout)
+    verbose && printmarkdown(txtout)
 end
 
 showall() = ALshow(n = nfeasible(replset))
