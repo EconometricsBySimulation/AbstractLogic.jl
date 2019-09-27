@@ -1,13 +1,10 @@
 
 function ALrange(userinput; verbose=true)
-  verbose && println(userinput)
-  inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
-  (inputpass == "") && return println(range(replset))
-  occursin(" ", inputpass) &&
-    return replthrow("\n range only takes up to one variable currently!")
-  !(inputpass ∈ replset.keys) &&
-    return replthrow("\n $inputpass not found in replset!")
-  return println(range(replset)[Symbol(inputpass)])
-  return println(range(replset, inputpass))
-  nothing
+    inputpass = string(replace(userinput, r"^(range)[\\:\\-\\ ]*"=>"")) |> strip
+    (inputpass == "") && (inputpass = join(string.(replset.keys),","))
+
+    for v in strip.(split(inputpass, r",| "))
+        !(Symbol(v) ∈ replset.keys) && return replthrow("\n $v not found in replset!")
+        verbose && println(v * " = {" * join(range(replset)[Symbol(v)], ",") * "}")
+    end
 end

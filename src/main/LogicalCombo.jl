@@ -168,7 +168,7 @@ Base.getindex(x::LogicalCombo, ::Colon, ::Colon; bool=false, varnames=false) =
 
 ###############################################################################
 # Set index!
-Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
+# Base.setindex!(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
 
 Base.setindex!(x::LogicalCombo, y::Bool, z::Integer)   = x.logical[z] = y
 Base.setindex!(x::LogicalCombo, y::Bool, z::Union{UnitRange, AbstractArray}) =
