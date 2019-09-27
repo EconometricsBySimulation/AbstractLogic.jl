@@ -13,6 +13,8 @@ using AbstractLogic
 @test nfeasible(LogicalCombo()) == 0
 @test LogicalCombo() |> collect |> size == (1,1)
 
+@test string(LogicalCombo()) == string(LogicalCombo(Symbol[], [], Bool[]))
+
 x = LogicalCombo([:x=>1:2, :y=>1:4])
 @test  x |> nfeasible == 8
 
@@ -21,6 +23,10 @@ x = LogicalCombo([:x=>1:2, :y=>1:4])
 @test x[5,"x"] == x[2,"y"]
 @test x[2,"x"] != x[2,"y"]
 @test x[:,:x] == x[:,"x"]
+@test x[1:2,:] == x[[1,2],:]
+@test x[:,:x,:] == x[:,:x,true]
+@test x[1,:x,true] == 1
+@test x[1:3] = true
 
 @test x[:,:,true] != x[:,:,!true]
 @test x[:,:] |> size == (8,2)
@@ -34,4 +40,5 @@ x[3] = false; @test x[3] == false
 
 @test length(AbstractLogic.sample(LogicalCombo())) == 0
 @test length(AbstractLogic.sample(x)) == 2
+@test length(AbstractLogic.sample(x,3)) == 6
 @test length(AbstractLogic.sample(x,2,false)) == 4
