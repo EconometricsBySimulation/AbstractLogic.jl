@@ -21,5 +21,3 @@ function ALshow(; n =10, verbose=true)
 
     verbose && printmarkdown(txtout)
 end
-
-showall() = ALshow(n = nfeasible(replset))

@@ -1,25 +1,30 @@
 function testcall(userinput; verbose=true)
-    if userinput == "t(1)"
-        abstractlogic("clear")
-        abstractlogic("a,b,c ∈ 1:4")
-        abstractlogic("a|c = 1")
-        abstractlogic("a > b")
-        abstractlogic("b > c")
-        return
-    elseif userinput == "t(hp)"
-        abstractlogic("clear")
-        abstractlogic("a, b, c, d, e, f, g  ∈  NW, MA, MB, PO")
-        abstractlogic("{{i}} == 'NW' {{2}}")
-        abstractlogic("{{i}} == 'MA' {{1}}")
-        abstractlogic("{{i}} == 'MB' {{1}}")
-        abstractlogic("{{i}} == 'PO' {{3}}")
-        abstractlogic("{{i!}} == 'NW' ==> {{i-1}} == 'PO'")
-        abstractlogic("a != g")
-        abstractlogic("a,g != 'MA'")
-        abstractlogic("c,f != 'PO'")
-        abstractlogic("b == f")
-        return
+
+    testname = match(r"t(?:est)?\((.*)\)", userinput).captures[1]
+
+    workingdir = match(r"(^.*?AbstractLogic.jl)", pwd()).captures[1]
+    testfiles = readdir("$workingdir/examples/repl/") .|> x -> replace(x, r".jl$"=>"") |> lowercase
+
+    occursin(r"^[0-9]{1,2}$", testname) && (testname = testfiles[parse(Int64, testname)])
+
+    (testname == "") && return printmarkdown("Tests available: `" * join(testfiles, "`, `") *
+        "`\n \n `abstractlogic> t(testname)`")
+
+    !(testname ∈ testfiles) &&
+      return replthrow("\"$testname\" not found. Tests available: " * join(testfiles, ", "))
+
+    testread = (readlines("$workingdir/examples/repl/$testname.jl") .|> x -> strip(x)) |>
+          x -> x[x .!= ""] |> x -> x[(x .|> y -> y[1]) .!= '#']
+
+    codestart = findall(y -> occursin(r"^Start the repl", y), testread)
+
+    (length(codestart) == 0) && return replthrow("\"Start the repl\" not found!")
+    (length(codestart) > 1 ) && return replthrow("Multiple \"Start the repl\" found!")
+
+    testlines = testread[(codestart[1]+1):end]
+
+    for v in testlines
+        abstractlogic(v)
+        replerror && throw("")
     end
-    replthrow("$userinput - test not found!")
-    return
 end

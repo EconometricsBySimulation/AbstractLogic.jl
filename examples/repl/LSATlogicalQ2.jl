@@ -47,8 +47,6 @@ f.3 = 'Greed'|'Limelight'; f.2,f.1 != 'Greed','Limelight'
 # shown after it on that day.
 s.3 = 'Greed'|'Harvest'; s.1,s.2 != 'Greed','Harvest'
 
-show
-range
 preserve
 
 #6. Which one of the following could be a complete and accurate description of
@@ -90,6 +88,7 @@ any f.1,f.2,f.3 |= 'Greed'
 # (D) A different film is shown first on each day of the festival.
 ## This will be a little trickier. Define .0 as first film
 
+preserve
 t.0, f.0, s.0 ∈ Greed, Harvest, Limelight
 {{j}}.0 == {{j}}.1 if {{j}}.1 != '_'
 {{j}}.1 == '_' &&& {{j}}.2 != '_' ==> {{j}}.0 == {{j}}.2

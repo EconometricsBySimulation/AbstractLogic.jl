@@ -210,8 +210,9 @@ function StatsBase.sample(x::LogicalCombo; n=1, feasible=true)
     return x[:,:,:]
   else
     y = x[sample(1:nfeasible(x, feasible), n, replace=false),:,feasible]
-    return sort(y, dims=1)
-  end
+    (n == 1) && return y
+    (n > 1) && return sort(y, dims=1)
+ end
 end
 
 StatsBase.sample(x::LogicalCombo, n; feasible=true) = sample(x, n=n, feasible=feasible)

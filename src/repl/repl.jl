@@ -27,20 +27,20 @@ let
     global returnreplerror() = replerror
 
     global preserver = missing
-    global setpreserver!(x) = preserver = x
+    global setpreserver!(x) = preserver = deepcopy(x)
 
     global function abstractlogic(replinput; returnactive = false, verbose = true)
         replerror = false
         userinput = replinput |> strip |> tounicode
 
         verbose = verboseall & verbose & !occursin("[silent]", userinput)
-        userinput = replace(userinput, "[silent]"=>"")
+        userinput = replace(userinput, "[silent]"=>"") |> strip |> string
 
         occursin("[clear]", userinput) && ALclear(verbose = verbose)
-        userinput = replace(userinput, "[clear]"=>"")
+        userinput = replace(userinput, "[clear]"=>"") |> strip |> string
 
-        if occursin(";", userinput)
-          for v in split(userinput, ";");
+        if occursin(";;", userinput)
+          for v in split(userinput, ";;");
               abstractlogic(v, verbose=verbose)
           end
           # userinput = "" # replace with return?
@@ -50,15 +50,16 @@ let
 
         # println("User input {$userinput}")
 
-        if strip(userinput) == ""                         nothing(verbose = verbose)
+        if userinput == ""                                nothing(verbose = verbose)
+        elseif (userinput[1] == '#')                      nothing(verbose = false)
         elseif occursin(r"⊥|dependenton|independentof", userinput)
             dependenton(userinput, replset, verbose = verbose)
         elseif occursin(r"[⊂⊃⊅⊄⋂⋔]|subset|superset|intersect", userinput)
             setcompare(userinput, replset, verbose = verbose)
-        elseif occursin("t(", userinput)                  testcall(userinput, verbose = verbose)
+        elseif occursin(r"^t(est)?\(.*\)", userinput)                  testcall(userinput, verbose = verbose)
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)
         elseif occursin(r"^show$", userinput)             ALshow(verbose = verbose)
-        elseif occursin(r"^showall$", userinput)          showall(verbose = verbose)
+        elseif occursin(r"^showall$", userinput)          ALshow(verbose = verbose, n = nfeasible(replset))
         elseif userinput ∈ ["back", "b"]                  ALback()
         elseif occursin(r"compare ", userinput)           ALcompare(userinput)
         elseif userinput ∈ ["discover", "d"]              discover(LogicalCombo())

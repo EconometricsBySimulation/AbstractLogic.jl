@@ -11,6 +11,8 @@ markdownescape(x) = replace(x, "|"=>"\\|") |> (x -> replace(x, "#"=>"\\#"))
 
 printmarkdown(x) = show(stdout, MIME("text/plain"), Markdown.parse(x))
 
-reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t Perceived Outcomes: $(percievedfeasible(replset)) \t:$(joinsample(replset))"
+reportfeasible(logicset::LogicalCombo) = "Feasible Outcomes: $(nfeasible(logicset)) \t $(join(sample(logicset),", "))"
+
+reportfeasible() = "Feasible Outcomes: $(nfeasible(replset)) \t $(join(sample(replset),", "))"
 
 tounicode(x) = replace(x, r"\bin\b"=>"∈")

@@ -4,9 +4,9 @@ function ALcheck(userinput; verbose=true)
       occursin(r"^(check|✓)[\\:\\-\\ ]+", userinput) &&
         checkfeasible(inputpass, replset, verbose = verbose)
       occursin(r"^(prove|all)[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(inputpass, replset, countall=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(inputpass, replset, countall=true, verbose = verbose)
       occursin(r"^any[\\:\\-\\ ]+", userinput) &&
-        checkfeasible(inputpass, replset, countany=true, verbose = replcmdverbose & replverboseall)
+        checkfeasible(inputpass, replset, countany=true, verbose = verbose)
       # push!(logicset, replset)
   catch er
       replthrow("\nWarning! Check Fail: $er")
