@@ -11,7 +11,7 @@
 julia> using AbstractLogic
 Start the repl in command prompt by typing `=`.
 
-abstractlogic> =G, L, M, N, P, R, S, W ∈ red, not [clear]
+abstractlogic> G, L, M, N, P, R, S, W ∈ red, not [clear]
 
 # 1 If both G and S are reduced, W is also reduced.
 abstractlogic> G, S = 'red' ==> W = 'red'
@@ -81,7 +81,7 @@ abstractlogic> V = U + 1 ||| V = U - 1
 
 # First lets save our state since Question 1 creates an addition constraint
 # which we would like to reverse.
-abstractlogic> preserve
+abstractlogic> export preserver
 
 abstractlogic> V = 1
 
@@ -101,7 +101,7 @@ abstractlogic> all: T = Y + 1
 abstractlogic> all: W = X + 1
 
 # lets restore the previous state (we could also use the back command but that is more likely to lead to errors)
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Question 3
 # If U plays third, what is the latest position in which Y can play?
@@ -121,11 +121,8 @@ abstractlogic> range Y
 # theater arts, wildlife preservation, and youth services—each grant being in
 # one of these areas.
 abstractlogic> q1.m, q1.t, q1.w, q1.y ∈ 0:1 [clear]
-
 abstractlogic> q2.m, q2.t, q2.w, q2.y ∈ 0:1
-
 abstractlogic> q3.m, q3.t, q3.w, q3.y ∈ 0:1
-
 abstractlogic> q4.m, q4.t, q4.w, q4.y ∈ 0:1
 # One or more grants are awarded in each of the four quarters of a calendar year.
 
@@ -159,7 +156,7 @@ abstractlogic> q2.w = 1
 # If a wildlife preservation grant and a youth services grant are awarded in the
 # same quarter of a particular calendar year, then any of the following could be
 # true that year EXCEPT:
-abstractlogic> preserve
+abstractlogic> export preserver
 
 abstractlogic> {{j}}.w = 1 &&& {{j}}.y = 1 {{1,}}
 
@@ -198,7 +195,7 @@ abstractlogic> L! ==> N!
 abstractlogic> K! ==> !Q
 
 # Question 5
-abstractlogic> preserve
+abstractlogic> export preserver
 # If P is not selected to attend the retirement dinner, then exactly how many
 # different groups of four are there each of which would be an acceptable selection?
 abstractlogic> P = 1
@@ -208,7 +205,7 @@ abstractlogic> show
 # three
 # four - we can see from the output that 4 is available
 # five
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Question 6
 # There is only one acceptable group of four that can be selected to attend the
@@ -223,17 +220,14 @@ abstractlogic> check: K == 1 &&& M == 1
 # L and N
 abstractlogic> check: L == 1 &&& N == 1
 check: L == 1 &&& N == 1 ... check: L == 1 &&& N == 1     Feasible Outcomes: 3    Perceived Outcomes: 16 ✓    :1 0 1 1 1 0 0
-possible, 3 out of 7 possible combinations 'true'.
 
 # L and Q
 abstractlogic> check: L == 1 &&& Q == 1
 check: L == 1 &&& Q == 1 ... check: L == 1 &&& Q == 1     Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :0 1 1 0 0 1 1
-possible, 2 out of 7 possible combinations 'true'.
 
 # M and Q
 abstractlogic> check: M == 1 &&& Q == 1
-heck: M == 1 &&& Q == 1 ... check: M == 1 &&& Q == 1     Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓    :0 1 0 1 0 1 1
-possible, 1 out of 7 possible combinations 'true'.
+check: M == 1 &&& Q == 1 ... check: M == 1 &&& Q == 1     Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓    :0 1 0 1 0 1 1
 
 # Explanation for Question 6
 #
@@ -246,25 +240,20 @@ abstractlogic> s, h, j, k, l, m ∈ unique [clear]
 
 # Grocery shopping has to be immediately after hedge trimming.
 abstractlogic> s = h + 1
-s = h + 1        Feasible Outcomes: 120      Perceived Outcomes: 32400 ✓     :2 1 6 4 5 3
 
 # Kitchen cleaning has to be earlier than grocery shopping.
 abstractlogic> k < s
-k < s            Feasible Outcomes: 60   Perceived Outcomes: 13824 ✓     :3 2 5 1 6 4
 
 # Motorbike servicing has to be earlier than laundry.
 abstractlogic> m < l
-m < l            Feasible Outcomes: 30   Perceived Outcomes: 9600 ✓      :5 4 6 1 3 2
 
 # Motorbike servicing has to be either immediately before or immediately after jogging.
 abstractlogic> m = j + 1 ||| m = j - 1
-m = j + 1 ||| m = j - 1      Feasible Outcomes: 12   Perceived Outcomes: 2025 ✓      :5 4 3 1 6 2
 
 # Question 7
 # If laundry is earlier than kitchen cleaning, then hedge trimming must be
 
 abstractlogic> l < k
-l < k            Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :6 5 1 4 3 2
 
 abstractlogic> range h
 # fifth
