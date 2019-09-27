@@ -91,6 +91,8 @@ output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @test (@capture_out abstractlogic("clear;; a,b ∈ 1,2; a=b [silent]")) == ""
 @capture_out(AbstractLogic.parse_to_expr("clear")) == "Clearing Activeset\n"
 
-@test length(@capture_out abstractlogic("t(:)")) > 10000
+# Running examples, skipping 4 as it is very long
+@test length(@capture_out abstractlogic("t(1,3)")) > 10000
+@test length(@capture_out abstractlogic("t(5,10)")) > 10000
 
 @suppress abstractlogic("t(undefinedtest)"); @test replerror
