@@ -27,7 +27,7 @@ let
     global returnreplerror() = replerror
 
     global preserver = missing
-    global setpreserver!(x) = preserver = deepcopy(x)
+    global setpreserver!(x) = preserver = x
 
     global function abstractlogic(replinput; returnactive = false, verbose = true)
         replerror = false
