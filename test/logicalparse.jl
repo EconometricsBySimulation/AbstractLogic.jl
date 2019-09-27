@@ -37,6 +37,10 @@ logicset = @suppress logicalparse("a, b, c in 1:3; a > b")
 
 @test logicset |> showfeasible == logicset[:,:,true]
 
+@test @suppress(logicalparse("a,b,c,d,e in 1:2; {{i}}!={{i+1}}") |> nfeasible) == 2
+@test @suppress(logicalparse("a,b,c,d,e in 1:2; {{i}}!={{i-1}}") |> nfeasible) == 2
+@test @suppress(logicalparse("a,b in 1:2; {{i}}!={{>i}}") |> nfeasible) == 2
+
 @test @capture_out(help()) |> length > 500
 @test @capture_out(help("")) |> length > 500
 @test @capture_out(help("in")) |> length > 250
@@ -45,3 +49,11 @@ logicset = @suppress logicalparse("a, b, c in 1:3; a > b")
 @test @capture_out(help("!==")) |> length > 430
 @test @capture_out(help("!===")) |> length > 440
 @test @capture_out(help("{{i}}")) |> length > 370
+
+@test @suppress(checkfeasible("{{i}}=1", logicalparse("a,b in 1:2")))[1] == .25
+@test @capture_out(logicalparse("a,b in 1:2; error"))[(end-16):end] == "not interpreted!\n"
+
+x = @suppress logicalparse("a,b in 1:2; a==b")
+@test @suppress(AbstractLogic.back(x) |> nfeasible) == 4
+
+@test @suppress nfeasible(logicalparse(["a,b in 1:2","a==b"])) == nfeasible(x)
