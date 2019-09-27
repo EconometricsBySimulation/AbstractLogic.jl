@@ -9,6 +9,9 @@ using AbstractLogic
 @test size(expand(LogicalCombo(), a = 1:3, b= 1:4, c = 1:2), 1) == 3*4*2
 @test size(expand(LogicalCombo(), ["a","b","c"], ["a1","a2","a3"]), 1) == 3^3
 @test size(expand(LogicalCombo(),[:a => 1:3, :b => 1:4, :c => 1:5]), 1) == 3*4*5
+@test size(expand(LogicalCombo(), a = 1:3, b = 1:4, c = 1:5), 1) == 3*4*5
+@test_throws "key :a already defined!" expand(LogicalCombo(a=1), a = 1:3)
+@test size(expand(LogicalCombo()), 1) == 0
 
 @test nfeasible(LogicalCombo()) == 0
 @test LogicalCombo() |> collect |> size == (1,1)

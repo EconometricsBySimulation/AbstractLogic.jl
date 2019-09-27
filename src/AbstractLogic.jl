@@ -17,7 +17,7 @@ using Markdown, StatsBase, Crayons, ReplMaker
 export abstractlogic,
        activehistory,
        checkfeasible,
-       dependentof,
+       dependenton,
        LogicalCombo,
        logicalparse,
        search,
