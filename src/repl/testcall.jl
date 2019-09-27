@@ -2,8 +2,11 @@ function testcall(userinput; verbose=true)
 
     testname = match(r"t(?:est)?\((.*)\)", userinput).captures[1]
 
-    workingdir = match(r"(^.*?AbstractLogic.jl)", pwd()).captures[1]
-    testfiles = readdir("$workingdir/examples/repl/") .|> x -> replace(x, r".jl$"=>"") |> lowercase
+    folders = readdir()
+    ("examples" ∈ folders) && (testfiles = readdir("examples/repl/"))
+    !("examples" ∈ folders) && (testfiles = readdir("../examples/repl/"))
+
+    testfiles = testfiles .|> x -> replace(x, r".jl$"=>"") |> lowercase
 
     occursin(r"^[0-9]{1,2}$", testname) && (testname = testfiles[parse(Int64, testname)])
 
@@ -13,8 +16,10 @@ function testcall(userinput; verbose=true)
     !(testname ∈ testfiles) &&
       return replthrow("\"$testname\" not found. Tests available: " * join(testfiles, ", "))
 
-    testread = (readlines("$workingdir/examples/repl/$testname.jl") .|> x -> strip(x)) |>
-          x -> x[x .!= ""] |> x -> x[(x .|> y -> y[1]) .!= '#']
+    ("examples" ∈ folders) && (testread = readlines("examples/repl/$testname.jl"))
+    !("examples" ∈ folders) && (testread = readlines("../examples/repl/$testname.jl"))
+
+    testread = (testread.|> x -> strip(x)) |> x -> x[x .!= ""] |> x -> x[(x .|> y -> y[1]) .!= '#']
 
     codestart = findall(y -> occursin(r"^Start the repl", y), testread)
 

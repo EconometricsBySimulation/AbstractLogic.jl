@@ -93,4 +93,5 @@ output = (@capture_out abstractlogic("a=b")) |> printcleaner
 
 # println( pwd())
 @test length(@capture_out abstractlogic("t(harrypotter)")) > 1200
+@test length(@capture_out abstractlogic("t(2)")) > 5200
 @suppress abstractlogic("t(undefinedtest)"); @test replerror

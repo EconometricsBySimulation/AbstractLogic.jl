@@ -47,7 +47,7 @@ f.3 = 'Greed'|'Limelight'; f.2,f.1 != 'Greed','Limelight'
 # shown after it on that day.
 s.3 = 'Greed'|'Harvest'; s.1,s.2 != 'Greed','Harvest'
 
-preserve
+export lsat3
 
 #6. Which one of the following could be a complete and accurate description of
 # the order in which the films are shown at the festival?
@@ -88,13 +88,14 @@ any f.1,f.2,f.3 |= 'Greed'
 # (D) A different film is shown first on each day of the festival.
 ## This will be a little trickier. Define .0 as first film
 
-preserve
 t.0, f.0, s.0 ∈ Greed, Harvest, Limelight
 {{j}}.0 == {{j}}.1 if {{j}}.1 != '_'
 {{j}}.1 == '_' &&& {{j}}.2 != '_' ==> {{j}}.0 == {{j}}.2
 {{j}}.2 == '_' ==> {{j}}.0 == {{j}}.3
 check t.0 != f.0, s.0 ; f.0 != s.0
-restore
+
+import lsat3
+
 # possible,  19 out of 64 possible combinations 'true'.
 
 # (E) A different film is shown last on each day of the festival.
@@ -129,7 +130,8 @@ any: {{i}} != '_' {{7}}
 
 # If Greed is shown exactly three times, Harvest is shown exactly twice, and
 # Limelight is shown exactly once, then which one of the following must be true?
-restore
+import lsat3
+
 {{i}} = 'Greed' {{3}}; {{i}} = 'Harvest' {{2}}; {{i}} = 'Limelight' {{1}}
 
 #(A) All three films are shown on Thursday.
@@ -156,7 +158,7 @@ prove: s.1,s.2,s.3 |= 'Harvest'; s.1,s.2,s.3 |= 'Greed'
 
 # If Limelight is shown exactly three times, Harvest is shown exactly twice, and
 # Greed is shown exactly once...
-restore
+import lsat3
 {{i}} = 'Limelight' {{3}}; {{i}} = 'Harvest' {{2}}; {{i}} = 'Greed' {{1}}
 
 # Reintroduce first film
@@ -168,7 +170,7 @@ t.0, f.0, s.0 ∈ Greed, Harvest, Limelight
 
 # then which one of the following is a complete and accurate list of the films
 # that could be the first film shown on Thursday?
-range
+range t.1
 # Greed, Limelight
 
 # (A) Harvest

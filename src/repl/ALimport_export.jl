@@ -22,5 +22,5 @@ function ALimport(userinput; verbose = true)
 
     pushsessionhistory!(imported)
 
-    verbose && println("Importing $imported - " * reportfeasible())
+    verbose && println("Importing $imports - " * reportfeasible(replset))
 end
