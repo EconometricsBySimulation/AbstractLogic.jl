@@ -41,7 +41,7 @@ w7 = 'Trinidad'
 # No destination will be scheduled for consecutive weeks.
 {{i}} != {{i+1}}
 
-preserve
+export lsat4
 
 ######
 # 11. Which one of the following is an acceptable schedule of destinations for
@@ -116,7 +116,8 @@ check w4 = 'Martinique'
 # (E) Freedom makes a voyage to Jamaica in week 6.
 check w6 = 'Jamaica'
 # false, 0 out of 3 possible combinations 'true'.
-restore
+
+import lsat4
 
 ######
 # 14. If Freedom makes a voyage to Guadeloupe in week 1 and a voyage to Jamaica in
@@ -142,7 +143,7 @@ check w6 = 'Guadeloupe'
 # (E) Freedom makes a voyage to Martinique in week 6.
 check w6 = 'Martinique'
 #true, 3 out of 3 possible combinations 'true'.
-restore
+import lsat4
 
 ######
 # 15. If Freedom makes a voyage to Guadeloupe in week 1 and to Trinidad in
@@ -168,7 +169,7 @@ prove w3 = 'Guadeloupe'
 # (E) Freedom makes a voyage to Guadeloupe in week 5
 prove w5 = 'Guadeloupe'
 # false, 0 out of 1 possible combinations 'true'.
-restore
+import lsat4
 
 ######
 # 16. If Freedom makes a voyage to Martinique in week 3, which one of the
@@ -195,7 +196,7 @@ any w4 = 'Trinidad'; w5 = 'Jamaica'
 # (E) Trinidad, Martinique
 any w4 = 'Trinidad'; w5 = 'Martinique'
 # false, 0 out of 8 possible combinations 'true'.
-restore
+import lsat4
 
 ######
 # 17. Which one of the following must be true about Freedom’s schedule of voyages?
