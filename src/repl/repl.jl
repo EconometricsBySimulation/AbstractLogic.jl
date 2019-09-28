@@ -33,6 +33,8 @@ let
         replerror = false
         userinput = replinput |> strip |> tounicode
 
+        userinput =  replace(userinput, r"^abstractlogic>"=>"") |> strip |> string
+
         verbose = verboseall & verbose & !occursin("[silent]", userinput)
         userinput = replace(userinput, "[silent]"=>"") |> strip |> string
 
