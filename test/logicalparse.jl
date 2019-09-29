@@ -57,3 +57,5 @@ x = @suppress logicalparse("a,b in 1:2; a==b")
 @test @suppress(AbstractLogic.back(x) |> nfeasible) == 4
 
 @test @suppress nfeasible(logicalparse(["a,b in 1:2","a==b"])) == nfeasible(x)
+
+@test @suppress(logicalparse("a, b ∈ 0:1; a | b ||| a & b")) |> nfeasible == 3
