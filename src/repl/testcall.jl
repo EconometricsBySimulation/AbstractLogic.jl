@@ -258,6 +258,7 @@ end
 #     testlines = testread[(codestart[1]+1):end]
 #
 #     for v in testlines
+#         println(Crayons.Box.GREEN_FG("\nabstractlogic> " * replace(v, "abstractlogic> "=> "")))
 #         abstractlogic(v)
 #         replerror && throw("")
 #     end

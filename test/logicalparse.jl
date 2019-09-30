@@ -2,6 +2,8 @@ using AbstractLogic
 using Test
 using Suppressor
 
+@test LogicalCombo() |> nfeasible == 0
+
 logicset = @suppress logicalparse("a,b,c,d,e in 1:2")
 @test logicset[1,1] == 1
 @test logicset[4^3,3] == 2
@@ -11,6 +13,21 @@ logicset = @suppress logicalparse("a.1,a.2,a.3,b.1,b.2,b.3 in 1:3 || {{j}}.1 != 
 @test nfeasible(logicset) == 36
 @test @suppress nfeasible(logicalparse("a,b,c in 1:3 || {{i}}!={{>i}}")) == nfeasible(logicalparse("a,b,c in unique"))
 
+logicset = @suppress logicalparse("a,b,c in 1:3 || {{i}}!={{!i}}")
+@test AbstractLogic.operatoreval("a^=b",logicset) |> nfeasible == 0
+@test AbstractLogic.operatoreval("a|=b",logicset) |> nfeasible == 0
+@test AbstractLogic.operatoreval("a!|=b",logicset) |> nfeasible == 6
+@test AbstractLogic.operatoreval("a<=b",logicset) |> nfeasible == 3
+@test AbstractLogic.operatoreval("a<<b",logicset) |> nfeasible == 1
+@test AbstractLogic.operatoreval("a>=b",logicset) |> nfeasible == 3
+@test AbstractLogic.operatoreval("a>>b",logicset) |> nfeasible ==1
+
+@test @suppress logicalparse("{{<3|>3}}=1", logicset) |> nfeasible  == 0
+
+@test @suppress search("{{i+4}}=1", logicset)[1] === missing
+
+@test @suppress logicalparse("a,b ∈ 0:1; a==a === b==b; a == b !=> b != a") |> nfeasible == 4
+
 x = @suppress logicalparse("a,b in 1:5; true &&& true ||| false ==> true <== false ||| true ^^^ false")
 @test nfeasible(x) == 25
 
@@ -19,6 +36,12 @@ x = @suppress logicalparse("a,b in 1:5; true &&&& true |||| false ===> true <===
 
 logicset = @suppress logicalparse("a, b in 1; a != b")
 @test @suppress( search("=1", logicset)) === missing
+@test  @suppress(checkfeasible("a=1", logicalparse("a, b in 1; a != b")) === missing)
+
+@test AbstractLogic.definelogicalset("a ∈ 1") |> nfeasible == 1
+@test AbstractLogic.definelogicalset("a,b,c ∈ 1,2,3 || unique") |> nfeasible == 6
+
+@test expand(LogicalCombo(), [:a => 1:2, :b => 1:3]) |> nfeasible == 6
 
 logicset = @suppress logicalparse("a, b, c in 1:3; a > b")
 @test @suppress !dependenton("a ⊥ b", logicset)

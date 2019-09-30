@@ -219,15 +219,12 @@ abstractlogic> check: K == 1 &&& M == 1
 
 # L and N
 abstractlogic> check: L == 1 &&& N == 1
-check: L == 1 &&& N == 1 ... check: L == 1 &&& N == 1     Feasible Outcomes: 3    Perceived Outcomes: 16 ✓    :1 0 1 1 1 0 0
 
 # L and Q
 abstractlogic> check: L == 1 &&& Q == 1
-check: L == 1 &&& Q == 1 ... check: L == 1 &&& Q == 1     Feasible Outcomes: 2    Perceived Outcomes: 4 ✓     :0 1 1 0 0 1 1
 
 # M and Q
 abstractlogic> check: M == 1 &&& Q == 1
-check: M == 1 &&& Q == 1 ... check: M == 1 &&& Q == 1     Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓    :0 1 0 1 0 1 1
 
 # Explanation for Question 6
 #
@@ -274,41 +271,41 @@ abstractlogic> s = h + 1; k < s; m = j + 1 ||| m = j - 1
 # would have the same effect in
 # determining the order of the student’s activities?
 
-abstractlogic> preserve
+abstractlogic> export preserver
 
 abstractlogic> m < l
 
 abstractlogic> export refset
 
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Laundry has to be one of the last three activities.
-bstractlogic> l >=4
+abstractlogic> l >=4
 
 abstractlogic> compare refset
 
 # Laundry has to be either immediately before or immediately after jogging.
-abstractlogic> restore
+abstractlogic> import preserver
 
 abstractlogic> l = j + 1 ||| l = j - 1
 
 abstractlogic> compare refset
 
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Jogging has to be earlier than laundry.
 abstractlogic> j < l
 
 abstractlogic> compare refset
 
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Laundry has to be earlier than hedge trimming.
 abstractlogic> l < h
 
 abstractlogic> compare refset
 
-abstractlogic> restore
+abstractlogic> import preserver
 
 # Laundry has to be earlier than jogging.
 abstractlogic> l < j
