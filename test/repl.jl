@@ -101,4 +101,4 @@ output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @suppress abstractlogic("t(2)")  ; @test replset |> nfeasible == 6
 @suppress abstractlogic("t(3)")  ; @test replset |> nfeasible == 3
 @suppress abstractlogic("t(4)")  ; @test replset |> nfeasible == 6
-@suppress abstractlogic("t(5)")  ; @test replset |> nfeasible == 12
+# @suppress abstractlogic("t(5)")  ; @test replset |> nfeasible == 12
