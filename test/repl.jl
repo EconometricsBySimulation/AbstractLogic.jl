@@ -92,7 +92,13 @@ output = (@capture_out abstractlogic("a=b")) |> printcleaner
 @capture_out(AbstractLogic.parse_to_expr("clear")) == "Clearing Activeset\n"
 
 # Running examples, skipping 4 as it is very long
-@test length(@capture_out abstractlogic("t(1,3)")) > 1000
-@test length(@capture_out abstractlogic("t(5,10)")) > 1000
+# @test length(@capture_out abstractlogic("t(1,3)")) > 1000
+# @test length(@capture_out abstractlogic("t(5,10)")) > 1000
 
 @suppress abstractlogic("t(undefinedtest)"); @test replerror
+
+@suppress abstractlogic("t(1)")  ; @test replset |> nfeasible == 1
+@suppress abstractlogic("t(2)")  ; @test replset |> nfeasible == 6
+@suppress abstractlogic("t(3)")  ; @test replset |> nfeasible == 3
+@suppress abstractlogic("t(4)")  ; @test replset |> nfeasible == 6
+@suppress abstractlogic("t(5)")  ; @test replset |> nfeasible == 12
