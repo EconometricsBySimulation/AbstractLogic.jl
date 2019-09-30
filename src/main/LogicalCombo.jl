@@ -53,15 +53,15 @@ function LogicalCombo(; kwargs...)
 end
 
 function LogicalCombo(x::Union{AbstractArray{Pair{Symbol, Any}}, Array{Pair{Symbol,UnitRange{Int64}},1}})
-    if length(x) == 0
-        return LogicalCombo(Symbol[],[], Bool[0])
-    else
+    # if length(x) == 0
+    #     return LogicalCombo(Symbol[],[], Bool[0])
+    # else
         mykeys = []; mydomain = []
         for (kw, val) in x;
             push!(mykeys, kw)
             push!(mydomain, val)
         end
-    end
+    # end
     LogicalCombo(mykeys, mydomain, fill(true,*(length.(mydomain)...)))
 end
 
@@ -112,8 +112,8 @@ end
 
 Base.getindex(x::LogicalCombo, ::Colon) =  x.logical
 Base.getindex(x::LogicalCombo, y::Union{Int64,UnitRange}) =  x.logical[y]
-Base.getindex(x::LogicalCombo, y::Union{Array}) =
-  [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
+# Base.getindex(x::LogicalCombo, y::Union{Array}) =
+#   [x[i,j] for i in (1:size(x)[1])[x[:] .& y], j in 1:size(x)[2]]
 
 ###############################################################################
 ## Logical Combo [x,y] two index

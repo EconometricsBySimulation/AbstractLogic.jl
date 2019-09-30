@@ -3,8 +3,8 @@
 integer(x::AbstractString) = parse(Int, strip(x))
 Base.range(x::AbstractString) = range(integer(match(r"^[0-9]+", x).match),
                                stop = integer(match(r"[0-9]+$", x).match))
-logicaloccursin(y::Symbol) = any( [ y ∈ keys(logicset[i]) for i in 1:length(logicset) ] )
-logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
+# logicaloccursin(y::Symbol) = any( [ y ∈ keys(logicset[i]) for i in 1:length(logicset) ] )
+# logicaloccursin(x::LogicalCombo, y::Symbol) = y ∈ keys(x)
 
 """
     logicalparse
