@@ -8,25 +8,23 @@ logicset = @suppress logicalparse("a,b,c,d,e in 1:2")
 @test logicset[1,1] == 1
 @test logicset[4^3,3] == 2
 @test logicset[:,:a] == logicset[:,1]
-@test AbstractLogic.logicaloccursin(logicset[1,1] == 1
-
-logicset[[1,2]]
 
 logicset = @suppress logicalparse("a.1,a.2,a.3,b.1,b.2,b.3 in 1:3 || {{j}}.1 != {{j}}.2, {{j}}.3 &&& {{j}}.2 != {{j}}.3")
 @test nfeasible(logicset) == 36
 @test @suppress nfeasible(logicalparse("a,b,c in 1:3 || {{i}}!={{>i}}")) == nfeasible(logicalparse("a,b,c in unique"))
 
-@test AbstractLogic.operatoreval("a^=b",logicset) |> nfeasible == 16
-@test AbstractLogic.operatoreval("a|=b",logicset) |> nfeasible == 16
-@test AbstractLogic.operatoreval("a!|=b",logicset) |> nfeasible == 16
-@test AbstractLogic.operatoreval("a<=b",logicset) |> nfeasible == 24
-@test AbstractLogic.operatoreval("a<<b",logicset) |> nfeasible == 0
-@test AbstractLogic.operatoreval("a>=b",logicset) |> nfeasible == 24
-@test AbstractLogic.operatoreval("a>>b",logicset) |> nfeasible == 0
+logicset = @suppress logicalparse("a,b,c in 1:3 || {{i}}!={{!i}}")
+@test AbstractLogic.operatoreval("a^=b",logicset) |> nfeasible == 0
+@test AbstractLogic.operatoreval("a|=b",logicset) |> nfeasible == 0
+@test AbstractLogic.operatoreval("a!|=b",logicset) |> nfeasible == 6
+@test AbstractLogic.operatoreval("a<=b",logicset) |> nfeasible == 3
+@test AbstractLogic.operatoreval("a<<b",logicset) |> nfeasible == 1
+@test AbstractLogic.operatoreval("a>=b",logicset) |> nfeasible == 3
+@test AbstractLogic.operatoreval("a>>b",logicset) |> nfeasible ==1
 
-@test @suppress logicalparse("{{<3|>3}}=1", logicset) |> nfeasible  == 2
+@test @suppress logicalparse("{{<3|>3}}=1", logicset) |> nfeasible  == 0
 
-@test @suppress search("{{i+4}}=1", logicset)[1] == .5
+@test @suppress search("{{i+4}}=1", logicset)[1] === missing
 
 @test @suppress logicalparse("a,b ∈ 0:1; a==a === b==b; a == b !=> b != a") |> nfeasible == 4
 
