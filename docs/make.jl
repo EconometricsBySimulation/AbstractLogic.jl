@@ -14,7 +14,7 @@ using Documenter
 
 makedocs(
     # options
-    # modules = [AbstractLogic],
+    modules = [AbstractLogic],
     doctest = false,
     clean = true,
     sitename = "AbstractLogic.jl",
