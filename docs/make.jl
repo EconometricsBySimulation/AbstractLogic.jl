@@ -1,5 +1,5 @@
 
-using Documenter
+using Documenter, AbstractLogic
 # using AbstractLogic
 
 # include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\src\\AbstractLogic.jl")
