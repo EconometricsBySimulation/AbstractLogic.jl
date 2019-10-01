@@ -2,6 +2,10 @@
 """
 Prints a list of logical combos, variables defined, number of feasible outcomes,
 number of commands, as well as the last command.
+
+discover(x::LogicalCombo)
+discover()
+
 """
 function discover(x::LogicalCombo)
    nameset = names(Main)
@@ -36,3 +40,5 @@ function discover(x::LogicalCombo)
 
    printmarkdown(txtout)
 end
+
+discover() = discover(LogicalCombo())

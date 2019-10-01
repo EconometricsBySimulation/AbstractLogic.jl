@@ -1,31 +1,8 @@
 
-using Documenter
-using AbstractLogic
+using Documenter, AbstractLogic
+# using AbstractLogic
 
 # include("C:\\Users\\francis.smart.ctr\\GitDir\\AbstractLogic.jl\\src\\AbstractLogic.jl")
-#
-# import AbstractLogic: abstractlogic,
-#        checkfeasible,
-#        help,
-#        LogicalCombo,
-#        logicalparse,
-#        search,
-#        showfeasible,
-#        discover,
-#        dashboard!,
-#        dashboard,
-#        expand,
-#        nfeasible,
-#        returnreplset,
-#        showlogichistory,
-#        showcommandhistory,
-#        showuserinput,
-#        showsetlocation,
-#        showcmdlocation,
-#        showcommandlist,
-#        abrepl
-
-# print(@doc checkfeasible)
 
 # Installation
 # ] dev https://github.com/EconometricsBySimulation/AbstractLogic.jl
@@ -39,7 +16,7 @@ makedocs(
     # options
     modules = [AbstractLogic],
     doctest = false,
-    clean = false,
+    clean = true,
     sitename = "AbstractLogic.jl",
     format = Documenter.HTML(),
     pages = Any[
@@ -55,7 +32,7 @@ makedocs(
             "Wildcards" => "man/wildcards.md",
             "Queries" => "man/queries.md"
         ]
-        ,
+        # ,
         # "API" => Any[
         #     "Types" => "lib/types.md",
         #     "Functions" => "lib/functions.md",
@@ -69,8 +46,5 @@ makedocs(
 
 deploydocs(
     # options
-    repo = "github.com/EconometricsBySimulation/AbstractLogic.jl.git",
-    target = "build",
-    deps = nothing,
-    make = nothing,
+    repo = "github.com/EconometricsBySimulation/AbstractLogic.jl.git"
 )

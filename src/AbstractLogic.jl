@@ -17,29 +17,23 @@ using Markdown, StatsBase, Crayons, ReplMaker
 export abstractlogic,
        activehistory,
        checkfeasible,
+       discover,
        dependenton,
        LogicalCombo,
        logicalparse,
        search,
        showfeasible,
-       discover,
        dashboard!,
        dashboard,
        expand,
        help,
        nfeasible,
-
+       percievedfeasible,
        replerror,
        activehistory,
        replset,
        sessionhistory,
-       setcompare,
-       showlogichistory,
-       showcommandhistory,
-       showuserinput,
-       showsetlocation,
-       showcmdlocation,
-       showcommandlist
+       setcompare
 
 
 ##############################################################################
@@ -49,6 +43,8 @@ export abstractlogic,
 ##############################################################################
 
 include("main/LogicalCombo.jl")
+
+include("main/feasible.jl")
 
 include("main/counter.jl")
 

@@ -57,6 +57,8 @@ x = @capture_out(abstractlogic("clear;; a ∈ 1:2;; export t2;; clear;; b ∈ 1:
 @suppress abstractlogic("h"); @test !replerror
 @suppress abstractlogic("history"); @test !replerror
 
+@suppress abstractlogic("clear ;; a in 1;; check aa = 1"); @test replerror
+
 printcleaner(x) = replace(x, r"( |\n|–|\"|\t|Feasible|Perceived|Outcomes)"=>"")
 
 @test (@capture_out abstractlogic("H")) == (@capture_out abstractlogic("History"))

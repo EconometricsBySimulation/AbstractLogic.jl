@@ -1,7 +1,7 @@
 
-joins(x) = length(x) > 0 ? join(x, " ") : x
-
-joinsample = (joins ∘ sample)
+# joins(x) = length(x) > 0 ? join(x, " ") : x
+#
+# joinsample = (joins ∘ sample)
 
 lastcommand() = "Last command: \"$(replset.commands[end])\" "
 

@@ -36,7 +36,7 @@ function checkfeasible(command::String,
   rowsin = sum(logicset.logical)
 
   if rowsin == 0
-      println("No outcomes feasible outcomes with set!")
+      println("No outcomes feasible with set!")
       return missing
   end
 

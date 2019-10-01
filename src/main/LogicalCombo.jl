@@ -192,15 +192,6 @@ end
 Base.range(x::LogicalCombo, y::String; feasible=true) =
   Dict(Symbol(y) => x[:, Symbol(y), feasible] |> unique |> sort)
 
-variablerange(x::LogicalCombo; feasible=true) = [unique(x[:,i,feasible]) for i in 1:size(x,2)]
-
-nfeasible(x::LogicalCombo; feasible::Bool=true) =
-  (feasible ? sum(x.logical) : size(x,1) - sum(x.logical))
-
-nfeasible(x::LogicalCombo, feasible::Bool) = nfeasible(x::LogicalCombo; feasible=feasible)
-
-percievedfeasible(x::LogicalCombo) = prod(length.(variablerange(x)))
-
 using StatsBase
 
 function StatsBase.sample(x::LogicalCombo; n=1, feasible=true)
