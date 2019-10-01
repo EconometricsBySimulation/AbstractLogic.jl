@@ -1,6 +1,6 @@
 #
 # Correctness Tests
-#
+# This runtest file configuration borrowed form Dataframes.jl
 
 fatalerrors = length(ARGS) > 0 && ARGS[1] == "-f"
 quiet = length(ARGS) > 0 && ARGS[1] == "-q"
