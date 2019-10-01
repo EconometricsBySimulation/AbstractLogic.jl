@@ -134,3 +134,31 @@ function parse_to_expr(s)
    # end
    nothing
 end
+
+"""
+    replerror
+
+Reports the error value of the most recently run repl command. Is defined as a
+global in the `let block`.
+"""
+replerror = replerror
+
+"""
+    replset
+
+Reports the value of the most recently run repl command. Is defined as a
+global in the `let block`.
+
+#### Example
+```
+abstractlogic> clear;; a, b in 1:2; a>b
+Activeset Already Empty
+
+a, b ∈ 1:2               Feasible Outcomes: 4    Perceived Outcomes: 4 ✓         :2 2
+a>b                      Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓        :2 1
+
+julia> replset |> nfeasible
+1
+```
+"""
+replset = replset

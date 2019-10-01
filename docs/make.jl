@@ -46,9 +46,5 @@ makedocs(
 
 deploydocs(
     # options
-    repo = "github.com/EconometricsBySimulation/AbstractLogic.jl.git",
-    target = "build",
-    julia = "1.1",
-    deps = nothing,
-    make = nothing
+    repo = "github.com/EconometricsBySimulation/AbstractLogic.jl.git"
 )

@@ -28,6 +28,7 @@ export abstractlogic,
        expand,
        help,
        nfeasible,
+       percievedfeasible,
        replerror,
        activehistory,
        replset,
@@ -42,6 +43,8 @@ export abstractlogic,
 ##############################################################################
 
 include("main/LogicalCombo.jl")
+
+include("main/feasible.jl")
 
 include("main/counter.jl")
 
