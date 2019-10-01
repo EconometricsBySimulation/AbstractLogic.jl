@@ -1,9 +1,9 @@
-language: julia
-
-os:
-  - osx
-  - linux
-
+# language: julia
+#
+# os:
+#   - osx
+#   - linux
+#
 # julia:
 #   - 1.1
 #   - 1.2
