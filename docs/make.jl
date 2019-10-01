@@ -32,7 +32,7 @@ makedocs(
             "Wildcards" => "man/wildcards.md",
             "Queries" => "man/queries.md"
         ]
-        ,
+        # ,
         # "API" => Any[
         #     "Types" => "lib/types.md",
         #     "Functions" => "lib/functions.md",
@@ -48,6 +48,7 @@ deploydocs(
     # options
     repo = "github.com/EconometricsBySimulation/AbstractLogic.jl.git",
     target = "build",
+    julia = "1.1"
     deps = nothing,
     make = nothing,
 )
