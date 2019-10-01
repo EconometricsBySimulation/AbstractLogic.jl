@@ -6,7 +6,7 @@ An Abstract Reasoning Logic Interface for Julia.
 
 ## Installation
 
-The AbstractLogic package is available through gitbub and can be installed using the following commands after entering the package REPL by typing `]` in the console.
+The AbstractLogic package can be installed using the following commands after entering the package REPL by typing `]` in the console.
 ```julia
 pkg> add AbstractLogic
 ```
