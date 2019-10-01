@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Functions · AbstractLogic.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>AbstractLogic.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Introduction</a></li><li><span class="toctext">User Guide</span><ul><li><a class="toctext" href="../../man/getting_started/">Getting Started</a></li><li><a class="toctext" href="../../man/command_syntax/">Command Snytax</a></li><li><a class="toctext" href="../../man/repl/">RELP</a></li><li><a class="toctext" href="../../man/generators/">Generators</a></li><li><a class="toctext" href="../../man/operators/">Operators</a></li><li><a class="toctext" href="../../man/superoperators/">Super Operators</a></li><li><a class="toctext" href="../../man/metaoperators/">Meta Operators</a></li><li><a class="toctext" href="../../man/wildcards/">Wildcards</a></li><li><a class="toctext" href="../../man/queries/">Queries</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Functions</a></li></ul><a class="edit-page" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/master/docs/src/lib/functions.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Functions</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Functions-1" href="#Functions-1">Functions</a></h1><ul><li><a href="#AbstractLogic.checkfeasible"><code>AbstractLogic.checkfeasible</code></a></li><li><a href="#AbstractLogic.discover"><code>AbstractLogic.discover</code></a></li><li><a href="#AbstractLogic.logicalparse"><code>AbstractLogic.logicalparse</code></a></li><li><a href="#AbstractLogic.nfeasible"><code>AbstractLogic.nfeasible</code></a></li><li><a href="#AbstractLogic.percievedfeasible"><code>AbstractLogic.percievedfeasible</code></a></li><li><a href="#AbstractLogic.search"><code>AbstractLogic.search</code></a></li><li><a href="#AbstractLogic.showfeasible"><code>AbstractLogic.showfeasible</code></a></li></ul><h2><a class="nav-anchor" id="General-Functions-1" href="#General-Functions-1">General Functions</a></h2><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.checkfeasible" href="#AbstractLogic.checkfeasible"><code>AbstractLogic.checkfeasible</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">checkfeasible(command::String, logicset::LogicalCombo; verbose=true, all=false, countany=false)</code></pre><p>Is called when the user would like to check if a command produces a valid result, possible result, or invalid result. The result is returned as a decimal from 0.0 to 1.0. With 0.0 being no matches and 1.0 being all matches.</p><p><strong>Arguments</strong></p><ul><li><code>verbose</code> : controls print</li><li><code>countall</code> : all sets have to be feasible or return 0</li><li><code>countany</code> : any set can be non-zero to return 1</li></ul><p><strong>Examples</strong></p><pre><code class="language-julia">julia&gt; myset = logicalparse(&quot;a, b, c ∈ red, blue, green&quot;)
+a, b, c ∈ red, blue, green       feasible outcomes 27 ✓          :red blue blue
+
+julia&gt; myset = logicalparse(&quot;a != b,c; b = c ==&gt; a = &#39;blue&#39;&quot;, myset)
+a != b,c                 feasible outcomes 12 ✓          :green blue blue
+b = c ==&gt; a = &#39;blue&#39;     feasible outcomes 8 ✓           :blue green green
+
+julia&gt; checkfeasible(&quot;a = &#39;green&#39; ==&gt; b = &#39;red&#39;&quot;, myset)
+Check: a = &#39;green&#39; ==&gt; b = &#39;red&#39; ... a = &#39;green&#39; ==&gt; b = &#39;red&#39;   feasible outcomes 17 ✓          :blue red green
+possible,  17 out of 21 possible combinations &#39;true&#39;.</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/checkfeasible.jl#L2-L27">source</a></section><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>dependenton</code>. Check Documenter&#39;s build log for details.</p></div></div><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.discover" href="#AbstractLogic.discover"><code>AbstractLogic.discover</code></a> — <span class="docstring-category">Function</span>.</div><div><div><p>Prints a list of logical combos, variables defined, number of feasible outcomes, number of commands, as well as the last command.</p><p>discover(x::LogicalCombo) discover()</p></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/discover.jl#L2-L9">source</a></section><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>help</code>. Check Documenter&#39;s build log for details.</p></div></div><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.logicalparse" href="#AbstractLogic.logicalparse"><code>AbstractLogic.logicalparse</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">logicalparse</code></pre><p>Takes a command and parses it into logical calls that either assigning additional feasible variable ranges or constrain the relationship between variables.</p><pre><code class="language-julia">logicalparse(command::String; logicset::LogicalCombo = LogicalCombo(), verbose=true)
+logicalparse(command::String, logicset::LogicalCombo; ...)
+logicalparse(commands::Array{String,1}, logicset::LogicalCombo; ...)
+logicalparse(commands::Array{String,1}; ...)</code></pre><p><strong>Arguments</strong></p><ul><li><code>verbose</code> : specifies to print to screen or not</li></ul><p><strong>Operators</strong></p><p>There are numerous operators available to be used in the logical parse command.</p><p><strong>Examples</strong></p><pre><code class="language-julia">julia&gt; myset = logicalparse(&quot;a, b, c in 1:3&quot;)
+a,b,c in 1:3             feasible outcomes 27 ✓          :3 3 3
+
+julia&gt; myset = logicalparse(&quot;a == b&quot;, myset)
+a == b                   feasible outcomes 9 ✓           :1 1 2
+
+julia&gt; myset = logicalparse(&quot;a &gt; c&quot;, myset)
+a &gt; c                    feasible outcomes 3 ✓           :3 3 1
+
+julia&gt; myset = logicalparse(&quot;c != 1&quot;, myset)
+c != 1                   feasible outcomes 1 ✓✓          :3 3 2</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/logicalparse.jl#L9-L42">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.nfeasible" href="#AbstractLogic.nfeasible"><code>AbstractLogic.nfeasible</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">nfeasible(x::LogicalCombo; feasible=true)
+
+Returns a count of the number of feasible outcomes in x.</code></pre><ul><li>feasible:</li></ul><p><strong>Example</strong></p><pre><code class="language-none">julia&gt; nfeasible(logicalparse(&quot;a,b in 1:3; a!=b&quot;, verbose = false))
+6
+julia&gt; nfeasible(logicalparse(&quot;a,b in 1:3; a!=b&quot;, verbose = false), feasible=false)
+3</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/feasible.jl#L1-L15">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.percievedfeasible" href="#AbstractLogic.percievedfeasible"><code>AbstractLogic.percievedfeasible</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">percievedfeasible(x::LogicalCombo)
+
+Returns a count of the number of feasible outcomes that could be infered if
+one were just looking at the number of possible values each variable can take.</code></pre><ul><li>feasible:</li></ul><p><strong>Example</strong></p><pre><code class="language-none">julia&gt; percievedfeasible(logicalparse(&quot;a,b in 1:3; a=b&quot;, verbose = false))
+9
+julia&gt; percievedfeasible(logicalparse(&quot;a,b in 1:3; a=1&quot;, verbose = false))
+3</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/feasible.jl#L23-L38">source</a></section><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.search" href="#AbstractLogic.search"><code>AbstractLogic.search</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">search(command::String, logicset::LogicalCombo; verbose=true)</code></pre><p>Searches for a possible match among a LogicalCombo in which the wildcard term is true. Search requires the use of a wildcard. In the event that a wildcard is missing, search will insert a {{i}} to the left of the command.<em>{{i+1}}</em> can be used to search for relationships between the ith column and another column.</p><p><strong>Examples</strong></p><pre><code class="language-julia">julia&gt; myset = logicalparse(&quot;v1, v2, v3 ∈ 1:10&quot;)
+v1, v2, v3 ∈ 1:10        feasible outcomes 1000 ✓        :6 6 10
+
+julia&gt; myset = logicalparse(&quot;{{i}} &gt;&gt; {{i+1}}&quot;, myset)
+{{i}} &gt;&gt; {{i+1}}
+&gt;&gt;&gt; v1 &gt;&gt; v2
+&gt;&gt;&gt; v2 &gt;&gt; v3
+         feasible outcomes 56 ✓          :10 7 3
+
+julia&gt; search(&quot;{{i}} == 4&quot;, myset)
+Checking: v1 == 4
+Checking: v2 == 4
+Checking: v3 == 4
+
+:v1 is a not match with 0 feasible combinations out of 56.
+:v2 is a possible match with 10 feasible combinations out of 56.
+:v3 is a possible match with 6 feasible combinations out of 56.
+
+julia&gt; search(&quot;== 4&quot;, myset, verbose=false) == search(&quot;{{i}} == 4&quot;, myset, verbose=false)
+true
+
+julia&gt; search(&quot;{{i}} &gt; {{!i}}&quot;, myset)
+Checking: v1 &gt; v2
+Checking: v1 &gt; v3
+Checking: v2 &gt; v1
+Checking: v2 &gt; v3
+Checking: v3 &gt; v1
+Checking: v3 &gt; v2
+
+:v1 is a match with 56 feasible combinations out of 56.
+:v2 is a not match with 0 feasible combinations out of 56.
+:v3 is a not match with 0 feasible combinations out of 56.</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/search.jl#L1-L45">source</a></section><div class="admonition warning"><div class="admonition-title">Missing docstring.</div><div class="admonition-text"><p>Missing docstring for <code>setcompare</code>. Check Documenter&#39;s build log for details.</p></div></div><section class="docstring"><div class="docstring-header"><a class="docstring-binding" id="AbstractLogic.showfeasible" href="#AbstractLogic.showfeasible"><code>AbstractLogic.showfeasible</code></a> — <span class="docstring-category">Function</span>.</div><div><div><pre><code class="language-julia">showfeasible</code></pre><p>Collects a matrix of only feasible outcomes given the parameter space and the constraints. Use <code>collect</code> to output a matrix of all possible matches for parameter space.</p><p><strong>Examples</strong></p><pre><code class="language-julia">julia&gt; myset = logicalparse(&quot;a, b, c in 1:3&quot;)
+a,b,c in 1:3             feasible outcomes 27 ✓          :3 3 3
+
+julia&gt; myset = logicalparse(&quot;a == b; c &gt; b&quot;, myset)
+a == b                   feasible outcomes 9 ✓           :1 1 3
+c &gt; b                    feasible outcomes 3 ✓           :2 2 3
+
+julia&gt; showfeasible(myset)
+3×3 Array{Int64,2}:
+ 1  1  2
+ 1  1  3
+ 2  2  3</code></pre></div></div><a class="source-link" target="_blank" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/fff1e78dff3d7f1267a577c083eec9c46b432643/src/main/showfeasible.jl#L1-L23">source</a></section><footer><hr/></footer></article></body></html>

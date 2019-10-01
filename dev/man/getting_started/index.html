@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Getting Started · AbstractLogic.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>AbstractLogic.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Introduction</a></li><li><span class="toctext">User Guide</span><ul><li class="current"><a class="toctext" href>Getting Started</a><ul class="internal"><li><a class="toctext" href="#Installation-1">Installation</a></li><li><a class="toctext" href="#Interacting-with-AbstractLogic-1">Interacting with AbstractLogic</a></li><li><a class="toctext" href="#Julia-AbstractLogic-Functions:-1">Julia AbstractLogic Functions:</a></li><li><a class="toctext" href="#Julia-REPL-1">Julia REPL</a></li></ul></li><li><a class="toctext" href="../command_syntax/">Command Snytax</a></li><li><a class="toctext" href="../repl/">RELP</a></li><li><a class="toctext" href="../generators/">Generators</a></li><li><a class="toctext" href="../operators/">Operators</a></li><li><a class="toctext" href="../superoperators/">Super Operators</a></li><li><a class="toctext" href="../metaoperators/">Meta Operators</a></li><li><a class="toctext" href="../wildcards/">Wildcards</a></li><li><a class="toctext" href="../queries/">Queries</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>User Guide</li><li><a href>Getting Started</a></li></ul><a class="edit-page" href="https://github.com/EconometricsBySimulation/AbstractLogic.jl/blob/master/docs/src/man/getting_started.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Getting Started</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Getting-Started-1" href="#Getting-Started-1">Getting Started</a></h1><h2><a class="nav-anchor" id="Installation-1" href="#Installation-1">Installation</a></h2><p>The <code>AbstractLogic</code> package is available through gitbub and can be installed using the following commands after entering the package REPL by typeing <code>]</code> in the console.</p><pre><code class="language-julia">pkg&gt; add https://github.com/EconometricsBySimulation/AbstractLogic.jl</code></pre><p>Leave the package REPL by hitting <code>&lt;backspace&gt;</code>. Now you can use the <code>AbstractLogic</code> package anytime by typing <code>using AbstractLogic</code> in Julia.</p><h2><a class="nav-anchor" id="Interacting-with-AbstractLogic-1" href="#Interacting-with-AbstractLogic-1">Interacting with AbstractLogic</a></h2><p>There are two basic methods of interacting with the solver: <code>logicalparse</code> and the <code>REPL</code>. <code>logicalparse</code> is generally preferred when programmatically interacting with the solver while <code>REPL</code> is convenient when interacting with the solver less formally.</p><h2><a class="nav-anchor" id="Julia-AbstractLogic-Functions:-1" href="#Julia-AbstractLogic-Functions:-1">Julia AbstractLogic Functions:</a></h2><p>One method is using <code>Julia</code> functions mainly <code>logicalparse</code>, <code>checkfeasible</code>, and <code>search</code>. This method relies primarily on <code>LogicalCombo</code> objects which are generated from and can be passed into <code>logicalparse</code>.</p><h3><a class="nav-anchor" id="logicalparse()-1" href="#logicalparse()-1"><code>logicalparse()</code></a></h3><p>This which evaluates <code>abstractlogic</code> commands to either generate data or constrain the data. The <code>REPL</code> will attempt to match any special <code>REPL</code> commands input into the <code>REPL</code>, if no matches are found the command is passed to <code>logicalparse</code> for evaluation.</p><h3><a class="nav-anchor" id="checkfeasible()-1" href="#checkfeasible()-1"><code>checkfeasible()</code></a></h3><p>Is called when the user would like to check if a command produces a valid result, possible result, or invalid result. The result is returned as a decimal from 0.0 to 1.0. With 0.0 being no matches and 1.0 being all matches.</p><h3><a class="nav-anchor" id="search()-1" href="#search()-1"><code>search()</code></a></h3><p>Searches for a possible match among a <code>LogicalCombo</code> in which the wildcard term is true. Search requires the use of a wildcard. In the event that a wildcard is missing, search will insert a <code>{{i}}</code> to the left of the command. <code>{{i+1}}</code> can be used to search for relationships between the ith column and another column.</p><h3><a class="nav-anchor" id="help()-1" href="#help()-1"><code>help()</code></a></h3><p>Searches the <code>AbstractLogic</code> package for matches.</p><pre><code class="language-julia">help()
+`` not found. Search any of the following:
+
+  REPL Commands: ?, b, back, check, clear, clearall, dash, dashboard, f, h, help, history, k, keys, logicset, ls, n, next, preserve, restore, s, search, show, showall
+
+  Generators: in, ||, ∈
+
+  Operators: !, &amp;, ,, &lt;, &lt;&lt;, &lt;=, =, ==, &gt;, &gt;=, &gt;&gt;, ^, {, |
+
+  Superoperators: !==, &amp;&amp;&amp;, &lt;==, &lt;=&gt;, ===, ==&gt;, ^^^, and, if, if...then, iff, or, then, xor, |||
+
+  Metaoperators: !===, &amp;&amp;&amp;&amp;, &lt;===, &lt;==&gt;, ====, ===&gt;, AND, IF, IF...THEN, IFF, OR, THEN, XOR, ^^^^, ||||
+
+  Wildcards: !i, ,n2, &lt;&lt;i, &lt;i, &gt;&gt;i, &gt;i, N, i, i+n, i+n!, i-n, i-n!, j, n1,, n1,n2, {{!i}}, {{&lt;&lt;i}}, {{&lt;i}}, {{&gt;&gt;i}}, {{&gt;i}}, {{N}}, {{i+n!}}, {{i+n}}, {{i-n!}}, {{i-n}}, {{i}}, {{j}}, {{n1,n2}}</code></pre><h3><a class="nav-anchor" id="Setting-up-a-logical-set-1" href="#Setting-up-a-logical-set-1">Setting up a logical set</a></h3><p>To set up an initial logical set. Pass a text command to logicalparse with the variable names on the left and range of possible values on the left with the ∈ or <code>in</code> operator in between.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;a, b, c ∈ 1, 2, 3&quot;)
+a, b, c ∈ 1, 2, 3        feasible outcomes 27 ✓          :3 1 3</code></pre><p><code>logicalparse</code> will now generate a lookup object of type <code>LogicalCombo</code> which tells <code>AbstractLogic</code> what options are feasible as well as which ones have been excluded. Every time <code>logicalparse</code> runs it prints the number of feasible outcomes, the number of &quot;percieved&quot; outcomes in terms of (product of the # of options) in the set given the current constraints as well as a random single feasible value that the variables can hold.</p><p>While many logical problems do have equivalent value ranges for each variable <code>AbstractLogic</code> has no such constraint. Additional variables can be added to a set in an equivalent as those added upon set initiation.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;d ∈ 4,5&quot;, logicalset)
+d ∈ 4,5                          feasible outcomes 54 ✓          :2 1 1 5</code></pre><p>Variable values need not be of the same type.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;bob, ali ∈ old, young&quot;, logicalset)
+bob, ali ∈ old, young    feasible outcomes 216 ✓         :3 2 3 5 young old</code></pre><h3><a class="nav-anchor" id="Constraining-the-logical-set-1" href="#Constraining-the-logical-set-1">Constraining the logical set</a></h3><p><code>logicalparse</code> is also the command used to set constraints on the logical set. These constraints are defined through use of operators expressing relationships between variables or constants.</p><p>Forcing variable a to take on the same value as variable c we could write.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;a = c&quot;, logicalset)
+a = c                    feasible outcomes 72 ✓          :2 3 2 5 young young</code></pre><p>We can also force variables to take the value of a constant.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;b = 2&quot;, logicalset)
+b = 2                    feasible outcomes 24 ✓          :2 2 2 4 old old</code></pre><p>Though constant strings need be quoted as they would otherwise be attempted to be parsed as variables.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;ali = &#39;old&#39;&quot;, logicalset)
+ali = &#39;old&#39;              feasible outcomes 12 ✓          :3 2 3 4 old old</code></pre><p>Perhaps we would like to force Ali to be a different age than Bob.</p><pre><code class="language-julia">julia&gt; logicalset = logicalparse(&quot;ali != bob&quot;, logicalset)
+ali != bob               feasible outcomes 6 ✓           :2 2 2 4 young old</code></pre><h3><a class="nav-anchor" id="Checking-the-Feasibility-of-a-Statement-1" href="#Checking-the-Feasibility-of-a-Statement-1">Checking the Feasibility of a Statement</a></h3><p>We might often like to check the feasiblility of a claim. Perhaps we would like to ask if Bob is young.</p><pre><code class="language-julia">julia&gt; checkfeasible(&quot;bob == &#39;young&#39;&quot;, logicalset)
+Check: bob == &#39;young&#39; ... bob == &#39;young&#39;                 feasible outcomes 6 ✓           :3 2 3 4 young old
+true, 6 out of 6 possible combinations &#39;true&#39;.
+2-element Array{Any,1}:
+ 1.0
+
+  LogicalCombo(Symbol[:a, :b, :c, :d, :bob, :ali], Array{T,1} where T[[1, 2, 3], [1, 2, 3], [1, 2, 3], [4, 5], [&quot;old&quot;, &quot;young&quot;], [&quot;old&quot;, &quot;young&quot;]], Bool[false, false, false, false, false, false, false, false, false, false  …  false, false, false, false, false, false, false, false, false, false])</code></pre><h3><a class="nav-anchor" id="Search-for-a-Possible-Match-1" href="#Search-for-a-Possible-Match-1">Search for a Possible Match</a></h3><p>We might instead want to ask the question, which variables could take on a value equal to 3.</p><pre><code class="language-julia">julia&gt; search(&quot;== 3 &quot;, logicalset)
+Checking: a == 3
+Checking: b == 3
+Checking: c == 3
+Checking: d == 3
+Checking: bob == 3
+Checking: ali == 3
+
+:a is a possible match with 2 feasible combinations out of 6.
+:b is a not match with 0 feasible combinations out of 6.
+:c is a possible match with 2 feasible combinations out of 6.
+:d is a not match with 0 feasible combinations out of 6.
+:bob is a not match with 0 feasible combinations out of 6.
+:ali is a not match with 0 feasible combinations out of 6.
+6-element Array{Float64,1}:
+ 0.3333333333333333
+ 0.0
+ 0.3333333333333333
+ 0.0
+ 0.0
+ 0.0</code></pre><p>From this we can see that variables a and c are possible matches.</p><h2><a class="nav-anchor" id="Julia-REPL-1" href="#Julia-REPL-1">Julia REPL</a></h2><p>Alternatively you can interact with the logical problem solver through the <code>repl</code> interface. It is initiated by in julia by typing <code>=</code> in <code>julia&gt;</code> repl.</p><pre><code class="language-julia">abstractlogic&gt;</code></pre><h3><a class="nav-anchor" id="Setting-up-a-logical-set-2" href="#Setting-up-a-logical-set-2">Setting up a logical set</a></h3><p>The interface is much cleaner to work with.</p><pre><code class="language-julia">abstractlogic&gt; a, b, c ∈ 1, 2, 3
+a, b, c ∈ 1, 2, 3        feasible outcomes 27 ✓          :1 3 3
+
+abstractlogic&gt; d ∈ 3, 4, 5
+d ∈ 3, 4, 5              feasible outcomes 81 ✓          :2 3 3 4
+
+abstractlogic&gt; e,f in red, green, blue
+e,f ∈ red, green, blue   feasible outcomes 729 ✓         :2 3 3 4 red red</code></pre><h3><a class="nav-anchor" id="Constraining-the-logical-set-2" href="#Constraining-the-logical-set-2">Constraining the logical set</a></h3><p>Writing contraints within the <code>repl</code> is equivalent to that of <code>logicalparse</code>.</p><pre><code class="language-julia">abstractlogic&gt; a = c
+a = c                    feasible outcomes 243 ✓         :3 1 3 3 red blue
+
+abstractlogic&gt; e != f
+e != f                   feasible outcomes 162 ✓         :1 1 1 3 blue green</code></pre><p>We can also force variables to take the value of a constant.</p><pre><code class="language-julia">abstractlogic&gt; f = &#39;blue&#39;
+f = &#39;blue&#39;               feasible outcomes 54 ✓          :2 3 2 4 red blue</code></pre><h3><a class="nav-anchor" id="Checking-the-Feasibility-of-a-Statement-2" href="#Checking-the-Feasibility-of-a-Statement-2">Checking the Feasibility of a Statement</a></h3><p>We might often like to check the feasiblility of a claim. This is done with the check command</p><pre><code class="language-julia">abstractlogic&gt; check a=2
+Check: a=2 ... a=2                       feasible outcomes 18 ✓          :2 1 2 4 green blue
+possible,  18 out of 54 possible combinations &#39;true&#39;.</code></pre><h3><a class="nav-anchor" id="Search-for-a-Possible-Match-2" href="#Search-for-a-Possible-Match-2">Search for a Possible Match</a></h3><p>We might instead want to ask the question, which variables could take on a value equal to 3.</p><pre><code class="language-julia">abstractlogic&gt; search ==3
+
+Checking: a ==3
+Checking: b ==3
+Checking: c ==3
+Checking: d ==3
+Checking: e ==3
+Checking: f ==3
+
+:a is a possible match with 18 feasible combinations out of 54.
+:b is a possible match with 18 feasible combinations out of 54.
+:c is a possible match with 18 feasible combinations out of 54.
+:d is a possible match with 18 feasible combinations out of 54.
+:e is a not match with 0 feasible combinations out of 54.
+:f is a not match with 0 feasible combinations out of 54.</code></pre><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Introduction</span></a><a class="next" href="../command_syntax/"><span class="direction">Next</span><span class="title">Command Snytax</span></a></footer></article></body></html>
