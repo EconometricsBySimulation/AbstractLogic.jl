@@ -17,29 +17,22 @@ using Markdown, StatsBase, Crayons, ReplMaker
 export abstractlogic,
        activehistory,
        checkfeasible,
+       discover,
        dependenton,
        LogicalCombo,
        logicalparse,
        search,
        showfeasible,
-       discover,
        dashboard!,
        dashboard,
        expand,
        help,
        nfeasible,
-
        replerror,
        activehistory,
        replset,
        sessionhistory,
-       setcompare,
-       showlogichistory,
-       showcommandhistory,
-       showuserinput,
-       showsetlocation,
-       showcmdlocation,
-       showcommandlist
+       setcompare
 
 
 ##############################################################################
