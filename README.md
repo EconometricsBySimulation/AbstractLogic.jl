@@ -4,6 +4,9 @@
 # AbstractLogic.jl
 An Abstract Reasoning Logic Interface for Julia.
 
+## Documentation
+[![Documentation-Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://econometricsbysimulation.github.io/AbstractLogic.jl/stable/)
+
 ## Installation
 
 The AbstractLogic package can be installed using the following commands after entering the package REPL by typing `]` in the console.
@@ -12,9 +15,6 @@ pkg> add AbstractLogic
 ```
 
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
-
-## Documentation
-[![Documentation-Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://econometricsbysimulation.github.io/AbstractLogic.jl/stable/)
 
 ## A Simple Example
 
