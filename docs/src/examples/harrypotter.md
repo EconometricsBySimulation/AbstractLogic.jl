@@ -29,7 +29,7 @@ Codes:
 * MB - move back
 * PO - poison
 
-Seven Potions a,b,c,d,e,f,g each have 1 of 4 possible values
+Seven Potions a, b, c, d, e, f, g each have 1 of 4 possible values
 a is left of b which is left of c etc.
 ```
 abstractlogic> a, b, c, d, e, f, g  ∈  NW, MA, MB, PO [clear]
