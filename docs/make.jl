@@ -19,6 +19,7 @@ makedocs(
     clean = true,
     sitename = "AbstractLogic.jl",
     format = Documenter.HTML(),
+    commit = "0.10.4",
     pages = Any[
         "Introduction" => "index.md",
         "User Guide" => Any[
@@ -33,12 +34,16 @@ makedocs(
             "Queries" => "man/queries.md"
         ]
         # ,
-        # "API" => Any[
+         "API" => Any[
         #     "Types" => "lib/types.md",
-        #     "Functions" => "lib/functions.md",
+             "Functions" => "lib/functions.md"
         #     "Indexing" => "lib/indexing.md"
-        # ]
+         ]
+         "Examples" => Any[
+             "Harry Potter" => "examples/harrypotter.md"
+         ]
     ]
+
 )
 
 # Deploy built documentation from Travis.

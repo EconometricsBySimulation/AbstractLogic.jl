@@ -26,6 +26,7 @@ For most non-trivial problems order of operations is going to be very important 
 *Standard operators* are evaluated first with their values returned first to *superoperators* if they exist and then to *metaoperators*.
 
 Lets take a look at a example set, "a, b, c ∈ 1:3". Let's say we wanted to specify that if a is less than b then c must greater than b ("a < b <=> c > b").
+
 ```julia
 julia> logicalparse("a, b, c ∈ 1:3; a < b <=> c > b") |> showfeasible
 a, b, c ∈ 1:3            feasible outcomes 27 ✓          :2 3 1
@@ -37,7 +38,8 @@ a, b, c ∈ 1:3            feasible outcomes 27 ✓          :2 3 1
  3  3  1
  3  3  2
  3  3  3
- ```
+```
+
 From the array above we can see that when a is less than b, c is greater than b and when a is not less than b, c is not greater than b.
 
 The above statement uses a *superoperator* the `<=>` which is identical to `===` and `iff`. A *metaoperator* could functionally do the same as a *superoperator* in this case. But more complex conditional assertions might exist.
@@ -50,6 +52,7 @@ Operators evaluated at the same level are always evaluated from left to right.
 Initializing the repl (`julia> =`).
 The `✓` is shorthand for `abstract logic> check ... [silent]`
 calls silent check same
+
 ```julia
 abstractlogic> a ∈ 1
 a ∈ 1                    Feasible Outcomes: 1    Perceived Outcomes: 1 ✓✓        :1
@@ -64,8 +67,10 @@ abstractlogic> ✓ true &&& false ==> false &&& false
 false
 ```
 
+
 Formulating a problem. Let's say we would like a constraint specifies the only time
 `a` is less than or equal to `b` or `c`, is when `a`, `b`, and `c` are all equal.
+
 ```julia
 abstractlogic> a, b, c ∈ 1:3; a <= b ||| a <= c ==> a = b, c [clear]
 Clear Workspace
