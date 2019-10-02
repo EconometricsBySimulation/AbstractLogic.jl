@@ -14,7 +14,7 @@ pkg> add AbstractLogic
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
 
 ## Documentation
-[Documentation](https://econometricsbysimulation.github.io/AbstractLogic.jl/dev/)
+[![Documentation-Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://econometricsbysimulation.github.io/AbstractLogic.jl/stable/)
 
 ## A Simple Example
 
