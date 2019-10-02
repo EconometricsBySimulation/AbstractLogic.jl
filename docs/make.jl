@@ -33,12 +33,13 @@ makedocs(
             "Wildcards" => "man/wildcards.md",
             "Queries" => "man/queries.md"
         ]
-        # ,
+        ,
          "API" => Any[
         #     "Types" => "lib/types.md",
              "Functions" => "lib/functions.md"
         #     "Indexing" => "lib/indexing.md"
          ]
+         ,
          "Examples" => Any[
              "Harry Potter" => "examples/harrypotter.md"
          ]
