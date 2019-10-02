@@ -278,8 +278,9 @@ a > b <=== b > c                  feasible outcomes 19 ✓          :3 1 1
 #### Example
 `abstractlogic>` a,b,c ∈ 1:3
 a,b,c ∈ 1:3              feasible outcomes 27 ✓          :1 1 3
-`abstractlogic>` a > b <=== b > c
-a > b <=== b > c                  feasible outcomes 19 ✓          :3 1 1
+`abstractlogic>` {{i}} > 1
+{{i}} > 1  >>> a > 1 >>> b > 1 >>> c > 1
+                 Feasible Outcomes: 8    Perceived Outcomes: 8 ✓         :3 3 3
 """ |> funadd(["{{i}}", "i"], "Wildcard")
 
 """
@@ -443,6 +444,51 @@ superoperatorlist = [v[1] for v in catdict if v[2]=="Superoperator"] |> sort
 metaoperatorlist  = [v[1] for v in catdict if v[2]=="Metaoperator"]  |> sort
 wildcardlist      = [v[1] for v in catdict if v[2]=="Wildcard"]      |> sort
 
+"""
+    help(x)
+
+A lookup related to `AbstractLogic` operators, commands, and wildcards.
+
+Example
+```
+julia> help("")
+`` not found. Search any of the following:
+
+REPL Commands: ?, b, back, check, clear, clearall, dash, dashboard, f, h, help, history, k, keys, logicset, ls, n, next, preserve, restore, s, search, show, showall
+
+Generators: in, ||, ∈
+
+Operators: !, &, ,, <, <<, <=, =, ==, >, >=, >>, ^, {, |
+
+Superoperators: !==, &&&, <==, <=>, ===, ==>, ^^^, and, if, if...then, iff, or, then, xor, |||
+
+Metaoperators: !===, &&&&, <===, <==>, ====, ===>, AND, IF, IF...THEN, IFF, OR, THEN, XOR, ^^^^, ||||
+
+Wildcards: !i, ,n2, <<i, <i, >>i, >i, N, i, i+n, i+n!, i-n, i-n!, j, n1,, n1,n2, {{!i}}, {{<<i}}, {{<i}}, {{>>i}}, {{>i}}, {{N}}, {{i+n!}}, {{i+n}}, {{i-n!}}, {{i-n}}, {{i}}, {{j}}, {{n1,n2}}
+
+julia> help("i")
+
+Wildcard: i
+
+variantes: {{i}}, i
+
+•    {{i}} the most basic wildcard reference is {{i}}. It can take any variable name from the set of variables so far defined.
+
+Example
+---------
+
+abstractlogic> a,b,c ∈ 1:3
+
+a,b,c ∈ 1:3 feasible outcomes 27 ✓ :1 1 3
+
+abstractlogic> {{i}} > 1
+
+{{i}} > 1 >>> a > 1 >>> b > 1 >>> c > 1
+
+            Feasible Outcomes: 8    Perceived Outcomes: 8 ✓         :3 3 3
+
+```
+"""
 function help(x::String)
   x = replace(x, r"^(\?|help)"=>"") |> strip
   if (haskey(fundict, x))
