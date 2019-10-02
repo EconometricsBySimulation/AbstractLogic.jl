@@ -19,7 +19,6 @@ makedocs(
     clean = true,
     sitename = "AbstractLogic.jl",
     format = Documenter.HTML(),
-    tag = "v0.10.4",
     pages = Any[
         "Introduction" => "index.md",
         "User Guide" => Any[
