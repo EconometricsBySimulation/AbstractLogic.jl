@@ -41,7 +41,7 @@ makedocs(
          ,
          "Examples" => Any[
              "Harry Potter" => "examples/harrypotter.md",
-             "LSAT 2007" => "examples/LSATAnalyticalReasoning1.md"
+             "LSAT 2007" => "examples/LSATAnalyticalReasoning.md"
          ]
     ]
 

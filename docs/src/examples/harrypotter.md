@@ -1,4 +1,3 @@
-
 # Snape's Riddle - Author JK Rowling
 
 >Danger lies before you, while safety lies behind,
