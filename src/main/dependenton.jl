@@ -12,7 +12,8 @@ distribution on variables on the right of the operator.
 * x !⊥ y: checks if the distribution of potential values of x changes when y changes.
 **Alternatively:** x dependenton y
 
-#### Example - API
+#### Examples - API
+
 ```
 julia> logicset = logicalparse("a, b, c ∈ 1:4; a > b", verbose=false)
 
@@ -33,7 +34,9 @@ julia> dependenton("a !⊥ b", logicset)
 a is dependent on b
 true
 ```
-#### Example - REPL
+
+#### Examples - REPL
+
 ```
 abstractlogic> a, b, c ∈ 1:4; a > b [clear]
 Activeset Already Empty
