@@ -1,6 +1,87 @@
+"""
+    setcompare(command::String, logicset::LogicalCombo; verbose=true)
+
+Provides a mechanism for checking if a set made up of possible values a variable can take is a subset of another set.
+
+#### Operatators
+In the repl this function is called by the use of set operators.
+
+* x ⊂ y: checks if the values x can take are all contained within the set y
+**Alternatively:** x subset y
+
+* x !⊂ y: checks if one or more of the values x can take are not within the set y
+**Alternatively:** x notsubset y
+
+* x ⊃ y: checks if the values y can take are all contained within the set x
+**Alternatively:** x superset y
+
+* x !⊃ y: checks if one or more of the values y can take are not within the set x
+**Alternatively:** x notsuperset y
+
+* x ⋂ y: checks if set x intersects set y, that is if any values of x are in y
+**Alternatively:** x intersect y
+
+* x ⋔ y:  checks if set x is disjoint from set y, that is no values of x are in y
+**Alternatively:** x notintersect y, x !⋂ y, x disjoint y
+
+#### Set Unions and Intersections
+The left and right hand side of the set operator can also be constructed from
+multiple sets joined together with either the `|` (or ,) operator or using the intersetion
+of the set using the `&` operator.
+
+#### Examples - API
+```
+julia> logicset = logicalparse("a, b, c ∈ 1:4; a > b", verbose=false)
+
+julia> setcompare("a ⊂ c", logicset)
+  a   ⊂    c    result
+––––– – ––––––– ––––––
+2,3,4 ⊂ 1,2,3,4  true
+true
+
+julia> setcompare("a !⊃ c", logicset)
+  a   !⊃    c    result
+––––– –– ––––––– ––––––
+2,3,4 !⊃ 1,2,3,4  true
+true
+```
+#### Examples - REPL
+```
+abstractlogic> a, b, c ∈ 1:4
+a, b, c ∈ 1:4            Feasible Outcomes: 64   Perceived Outcomes: 64 ✓        :1 1 4
+
+abstractlogic> a > b
+a > b                    Feasible Outcomes: 24   Perceived Outcomes: 36 ✓        :3 2 2
+
+abstractlogic> a ⊂ c
+  a   ⊂    c    result
+––––– – ––––––– ––––––
+2,3,4 ⊂ 1,2,3,4  true
+
+abstractlogic> a !⊃ c
+  a   !⊃    c    result
+––––– –– ––––––– ––––––
+2,3,4 !⊃ 1,2,3,4  true
+
+abstractlogic> a ⋂ b
+  a   ⋂   b   result
+––––– – ––––– ––––––
+2,3,4 ⋂ 1,2,3  true
+
+abstractlogic> a | b superset c
+ a | b  superset    c    result
+––––––– –––––––– ––––––– ––––––
+2,3,4,1 superset 1,2,3,4  true
+
+abstractlogic> a & b ⊃ c
+a & b ⊃    c    result
+––––– – ––––––– ––––––
+ 2,3  ⊃ 1,2,3,4 false
+```
+"""
 function setcompare(command::String, logicset::LogicalCombo; verbose=true)
 
-    m = match(r"^(.*?)([⊂⊃⊅⊄⋂⋔!]{1,2}|(subset|superset|notsubset|notsuperset|intersect))(.*?)$",command)
+    m = match(r"^(.*?)([⊂⊃⊅⊄⋂⋔!]{1,2}|(notsubset|notsuperset|notintersect|disjoint|subset|superset|intersect))(.*?)$",command)
     left, operator, right  = m.captures[[1,2,4]] .|> strip
 
     ranges = range(logicset)
@@ -38,6 +119,7 @@ function setcompare(command::String, logicset::LogicalCombo; verbose=true)
        txtout *= "| " * join(fill(":---:", 4), " | ") * " | \n"
        txtout *= "| " * join([leftjoin,operator,rightjoin,result], " | ") * " | \n"
        printmarkdown(txtout)
+       println()
    end
 
    return result

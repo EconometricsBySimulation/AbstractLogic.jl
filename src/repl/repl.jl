@@ -56,7 +56,7 @@ let
         elseif (userinput[1] == '#')                      nothing(verbose = false)
         elseif occursin(r"⊥|dependenton|independentof", userinput)
             dependenton(userinput, replset, verbose = verbose)
-        elseif occursin(r"[⊂⊃⊅⊄⋂⋔]|subset|superset|intersect", userinput)
+        elseif occursin(r"[⊂⊃⊅⊄⋂⋔]|subset|superset|intersect|disjoint", userinput)
             setcompare(userinput, replset, verbose = verbose)
         elseif occursin(r"^t(est)?\(.*\)", userinput)                  testcall(userinput, verbose = verbose)
         elseif occursin(r"^(\?|help)", userinput)         help(userinput)

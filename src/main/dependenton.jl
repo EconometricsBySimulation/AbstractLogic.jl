@@ -1,3 +1,61 @@
+"""
+   dependenton(command::String, logicset::LogicalCombo; verbose=true)
+
+Checks whether variables on the left of the infix operator (⊥) depend for their
+distribution on variables on the right of the operator.
+
+#### Operators
+
+* x ⊥ y: checks if the distribution of potential values of x does not change when y changes.
+**Alternatively:** x independentof y
+
+* x !⊥ y: checks if the distribution of potential values of x changes when y changes.
+**Alternatively:** x dependenton y
+
+#### Example - API
+```
+julia> logicset = logicalparse("a, b, c ∈ 1:4; a > b", verbose=false)
+
+julia> dependenton("a ⊥ c", logicset)
+True: a is independent of c
+true
+
+julia> dependenton("a ⊥ b", logicset)
+False: a is dependent on b
+range( a | b == b ) =   {}
+––––––––––––––––––– – –––––––
+range( a | b == 1 ) = {2,3,4}
+range( a | b == 2 ) =  {3,4}
+range( a | b == 3 ) =   {4}
+false
+
+julia> dependenton("a !⊥ b", logicset)
+a is dependent on b
+true
+```
+#### Example - REPL
+```
+abstractlogic> a, b, c ∈ 1:4; a > b [clear]
+Activeset Already Empty
+
+a, b, c ∈ 1:4            Feasible Outcomes: 64   Perceived Outcomes: 64 ✓        :1 4 2
+a > b                    Feasible Outcomes: 24   Perceived Outcomes: 36 ✓        :4 2 1
+
+abstractlogic> a ⊥ c
+True: a is independent of c
+
+abstractlogic> a ⊥ b
+False: a is dependent on b
+range( a | b == b ) =   {}
+––––––––––––––––––– – –––––––
+range( a | b == 1 ) = {2,3,4}
+range( a | b == 2 ) =  {3,4}
+range( a | b == 3 ) =   {4}
+
+abstractlogic> a !⊥ b
+True: a is dependent on b
+```
+"""
 function dependenton(command::String, logicset::LogicalCombo; verbose=true)
 
     m = match(r"^(.*?)([⊥!]{1,2}|(dependenton|independentof))(.*?)$",command)
@@ -19,9 +77,9 @@ function dependenton(command::String, logicset::LogicalCombo; verbose=true)
     indeptext = (independence ? "independent of" : "dependent on")
 
     (operator == "⊥")  && independence &&
-      return (verbose && println("$left is $indeptext $right"); true)
+      return (verbose && println("True: $left is $indeptext $right"); true)
     (operator == "!⊥") && !independence &&
-      return (verbose && println("$left is $indeptext $right"); true)
+      return (verbose && println("True: $left is $indeptext $right"); true)
 
    if verbose
        println("False: $left is $indeptext $right")
