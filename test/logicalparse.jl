@@ -20,7 +20,9 @@ logicset = @suppress logicalparse("a,b,c in 1:3 || {{i}}!={{!i}}")
 @test AbstractLogic.operatoreval("a<=b",logicset) |> nfeasible == 3
 @test AbstractLogic.operatoreval("a<<b",logicset) |> nfeasible == 1
 @test AbstractLogic.operatoreval("a>=b",logicset) |> nfeasible == 3
-@test AbstractLogic.operatoreval("a>>b",logicset) |> nfeasible ==1
+@test AbstractLogic.operatoreval("a>>b",logicset) |> nfeasible == 1
+@test AbstractLogic.operatoreval("a % 3 ==0",logicset) |> nfeasible == 2
+
 
 @test @suppress logicalparse("{{<3|>3}}=1", logicset) |> nfeasible  == 0
 

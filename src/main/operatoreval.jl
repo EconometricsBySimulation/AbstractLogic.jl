@@ -122,7 +122,7 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
 
   # matcher = r"^([a-zA-z][a-zA-z0-9.]*)*([0-9]+)*([+\-*/])*([a-zA-z][a-zA-z0-9]*)*([0-9]+)*$"
   # matcher = r"^(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))\s*([+\-*/÷])*\s*(.*?)$"
-  matcher = r"^(.*?)\s*([+\-*/÷]*)\s*(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))$"
+  matcher = r"^(.*?)\s*([+\-*/÷%]*)\s*(?:([a-zA-z][a-zA-z0-9.]*)|([0-9]+))$"
 
   m = match(matcher, argument)
   (m==nothing) && throw("Argument $argument could not be parsed in $command")
@@ -142,4 +142,5 @@ function grab(argument::AbstractString, logicset::LogicalCombo; command = "")
   (o1 == "/") && return left ./ right
   (o1 == "÷") && return left .÷ right
   (o1 == "*") && return left .* right
+  (o1 == "%") && return left .% right
 end
