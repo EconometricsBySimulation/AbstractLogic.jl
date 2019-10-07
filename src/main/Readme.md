@@ -2,15 +2,7 @@
 
 This section defines the core functionality of the package.
 
-## LogicalCombo
-
-Defines the basic object type for which most operations are performed.
-
 ## API
-
-### logicalparse
-
-Defines the core call function which is used to generate, modify, and query LogicalCombo objects.
 
 ### checkfeasible
 
@@ -22,6 +14,15 @@ entirely (false), partially (possible), or not at all (true).
 
 Checks if a variable is dependent in some way on another variable or if its values
 are independent.
+
+### logicalparse
+
+Defines the core call function which is used to generate, modify, and query LogicalCombo objects.
+
+### LogicalCombo
+
+Defines the basic object type for which most operations are performed.
+
 
 ### search
 
