@@ -1,11 +1,9 @@
 [![Build Status](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl.svg?branch=master)](https://travis-ci.org/EconometricsBySimulation/AbstractLogic.jl)
 [![Coverage Status](https://coveralls.io/repos/github/EconometricsBySimulation/AbstractLogic.jl/badge.svg?branch=master)](https://coveralls.io/github/EconometricsBySimulation/AbstractLogic.jl?branch=master)
+[![Documentation-Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://econometricsbysimulation.github.io/AbstractLogic.jl/stable/)
 
 # AbstractLogic.jl
 An Abstract Reasoning Logic Interface for Julia.
-
-## Documentation
-[![Documentation-Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://econometricsbysimulation.github.io/AbstractLogic.jl/stable/)
 
 ## Installation
 
@@ -13,7 +11,6 @@ The AbstractLogic package can be installed using the following commands after en
 ```julia
 pkg> add AbstractLogic
 ```
-
 Leave the package REPL by hitting `<backspace>`. Now you can use the `AbstractLogic` package anytime by typing `using AbstractLogic` in Julia.
 
 ## A Simple Example
