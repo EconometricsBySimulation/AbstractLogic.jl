@@ -22,7 +22,7 @@ This which evaluates `abstractlogic` commands to either generate data or constra
 Is called when the user would like to check if a command produces a valid result, possible result, or invalid result. The result is returned as a decimal from 0.0 to 1.0. With 0.0 being no matches and 1.0 being all matches.
 
 ### `search()`
-Searches for a possible match among a `LogicalCombo` in which the wildcard term is true. Search requires the use of a wildcard. In the event that a wildcard is missing, search will insert a `{{i}}` to the left of the command. `{{i+1}}` can be used to search for relationships between the ith column and another column.
+Searches for a possible match among a `LogicalCombo` in which the wildcard term is true. Search requires the use of a wildcard. In the event that a wildcard is missing, search will insert a `{{i}}` to the left of the command. `{{i+1}}` can be used to search for relationships between the ith column and the column one step to the right.
 
 ### `help()`
 Searches the `AbstractLogic` package for matches.

@@ -36,7 +36,7 @@ a > b &&& b > c                  feasible outcomes 1 ✓✓          :3 2 1
 
 ---
 #### `x ||| y`
-Either x or y must be `true` but not both. If both are `false` or then total expression will return false.
+Either x or y could be `true`. Only if both are `false` or then total expression will return false.
 
 **Note** `x or y` is equivalent
 ###### Example
