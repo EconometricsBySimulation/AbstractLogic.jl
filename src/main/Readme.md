@@ -15,14 +15,21 @@ entirely (false), partially (possible), or not at all (true).
 Checks if a variable is dependent in some way on another variable or if its values
 are independent.
 
+### discover
+
+Searches for the existence of `LogicalCombo` objects in the main frame.
+
+### help
+
+Searchs for `AbstractLogic` specific documentation.
+
 ### logicalparse
 
-Defines the core call function which is used to generate, modify, and query LogicalCombo objects.
+Defines the core call function which is used to generate, modify, and query `LogicalCombo` objects.
 
 ### LogicalCombo
 
 Defines the basic object type for which most operations are performed.
-
 
 ### search
 
@@ -36,7 +43,7 @@ Compares the number of feasbile values in one set with that of another set.
 
 Returns a table of feasible values from a set.
 
-## Set Evaluation Tools
+## Set Command Tools
 
 Generally these functions are only called when logicalparse is called which then
 sends the functions to metaoperator, superoperator, and operator in turn.
