@@ -67,7 +67,7 @@ Checking: Ali > Li
 :Ali is a not match with 0 feasible combinations out of 13.
 ```
 
-## More Interesting Examples
+## Examples Which Are More Interesting
 
 The best way to see the functionality of `AbstractLogic` is to see it in action.
 
